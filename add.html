@@ -61,8 +61,6 @@
 
         .form-control:focus { outline: none; border-color: #38bdf8; }
 
-        input[type="file"] { padding: 0.5rem; color: #94a3b8; cursor: pointer; }
-
         .btn-submit {
             background-color: #10b981;
             color: white;
@@ -79,6 +77,12 @@
         }
 
         .btn-submit:hover { background-color: #059669; }
+
+        .note {
+            font-size: 0.75rem;
+            color: #38bdf8;
+            margin-top: 0.3rem;
+        }
     </style>
 </head>
 <body>
@@ -86,7 +90,7 @@
     <div class="container">
         <div class="form-card">
             <div class="form-header">
-                <h2>➕ เพิ่มอัลบั้มงานใหม่ (หลายรูป)</h2>
+                <h2>➕ เพิ่มอัลบั้มงาน (ไม่จำกัดจำนวนรูป)</h2>
                 <a href="index.html" class="btn-back">← กลับหน้าหลัก</a>
             </div>
 
@@ -101,12 +105,12 @@
                 </div>
                 <div class="form-group">
                     <label>รายละเอียดงาน</label>
-                    <textarea id="albumDesc" class="form-control" rows="4" placeholder="ระบุรายละเอียดงาน..." required></textarea>
+                    <textarea id="albumDesc" class="form-control" rows="3" placeholder="ระบุรายละเอียดงาน..." required></textarea>
                 </div>
                 <div class="form-group">
-                    <label>เลือกรูปภาพหน้างาน (เลือกได้หลายรูปพร้อมกัน)</label>
-                    <!-- เพิ่มคำสั่ง multiple ให้เลือกหลายรูปได้ -->
-                    <input type="file" id="albumImageFiles" class="form-control" accept="image/*" multiple required>
+                    <label>ลิงก์อัลบั้มรูปภาพ (Google Drive / Google Photos)</label>
+                    <input type="url" id="albumLink" class="form-control" placeholder="https://photos.app.goo.gl/..." required>
+                    <div class="note">💡 อัปโหลดรูปเป็นร้อยๆ รูปใส่ Google Drive แล้วเอาลิงก์มาวางตรงนี้ได้เลย</div>
                 </div>
                 <button type="submit" class="btn-submit">💾 บันทึกอัลบั้ม</button>
             </form>
@@ -118,41 +122,21 @@
 
         albumForm.addEventListener('submit', function(e) {
             e.preventDefault();
-            const fileInput = document.getElementById('albumImageFiles');
-            const files = fileInput.files;
+            
+            let albums = JSON.parse(localStorage.getItem('qtc_smart_albums_v4')) || [];
+            
+            const newAlbum = {
+                date: document.getElementById('albumDate').value,
+                title: document.getElementById('albumTitle').value,
+                desc: document.getElementById('albumDesc').value,
+                link: document.getElementById('albumLink').value
+            };
 
-            if (files.length > 0) {
-                let base64Images = [];
-                let processedCount = 0;
-
-                // วนลูปอ่านไฟล์รูปภาพทุกรูปที่ผู้ใช้เลือกมาพร้อมกัน
-                Array.from(files).forEach((file, index) => {
-                    const reader = new FileReader();
-                    reader.onload = function(event) {
-                        base64Images[index] = event.target.result;
-                        processedCount++;
-
-                        // เมื่อแปลงครบทุกรูปแล้ว ให้ทำการบันทึกลง LocalStorage
-                        if (processedCount === files.length) {
-                            let albums = JSON.parse(localStorage.getItem('qtc_smart_albums_v3')) || [];
-                            
-                            const newAlbum = {
-                                date: document.getElementById('albumDate').value,
-                                title: document.getElementById('albumTitle').value,
-                                desc: document.getElementById('albumDesc').value,
-                                images: base64Images // เก็บเป็นชุดรูปภาพหลายรูป
-                            };
-
-                            albums.unshift(newAlbum);
-                            localStorage.setItem('qtc_smart_albums_v3', JSON.stringify(albums));
-                            
-                            alert('บันทึกอัลบั้มสำเร็จ!');
-                            window.location.href = 'index.html';
-                        }
-                    };
-                    reader.readAsDataURL(file);
-                });
-            }
+            albums.unshift(newAlbum);
+            localStorage.setItem('qtc_smart_albums_v4', JSON.stringify(albums));
+            
+            alert('บันทึกอัลบั้มสำเร็จ!');
+            window.location.href = 'index.html';
         });
     </script>
 </body>
