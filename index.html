@@ -205,7 +205,6 @@
             justify-content: center;
             align-items: center;
             flex-direction: column;
-            touch-action: pan-y;
         }
 
         .modal-content-wrapper {
@@ -233,7 +232,6 @@
             z-index: 1000;
             background: none;
             border: none;
-            line-height: 1;
         }
         .modal-close:hover { color: #38bdf8; }
 
@@ -259,39 +257,70 @@
             font-size: 0.9rem;
         }
 
-        /* Dialog กล่องใส่รหัสผ่าน / โหลดดิ้ง */
+        /* Dialog สไตล์พรีเมียม (เหมือนหน้าเพิ่มอัลบั้ม) */
         .dialog-box {
             background-color: #1e293b;
             border: 1px solid #334155;
-            padding: 1.5rem;
-            border-radius: 12px;
+            padding: 1.8rem;
+            border-radius: 16px;
             width: 90%;
-            max-width: 350px;
+            max-width: 380px;
             text-align: center;
-            box-shadow: 0 10px 25px rgba(0,0,0,0.5);
+            box-shadow: 0 15px 35px rgba(0,0,0,0.6);
+            animation: popIn 0.25s ease-out;
         }
-        .dialog-box h3 { color: #38bdf8; margin-bottom: 0.8rem; font-size: 1.1rem; }
-        .dialog-box input {
+
+        @keyframes popIn {
+            0% { transform: scale(0.9); opacity: 0; }
+            100% { transform: scale(1); opacity: 1; }
+        }
+
+        .dialog-box h3 { color: #38bdf8; margin-bottom: 0.5rem; font-size: 1.2rem; }
+        
+        .dialog-box input[type="password"],
+        .dialog-box input[type="file"] {
             width: 100%;
-            padding: 0.6rem;
-            border-radius: 6px;
+            padding: 0.7rem;
+            border-radius: 8px;
             border: 1px solid #475569;
             background: #0f172a;
             color: #fff;
-            margin-bottom: 1rem;
+            margin-bottom: 1.2rem;
             text-align: center;
-            font-size: 1rem;
+            font-size: 0.95rem;
         }
-        .dialog-btns { display: flex; gap: 0.5rem; justify-content: center; }
+
+        .dialog-btns { display: flex; gap: 0.8rem; justify-content: center; }
         .dialog-btns button {
-            padding: 0.5rem 1rem;
-            border-radius: 6px;
+            flex: 1;
+            padding: 0.6rem;
+            border-radius: 8px;
             font-weight: 600;
             cursor: pointer;
             border: none;
+            font-size: 0.9rem;
+            transition: background 0.2s;
         }
-        .btn-confirm { background-color: #38bdf8; color: #0f172a; }
-        .btn-cancel { background-color: #475569; color: #fff; }
+        .btn-confirm { background-color: #10b981; color: #fff; box-shadow: 0 4px 10px rgba(16, 185, 129, 0.3); }
+        .btn-confirm:hover { background-color: #059669; }
+        .btn-cancel { background-color: #334155; color: #94a3b8; }
+        .btn-cancel:hover { background-color: #475569; color: #fff; }
+
+        /* แถบโหลดดิ้งแบบเรืองแสง (Progress Bar Animation) */
+        .loading-spinner {
+            width: 50px;
+            height: 50px;
+            border: 4px solid #334155;
+            border-top: 4px solid #38bdf8;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 1rem auto;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
 
         .loading-view {
             text-align: center;
@@ -351,12 +380,12 @@
         <div id="modalCounter" class="modal-counter">1 / 1</div>
     </div>
 
-    <!-- Modal ใส่รหัสผ่าน (Password Dialog) -->
+    <!-- Modal ใส่รหัสผ่าน -->
     <div id="passwordModal" class="modal" style="z-index: 1005;">
         <div class="dialog-box">
-            <h3 id="dialogTitle">🔒 ยืนยันตัวตนผู้ดูแลระบบ</h3>
-            <p style="font-size: 0.8rem; color: #94a3b8; margin-bottom: 0.8rem;">กรุณากรอกรหัสผ่านเพื่อดำเนินการ</p>
-            <input type="password" id="adminPasswordInput" placeholder="ใส่รหัสผ่าน...">
+            <h3 id="dialogTitle">🔒 ยืนยันรหัสผ่านผู้ดูแล</h3>
+            <p style="font-size: 0.8rem; color: #94a3b8; margin-bottom: 1rem;">กรุณากรอกรหัสผ่านเพื่อดำเนินการต่อ</p>
+            <input type="password" id="adminPasswordInput" placeholder="รหัสผ่าน...">
             <div class="dialog-btns">
                 <button class="btn-cancel" onclick="closePasswordModal()">ยกเลิก</button>
                 <button class="btn-confirm" onclick="executeAction()">ยืนยัน</button>
@@ -364,12 +393,12 @@
         </div>
     </div>
 
-    <!-- Modal อัปโหลดรูปเพิ่ม -->
+    <!-- Modal เลือกรูปเพิ่ม -->
     <div id="addImagesModal" class="modal" style="z-index: 1005;">
         <div class="dialog-box">
             <h3>📷 เพิ่มรูปภาพในอัลบั้ม</h3>
-            <p id="targetAlbumLabel" style="font-size: 0.8rem; color: #38bdf8; margin-bottom: 0.8rem;"></p>
-            <input type="file" id="additionalImagesInput" multiple accept="image/*" style="margin-bottom: 1rem; color: #fff; font-size: 0.8rem;">
+            <p id="targetAlbumLabel" style="font-size: 0.8rem; color: #38bdf8; margin-bottom: 1rem; word-break: break-all;"></p>
+            <input type="file" id="additionalImagesInput" multiple accept="image/*">
             <div class="dialog-btns">
                 <button class="btn-cancel" onclick="document.getElementById('addImagesModal').style.display='none'">ยกเลิก</button>
                 <button class="btn-confirm" onclick="uploadAdditionalImages()">อัปโหลด</button>
@@ -377,11 +406,12 @@
         </div>
     </div>
 
-    <!-- Modal โหลดดิ้งกำลังดำเนินการ -->
+    <!-- Modal แสดงสถานะกำลังบันทึก (ดีไซน์พรีเมียมเรืองแสง) -->
     <div id="loadingModal" class="modal" style="z-index: 1010;">
         <div class="dialog-box">
-            <h3 style="color: #38bdf8;">⏳ กำลังประมวลผล...</h3>
-            <p style="font-size: 0.85rem; color: #94a3b8;">กรุณารอสักครู่ ระบบกำลังบันทึกข้อมูลลง Google Drive</p>
+            <div class="loading-spinner"></div>
+            <h3 id="loadingTitle" style="color: #38bdf8; margin-bottom: 0.4rem;">กำลังประมวลผล...</h3>
+            <p id="loadingDesc" style="font-size: 0.82rem; color: #94a3b8;">ระบบกำลังอัปเดตข้อมูลไปยัง Google Drive</p>
         </div>
     </div>
 
@@ -396,11 +426,9 @@
         let currentAlbumImages = [];
         let currentIndex = 0;
 
-        // ตัวแปรสำหรับเก็บงานที่กำลังจะแก้ไข/ลบ
-        let pendingAction = null; // 'delete' หรือ 'add'
+        let pendingAction = null;
         let selectedCategory = '';
         let selectedFolderName = '';
-        let selectedFiles = null;
 
         async function fetchAlbums() {
             try {
@@ -447,7 +475,6 @@
                 let imagesHtml = '';
                 if (item.images && item.images.length > 0) {
                     imagesHtml = `<div class="album-images-container">`;
-                    // ดึงเฉพาะ URL มาแสดงผล
                     const rawUrls = item.images.map(img => img.url);
                     rawUrls.forEach((imgSrc, imgIndex) => {
                         imagesHtml += `<img src="${imgSrc}" class="thumb-img" onclick='openModal(${JSON.stringify(rawUrls)}, ${imgIndex})' alt="Work Photo">`;
@@ -483,7 +510,6 @@
             renderAlbums();
         }
 
-        // --- ระบบจัดการรหัสผ่านและคำสั่ง ---
         function promptDeleteAlbum(category, folderName) {
             pendingAction = 'delete';
             selectedCategory = category;
@@ -515,11 +541,11 @@
             closePasswordModal();
 
             if (pendingAction === 'delete') {
+                showLoading("กำลังลบอัลบั้ม...", "กรุณารอสักครู่ ระบบกำลังลบโฟลเดอร์ออกจาก Google Drive");
                 sendDriveRequest({ action: 'delete', optionType: selectedCategory, folderName: selectedFolderName, password: password });
             } else if (pendingAction === 'add') {
-                // หลังจากใส่รหัสผ่านผ่าน ให้เปิดหน้าต่างเลือกรูปต่อ
                 document.getElementById('targetAlbumLabel').innerText = `อัลบั้ม: ${selectedFolderName}`;
-                window.verifiedPasswordForAdd = password; // เก็บไว้ใช้ชั่วคราว
+                window.verifiedPasswordForAdd = password;
                 document.getElementById('addImagesModal').style.display = 'flex';
             }
         }
@@ -531,6 +557,7 @@
                 return;
             }
             document.getElementById('addImagesModal').style.display = 'none';
+            showLoading("กำลังบีบอัดและอัปโหลด...", `กำลังอัปเพิ่มรูปภาพ (${fileInput.files.length} รูป) ลง Google Drive`);
             
             let base64Images = [];
             for (let file of fileInput.files) {
@@ -547,7 +574,12 @@
             });
         }
 
-        // ฟังก์ชันบีบอัดรูปภาพก่อนส่ง
+        function showLoading(title, desc) {
+            document.getElementById('loadingTitle').innerText = title;
+            document.getElementById('loadingDesc').innerText = desc;
+            document.getElementById('loadingModal').style.display = 'flex';
+        }
+
         function resizeAndCompressImage(file) {
             return new Promise((resolve) => {
                 const reader = new FileReader();
@@ -578,7 +610,6 @@
         }
 
         async function sendDriveRequest(payload) {
-            document.getElementById('loadingModal').style.display = 'flex';
             try {
                 const response = await fetch(SCRIPT_URL, {
                     method: 'POST',
@@ -588,14 +619,14 @@
                 document.getElementById('loadingModal').style.display = 'none';
 
                 if (result.status === "success") {
-                    alert("ดำเนินการสำเร็จ!");
-                    location.reload(); // รีเฟรชหน้าเว็บเพื่อดึงข้อมูลใหม่
+                    alert("✨ ดำเนินการสำเร็จเรียบร้อย!");
+                    location.reload();
                 } else {
-                    alert("เกิดข้อผิดพลาด: " + (result.message || "รหัสผ่านไม่ถูกต้อง"));
+                    alert("❌ เกิดข้อผิดพลาด: " + (result.message || "รหัสผ่านไม่ถูกต้อง"));
                 }
             } catch (err) {
                 document.getElementById('loadingModal').style.display = 'none';
-                alert("เกิดข้อผิดพลาดในการเชื่อมต่อกับเซิร์ฟเวอร์");
+                alert("⚠️ เกิดข้อผิดพลาดในการเชื่อมต่อกับเซิร์ฟเวอร์");
             }
         }
 
@@ -644,7 +675,7 @@
             const modal = document.getElementById('imageModal');
             if (modal.style.display === 'flex') {
                 if (e.key === 'ArrowRight') nextImage();
-                if (e.key === 'ArrowLeft') prevImage();
+                if (e.key === 'ArrowLeft') prevInfo();
                 if (e.key === 'Escape') closeModal();
             }
         });
