@@ -10,54 +10,20 @@
         
         .container { max-width: 900px; margin: 0 auto; }
 
-        .header-card {
-            background-color: #1e293b;
-            border: 1px solid #334155;
-            padding: 1.2rem;
-            border-radius: 14px;
-            text-align: center;
-            box-shadow: 0 10px 25px rgba(0,0,0,0.4);
-            margin-bottom: 1.2rem;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            gap: 0.8rem;
-        }
-
-        @media(min-width: 768px) {
-            .header-card { flex-direction: row; text-align: left; padding: 1.5rem; }
-        }
-
-        .character-img {
-            width: 90px;
-            height: 90px;
-            object-fit: cover;
-            border-radius: 12px;
-            border: 2px solid #38bdf8;
-            box-shadow: 0 5px 15px rgba(0,0,0,0.3);
-        }
-
-        .header-info .company-tag {
-            font-size: 0.7rem;
-            color: #38bdf8;
-            font-weight: 700;
-            letter-spacing: 1.5px;
-            text-transform: uppercase;
-            margin-bottom: 0.2rem;
-        }
-
-        .header-info h1 { font-size: 1.15rem; color: #f8fafc; margin-bottom: 0.2rem; }
-        .header-info p { font-size: 0.8rem; color: #94a3b8; }
-
         .top-action-bar {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            margin-bottom: 1rem;
+            margin-bottom: 1.2rem;
+            background-color: #1e293b;
+            border: 1px solid #334155;
+            padding: 1.2rem;
+            border-radius: 14px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.3);
         }
 
         .section-title {
-            font-size: 1rem;
+            font-size: 1.1rem;
             color: #38bdf8;
             font-weight: 600;
             border-left: 4px solid #38bdf8;
@@ -171,7 +137,7 @@
             margin-top: auto;
         }
 
-        /* Modal สำหรับดูรูปภาพแบบไร้วงกลม + รองรับการปัด */
+        /* Modal สำหรับดูรูปภาพ */
         .modal {
             display: none;
             position: fixed;
@@ -214,7 +180,6 @@
         }
         .modal-close:hover { color: #38bdf8; }
 
-        /* ปุ่มลูกศรแบบไม่มีวงกลม (เรียบหรู) */
         .modal-nav-btn {
             position: absolute;
             top: 50%;
@@ -255,25 +220,16 @@
 
         .footer {
             text-align: center;
-            margin-top: 2rem;
-            font-size: 0.7rem;
-            color: #64748b;
+            margin-top: 2.5rem;
+            font-size: 0.75rem;
+            color: #ffffff;
+            line-height: 1.6;
         }
     </style>
 </head>
 <body>
 
     <div class="container">
-        <div class="header-card">
-            <img src="big.jpeg" alt="Smart Monitoring Box Mascot" class="character-img">
-            <div class="header-info">
-                <div class="company-tag">QTC Energy PCL. • Rayong</div>
-                <h1>Smart Monitoring Box</h1>
-                <p>คลังจัดเก็บอัลบั้มภาพถ่ายสำหรับตรวจสอบการปฏิบัติงาน</p>
-                <span style="color: #38bdf8; font-weight: 500;">ผู้จัดทำ: Natee Intharam</span>
-            </div>
-        </div>
-
         <div class="top-action-bar">
             <div class="section-title">📂 รายการอัลบั้มงาน</div>
             <a href="add.html" class="btn-add">➕ เพิ่มอัลบั้มใหม่</a>
@@ -290,7 +246,8 @@
         <div class="album-grid" id="albumContainer"></div>
 
         <div class="footer">
-            ระบบบันทึกข้อมูลอัตโนมัติ • QTC Energy PCL.
+            ระบบบันทึกข้อมูลอัตโนมัติ • QTC Energy PCL.<br>
+            ผู้จัดทำ: Natee Intharam
         </div>
     </div>
 
@@ -421,10 +378,8 @@
             document.getElementById('imageModal').style.display = 'none';
         }
 
-        // ระบบรองรับการปัดนิ้วซ้าย-ขวา (Swipe) บนมือถือ
         let touchStartX = 0;
         let touchEndX = 0;
-
         const modalWrapper = document.getElementById('modalWrapper');
 
         modalWrapper.addEventListener('touchstart', e => {
@@ -437,16 +392,11 @@
         }, {passive: true});
 
         function handleSwipe() {
-            const threshold = 50; // ระยะความกว้างในการปัด
-            if (touchEndX < touchStartX - threshold) {
-                nextImage(); // ปัดไปทางซ้าย = รูปถัดไป
-            }
-            if (touchEndX > touchStartX + threshold) {
-                prevImage(); // ปัดไปทางขวา = รูปก่อนหน้า
-            }
+            const threshold = 50;
+            if (touchEndX < touchStartX - threshold) nextImage();
+            if (touchEndX > touchStartX + threshold) prevImage();
         }
 
-        // รองรับการกดปุ่มลูกศรบนคีย์บอร์ด
         document.addEventListener('keydown', function(e) {
             const modal = document.getElementById('imageModal');
             if (modal.style.display === 'flex') {
