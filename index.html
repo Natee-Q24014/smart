@@ -171,16 +171,17 @@
             margin-top: auto;
         }
 
-        /* Modal สำหรับดูรูปภาพแบบ Slideshow (มีปุ่มซ้าย-ขวา และตัวนับรูป) */
+        /* Modal สำหรับดูรูปภาพแบบไร้วงกลม + รองรับการปัด */
         .modal {
             display: none;
             position: fixed;
             z-index: 999;
             top: 0; left: 0; width: 100%; height: 100%;
-            background-color: rgba(0,0,0,0.92);
+            background-color: rgba(0,0,0,0.95);
             justify-content: center;
             align-items: center;
             flex-direction: column;
+            touch-action: pan-y;
         }
 
         .modal-content-wrapper {
@@ -195,56 +196,54 @@
         .modal-content {
             max-width: 100%;
             max-height: 80vh;
-            border-radius: 8px;
-            border: 2px solid #38bdf8;
+            border-radius: 6px;
             object-fit: contain;
+            user-select: none;
         }
 
         .modal-close {
             position: absolute;
             top: 20px; right: 25px;
-            color: #fff; font-size: 2.5rem; font-weight: bold;
+            color: #fff; font-size: 2.2rem; font-weight: 300;
             cursor: pointer;
             z-index: 1000;
-            background: rgba(0,0,0,0.5);
-            width: 45px; height: 45px;
-            border-radius: 50%;
-            display: flex;
-            justify-content: center;
-            align-items: center;
+            background: none;
+            border: none;
             line-height: 1;
+            transition: color 0.2s;
         }
+        .modal-close:hover { color: #38bdf8; }
 
+        /* ปุ่มลูกศรแบบไม่มีวงกลม (เรียบหรู) */
         .modal-nav-btn {
             position: absolute;
             top: 50%;
             transform: translateY(-50%);
-            background-color: rgba(56, 189, 248, 0.3);
-            color: white;
-            border: 2px solid #38bdf8;
-            width: 50px; height: 50px;
-            border-radius: 50%;
-            font-size: 1.5rem;
+            background: none;
+            border: none;
+            color: rgba(255, 255, 255, 0.7);
+            font-size: 3rem;
             cursor: pointer;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            transition: background 0.2s;
+            padding: 1rem;
+            transition: color 0.2s;
             z-index: 1000;
+            user-select: none;
         }
-        .modal-nav-btn:hover { background-color: rgba(56, 189, 248, 0.7); }
-        .nav-prev { left: 15px; }
-        .nav-next { right: 15px; }
+        .modal-nav-btn:hover { color: #38bdf8; }
+        .nav-prev { left: 10px; }
+        .nav-next { right: 10px; }
+
+        @media(min-width: 768px) {
+            .nav-prev { left: 30px; }
+            .nav-next { right: 30px; }
+        }
 
         .modal-counter {
-            color: #38bdf8;
+            color: #94a3b8;
             margin-top: 1rem;
-            font-size: 1rem;
-            font-weight: 600;
-            background: rgba(30, 41, 59, 0.8);
-            padding: 0.4rem 1rem;
-            border-radius: 20px;
-            border: 1px solid #334155;
+            font-size: 0.9rem;
+            font-weight: 500;
+            letter-spacing: 1px;
         }
 
         .loading-view {
@@ -294,12 +293,12 @@
         </div>
     </div>
 
-    <!-- Modal สำหรับดูรูปภาพแบบเลื่อนได้ -->
+    <!-- Modal สำหรับดูรูปภาพ -->
     <div id="imageModal" class="modal">
-        <span class="modal-close" onclick="closeModal()">&times;</span>
+        <button class="modal-close" onclick="closeModal()">&times;</button>
         <button class="modal-nav-btn nav-prev" onclick="prevImage()">&#10094;</button>
         
-        <div class="modal-content-wrapper">
+        <div class="modal-content-wrapper" id="modalWrapper">
             <img class="modal-content" id="modalImg">
         </div>
 
@@ -316,7 +315,6 @@
         let allAlbumsData = [];
         let currentFilter = 'all';
 
-        // ตัวแปรสำหรับระบบเลื่อนรูปภาพ
         let currentAlbumImages = [];
         let currentIndex = 0;
 
@@ -365,7 +363,6 @@
                 let imagesHtml = '';
                 if (item.images && item.images.length > 0) {
                     imagesHtml = `<div class="album-images-container">`;
-                    // ส่งอาร์เรย์รูปทั้งหมด และ index ของรูปไปเปิดใน Modal
                     item.images.forEach((imgSrc, imgIndex) => {
                         imagesHtml += `<img src="${imgSrc}" class="thumb-img" onclick='openModal(${JSON.stringify(item.images)}, ${imgIndex})' alt="Work Photo">`;
                     });
@@ -394,7 +391,6 @@
             renderAlbums();
         }
 
-        // เปิด Modal พร้อมเก็บข้อมูลรูปภาพทั้งหมดในอัลบั้มนั้นๆ
         function openModal(imagesArray, index) {
             currentAlbumImages = imagesArray;
             currentIndex = index;
@@ -424,7 +420,32 @@
             document.getElementById('imageModal').style.display = 'none';
         }
 
-        // รองรับการกดปุ่มลูกศรซ้าย/ขวา บนคีย์บอร์ด
+        // ระบบรองรับการปัดนิ้วซ้าย-ขวา (Swipe) บนมือถือ
+        let touchStartX = 0;
+        let touchEndX = 0;
+
+        const modalWrapper = document.getElementById('modalWrapper');
+
+        modalWrapper.addEventListener('touchstart', e => {
+            touchStartX = e.changedTouches[0].screenX;
+        }, {passive: true});
+
+        modalWrapper.addEventListener('touchend', e => {
+            touchEndX = e.changedTouches[0].screenX;
+            handleSwipe();
+        }, {passive: true});
+
+        function handleSwipe() {
+            const threshold = 50; // ระยะความกว้างในการปัด
+            if (touchEndX < touchStartX - threshold) {
+                nextImage(); // ปัดไปทางซ้าย = รูปถัดไป
+            }
+            if (touchEndX > touchStartX + threshold) {
+                prevImage(); // ปัดไปทางขวา = รูปก่อนหน้า
+            }
+        }
+
+        // รองรับการกดปุ่มลูกศรบนคีย์บอร์ด
         document.addEventListener('keydown', function(e) {
             const modal = document.getElementById('imageModal');
             if (modal.style.display === 'flex') {
