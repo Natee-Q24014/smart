@@ -95,6 +95,12 @@
             border-color: #38bdf8;
         }
 
+        input[type="file"] {
+            padding: 0.45rem;
+            color: #94a3b8;
+            cursor: pointer;
+        }
+
         .btn-submit {
             background-color: #10b981;
             color: white;
@@ -106,6 +112,7 @@
             cursor: pointer;
             width: 100%;
             transition: background-color 0.2s;
+            margin-top: 0.5rem;
         }
 
         .btn-submit:hover { background-color: #059669; }
@@ -118,9 +125,6 @@
             font-weight: 600;
             border-left: 4px solid #38bdf8;
             padding-left: 0.5rem;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
         }
 
         .album-grid {
@@ -140,7 +144,6 @@
             overflow: hidden;
             transition: transform 0.2s, border-color 0.2s;
             box-shadow: 0 4px 6px rgba(0,0,0,0.2);
-            position: relative;
         }
 
         .album-card:hover {
@@ -158,6 +161,14 @@
             justify-content: space-between;
             align-items: center;
             border-bottom: 1px solid #334155;
+        }
+
+        .album-img-preview {
+            width: 100%;
+            height: 160px;
+            object-fit: cover;
+            border-bottom: 1px solid #334155;
+            background-color: #0f172a;
         }
 
         .album-body {
@@ -178,22 +189,6 @@
             line-height: 1.4;
             white-space: pre-line;
         }
-
-        .btn-album {
-            display: inline-block;
-            background-color: #0284c7;
-            color: white;
-            padding: 0.5rem 1rem;
-            border-radius: 6px;
-            font-size: 0.85rem;
-            font-weight: 600;
-            text-decoration: none;
-            transition: background-color 0.2s;
-            width: 100%;
-            text-align: center;
-        }
-
-        .btn-album:hover { background-color: #0369a1; }
 
         .btn-delete {
             background: none;
@@ -227,9 +222,9 @@
             </div>
         </div>
 
-        <!-- ฟอร์มเพิ่มอัลบั้มใหม่ -->
+        <!-- ฟอร์มเพิ่มอัลบั้มใหม่ (รองรับเลือกรูปจากโทรศัพท์) -->
         <div class="form-card">
-            <h3>➕ เพิ่มอัลบั้มงานใหม่</h3>
+            <h3>➕ เพิ่มอัลบั้มงานใหม่พร้อมรูปภาพ</h3>
             <form id="albumForm">
                 <div class="form-group">
                     <label>วันที่ปฏิบัติงาน</label>
@@ -244,8 +239,8 @@
                     <textarea id="albumDesc" class="form-control" rows="2" placeholder="เช่น • สถานที่: นิคมพัฒนา ระยอง&#10;• รายละเอียด: ทดสอบระบบเรียบร้อย" required></textarea>
                 </div>
                 <div class="form-group">
-                    <label>ลิงก์อัลบั้มรูปภาพ (เช่น Google Drive / รูปภาพ)</label>
-                    <input type="url" id="albumLink" class="form-control" placeholder="https://..." value="#" required>
+                    <label>เลือกรูปภาพหน้าปกอัลบั้ม (จากมือถือ / คอมพิวเตอร์)</label>
+                    <input type="file" id="albumImageFile" class="form-control" accept="image/*" required>
                 </div>
                 <button type="submit" class="btn-submit">💾 บันทึกและเพิ่มอัลบั้มลงเว็บ</button>
             </form>
@@ -257,7 +252,7 @@
         </div>
         
         <div class="album-grid" id="albumContainer">
-            <!-- ข้อมูลอัลบั้มจะถูกแสดงผลตรงนี้อัตโนมัติ -->
+            <!-- ข้อมูลอัลบั้มจะแสดงผลตรงนี้ -->
         </div>
 
         <div class="footer">
@@ -266,29 +261,17 @@
     </div>
 
     <script>
-        // โหลดข้อมูลเริ่มต้น หรือจาก LocalStorage
-        let defaultAlbums = [
-            {
-                date: "25 ต.ค. 2026",
-                title: "ตรวจเช็กระบบสัญญาณและตู้ควบคุมประจำเดือน",
-                desc: "• สถานที่: พื้นที่นิคมพัฒนา ระยอง\n• รายละเอียด: ทดสอบระบบเสาอากาศ 4G และวัดค่าแรงดันไฟภายในตู้ ปกติเรียบร้อยดี",
-                link: "#"
-            },
-            {
-                date: "18 ต.ค. 2026",
-                title: "ติดตั้งอุปกรณ์ Smart Monitoring Box เพิ่มเติม",
-                desc: "• สถานที่: หม้อแปลงลูกที่ 2 (Rayong Plant)\n• รายละเอียด: เดินสายไฟ ควบคุมการยึดตู้ และเชื่อมต่อระบบ Monitoring สำเร็จ",
-                link: "#"
-            }
-        ];
-
-        let albums = JSON.parse(localStorage.getItem('qtc_smart_albums')) || defaultAlbums;
+        let albums = JSON.parse(localStorage.getItem('qtc_smart_albums_v2')) || [];
 
         const albumContainer = document.getElementById('albumContainer');
         const albumForm = document.getElementById('albumForm');
 
         function renderAlbums() {
             albumContainer.innerHTML = '';
+            if(albums.length === 0) {
+                albumContainer.innerHTML = '<p style="color: #64748b; text-align: center; grid-column: span 2;">ยังไม่มีอัลบั้มบันทึกงาน กรุณาเพิ่มข้อมูลด้านบนครับ</p>';
+                return;
+            }
             albums.forEach((item, index) => {
                 const card = document.createElement('div');
                 card.className = 'album-card';
@@ -297,10 +280,10 @@
                         <span>📅 ${item.date}</span>
                         <span style="color: #34d399;">● เสร็จสิ้น</span>
                     </div>
+                    ${item.image ? `<img src="${item.image}" alt="Work Image" class="album-img-preview">` : ''}
                     <div class="album-body">
                         <div class="album-title">${item.title}</div>
                         <div class="album-desc">${item.desc}</div>
-                        <a href="${item.link}" target="_blank" class="btn-album">🖼️ เปิดดูอัลบั้มภาพงานนี้</a>
                         <button class="btn-delete" onclick="deleteAlbum(${index})">🗑️ ลบอัลบั้มนี้</button>
                     </div>
                 `;
@@ -310,28 +293,36 @@
 
         albumForm.addEventListener('submit', function(e) {
             e.preventDefault();
-            const newAlbum = {
-                date: document.getElementById('albumDate').value,
-                title: document.getElementById('albumTitle').value,
-                desc: document.getElementById('albumDesc').value,
-                link: document.getElementById('albumLink').value
-            };
+            const fileInput = document.getElementById('albumImageFile');
+            const file = fileInput.files[0];
 
-            albums.unshift(newAlbum); // เพิ่มไว้บนสุด
-            localStorage.setItem('qtc_smart_albums', JSON.stringify(albums));
-            renderAlbums();
-            albumForm.reset();
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(event) {
+                    const newAlbum = {
+                        date: document.getElementById('albumDate').value,
+                        title: document.getElementById('albumTitle').value,
+                        desc: document.getElementById('albumDesc').value,
+                        image: event.target.result // แปลงรูปเป็น Base64
+                    };
+
+                    albums.unshift(newAlbum);
+                    localStorage.setItem('qtc_smart_albums_v2', JSON.stringify(albums));
+                    renderAlbums();
+                    albumForm.reset();
+                };
+                reader.readAsDataURL(file);
+            }
         });
 
         function deleteAlbum(index) {
             if(confirm('ต้องการลบอัลบั้มนี้ใช่หรือไม่?')) {
                 albums.splice(index, 1);
-                localStorage.setItem('qtc_smart_albums', JSON.stringify(albums));
+                localStorage.setItem('qtc_smart_albums_v2', JSON.stringify(albums));
                 renderAlbums();
             }
         }
 
-        // แสดงผลครั้งแรก
         renderAlbums();
     </script>
 </body>
