@@ -592,7 +592,6 @@
             }
             document.getElementById('addImagesModal').style.display = 'none';
             showLoading("กำลังอัปโหลด...", `กำลังเพิ่มรูปภาพ (${fileInput.files.length} รูป);
-            
             let base64Images = [];
             for (let file of fileInput.files) {
                 let base64 = await resizeAndCompressImage(file);
