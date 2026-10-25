@@ -47,6 +47,7 @@
         }
 
         .header-info h1 { font-size: 1.15rem; color: #f8fafc; margin-bottom: 0.2rem; }
+        .header-info .creator-text { font-size: 0.85rem; color: #ffffff; font-weight: 500; margin-bottom: 0.3rem; }
         .header-info p { font-size: 0.8rem; color: #94a3b8; }
 
         .top-action-bar {
@@ -256,20 +257,20 @@
             text-align: center;
             margin-top: 2.5rem;
             font-size: 0.75rem;
-            color: #ffffff;
-            line-height: 1.6;
+            color: #94a3b8;
         }
     </style>
 </head>
 <body>
 
     <div class="container">
-        <!-- การ์ดหัวข้อและรูปตัวการ์ตูนด้านบน -->
+        <!-- การ์ดหัวข้อและชื่อผู้จัดทำด้านบน -->
         <div class="header-card">
             <img src="big.jpeg" alt="Smart Monitoring Box Mascot" class="character-img">
             <div class="header-info">
                 <div class="company-tag">QTC Energy PCL. • Rayong</div>
                 <h1>Smart Monitoring Box</h1>
+                <div class="creator-text">ผู้จัดทำ: Natee Intharam</div>
                 <p>คลังจัดเก็บอัลบั้มภาพถ่ายสำหรับตรวจสอบการปฏิบัติงาน</p>
             </div>
         </div>
@@ -290,8 +291,7 @@
         <div class="album-grid" id="albumContainer"></div>
 
         <div class="footer">
-            ระบบบันทึกข้อมูลอัตโนมัติ • QTC Energy PCL.<br>
-            ผู้จัดทำ: Natee Intharam
+            ระบบบันทึกข้อมูลอัตโนมัติ • QTC Energy PCL.
         </div>
     </div>
 
@@ -443,4 +443,14 @@
 
         document.addEventListener('keydown', function(e) {
             const modal = document.getElementById('imageModal');
-            if (modal.
+            if (modal.style.display === 'flex') {
+                if (e.key === 'ArrowRight') nextImage();
+                if (e.key === 'ArrowLeft') prevImage();
+                if (e.key === 'Escape') closeModal();
+            }
+        });
+
+        fetchAlbums();
+    </script>
+</body>
+</html>
