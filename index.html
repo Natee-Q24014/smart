@@ -8,10 +8,7 @@
         * { box-sizing: border-box; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; margin: 0; padding: 0; }
         body { background-color: #0f172a; color: #f8fafc; min-height: 100vh; padding: 2rem 1rem; }
         
-        .container {
-            max-width: 900px;
-            margin: 0 auto;
-        }
+        .container { max-width: 900px; margin: 0 auto; }
 
         /* ส่วนหัวเว็บไซต์ */
         .header-card {
@@ -53,6 +50,66 @@
         .header-info h1 { font-size: 1.5rem; color: #f8fafc; margin-bottom: 0.4rem; }
         .header-info p { font-size: 0.85rem; color: #94a3b8; }
 
+        /* ฟอร์มเพิ่มอัลบั้มใหม่ */
+        .form-card {
+            background-color: #1e293b;
+            border: 1px solid #334155;
+            padding: 1.5rem;
+            border-radius: 12px;
+            margin-bottom: 2rem;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.2);
+        }
+
+        .form-card h3 {
+            font-size: 1rem;
+            color: #38bdf8;
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .form-group {
+            margin-bottom: 0.9rem;
+        }
+
+        .form-group label {
+            display: block;
+            font-size: 0.8rem;
+            color: #94a3b8;
+            margin-bottom: 0.3rem;
+        }
+
+        .form-control {
+            width: 100%;
+            padding: 0.65rem 0.9rem;
+            background-color: #0f172a;
+            border: 1px solid #475569;
+            color: #fff;
+            border-radius: 6px;
+            font-size: 0.9rem;
+        }
+
+        .form-control:focus {
+            outline: none;
+            border-color: #38bdf8;
+        }
+
+        .btn-submit {
+            background-color: #10b981;
+            color: white;
+            border: none;
+            padding: 0.75rem 1rem;
+            border-radius: 6px;
+            font-size: 0.9rem;
+            font-weight: 600;
+            cursor: pointer;
+            width: 100%;
+            transition: background-color 0.2s;
+        }
+
+        .btn-submit:hover { background-color: #059669; }
+
         /* ส่วนของอัลบั้มงาน */
         .section-title {
             font-size: 1.1rem;
@@ -61,6 +118,9 @@
             font-weight: 600;
             border-left: 4px solid #38bdf8;
             padding-left: 0.5rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
         }
 
         .album-grid {
@@ -80,6 +140,7 @@
             overflow: hidden;
             transition: transform 0.2s, border-color 0.2s;
             box-shadow: 0 4px 6px rgba(0,0,0,0.2);
+            position: relative;
         }
 
         .album-card:hover {
@@ -115,6 +176,7 @@
             color: #94a3b8;
             margin-bottom: 1rem;
             line-height: 1.4;
+            white-space: pre-line;
         }
 
         .btn-album {
@@ -133,6 +195,17 @@
 
         .btn-album:hover { background-color: #0369a1; }
 
+        .btn-delete {
+            background: none;
+            border: none;
+            color: #ef4444;
+            cursor: pointer;
+            font-size: 0.75rem;
+            margin-top: 0.5rem;
+            float: right;
+        }
+        .btn-delete:hover { text-decoration: underline; }
+
         .footer {
             text-align: center;
             margin-top: 2.5rem;
@@ -146,7 +219,6 @@
     <div class="container">
         <!-- ส่วนหัว ข้อมูลภาพรวม -->
         <div class="header-card">
-            <!-- ใช้รูปคาแรตเตอร์ที่คุณอัปโหลดไว้ (เปลี่ยนชื่อไฟล์ตามที่คุณตั้งจริง เช่น character.jpg) -->
             <img src="character.jpg" alt="Smart Monitoring Box Mascot" class="character-img">
             <div class="header-info">
                 <div class="company-tag">QTC Energy PCL. • Rayong Field</div>
@@ -155,60 +227,37 @@
             </div>
         </div>
 
-        <!-- รายการอัลบั้มงานแยกตามวันที่ -->
-        <div class="section-title">📂 รายการอัลบั้มงานและรายงานย้อนหลัง</div>
+        <!-- ฟอร์มเพิ่มอัลบั้มใหม่ -->
+        <div class="form-card">
+            <h3>➕ เพิ่มอัลบั้มงานใหม่</h3>
+            <form id="albumForm">
+                <div class="form-group">
+                    <label>วันที่ปฏิบัติงาน</label>
+                    <input type="text" id="albumDate" class="form-control" placeholder="เช่น 25 ต.ค. 2026" required>
+                </div>
+                <div class="form-group">
+                    <label>ชื่องาน / หัวข้ออัลบั้ม</label>
+                    <input type="text" id="albumTitle" class="form-control" placeholder="เช่น ตรวจเช็กระบบสัญญาณประจำเดือน" required>
+                </div>
+                <div class="form-group">
+                    <label>รายละเอียดงานและสถานที่</label>
+                    <textarea id="albumDesc" class="form-control" rows="2" placeholder="เช่น • สถานที่: นิคมพัฒนา ระยอง&#10;• รายละเอียด: ทดสอบระบบเรียบร้อย" required></textarea>
+                </div>
+                <div class="form-group">
+                    <label>ลิงก์อัลบั้มรูปภาพ (เช่น Google Drive / รูปภาพ)</label>
+                    <input type="url" id="albumLink" class="form-control" placeholder="https://..." value="#" required>
+                </div>
+                <button type="submit" class="btn-submit">💾 บันทึกและเพิ่มอัลบั้มลงเว็บ</button>
+            </form>
+        </div>
+
+        <!-- รายการอัลบั้มงาน -->
+        <div class="section-title">
+            <span>📂 รายการอัลบั้มงานและรายงานย้อนหลัง</span>
+        </div>
         
-        <div class="album-grid">
-            
-            <!-- อัลบั้มที่ 1 (ตัวอย่างล่าสุด) -->
-            <div class="album-card">
-                <div class="album-header-bar">
-                    <span>📅 25 ต.ค. 2026</span>
-                    <span style="color: #34d399;">● เสร็จสิ้น</span>
-                </div>
-                <div class="album-body">
-                    <div class="album-title">ตรวจเช็กระบบสัญญาณและตู้ควบคุมประจำเดือน</div>
-                    <div class="album-desc">
-                        • สถานที่: พื้นที่นิคมพัฒนา ระยอง<br>
-                        • รายละเอียด: ทดสอบระบบเสาอากาศ 4G และวัดค่าแรงดันไฟภายในตู้ ปกติเรียบร้อยดี
-                    </div>
-                    <!-- ตรง href สามารถใส่ลิงก์อัลบั้มรูปภาพเต็ม (เช่น Google Drive, โฟลเดอร์ย่อย) หรือลิงก์รูปภาพ -->
-                    <a href="#" class="btn-album">🖼️ เปิดดูอัลบั้มภาพงานนี้</a>
-                </div>
-            </div>
-
-            <!-- อัลบั้มที่ 2 -->
-            <div class="album-card">
-                <div class="album-header-bar">
-                    <span>📅 18 ต.ค. 2026</span>
-                    <span style="color: #34d399;">● เสร็จสิ้น</span>
-                </div>
-                <div class="album-body">
-                    <div class="album-title">ติดตั้งอุปกรณ์ Smart Monitoring Box เพิ่มเติม</div>
-                    <div class="album-desc">
-                        • สถานที่: หม้อแปลงลูกที่ 2 (Rayong Plant)<br>
-                        • รายละเอียด: เดินสายไฟ ควบคุมการยึดตู้ และเชื่อมต่อระบบ Monitoring สำเร็จ
-                    </div>
-                    <a href="#" class="btn-album">🖼️ เปิดดูอัลบั้มภาพงานนี้</a>
-                </div>
-            </div>
-
-            <!-- อัลบั้มที่ 3 (เพิ่มอัลบั้มอื่นๆ ตามต้องการในอนาคต) -->
-            <div class="album-card">
-                <div class="album-header-bar">
-                    <span>📅 10 ต.ค. 2026</span>
-                    <span style="color: #34d399;">● เสร็จสิ้น</span>
-                </div>
-                <div class="album-body">
-                    <div class="album-title">บำรุงรักษาและทำความสะอาดชุดสายไฟขั้วต่อ</div>
-                    <div class="album-desc">
-                        • สถานที่: ภาคสนามโซน A<br>
-                        • รายละเอียด: เปลี่ยนซีลกันน้ำ เปลี่ยนจุดยึดสายเคเบิล และตรวจสอบความแน่นหนา
-                    </div>
-                    <a href="#" class="btn-album">🖼️ เปิดดูอัลบั้มภาพงานนี้</a>
-                </div>
-            </div>
-
+        <div class="album-grid" id="albumContainer">
+            <!-- ข้อมูลอัลบั้มจะถูกแสดงผลตรงนี้อัตโนมัติ -->
         </div>
 
         <div class="footer">
@@ -216,5 +265,74 @@
         </div>
     </div>
 
+    <script>
+        // โหลดข้อมูลเริ่มต้น หรือจาก LocalStorage
+        let defaultAlbums = [
+            {
+                date: "25 ต.ค. 2026",
+                title: "ตรวจเช็กระบบสัญญาณและตู้ควบคุมประจำเดือน",
+                desc: "• สถานที่: พื้นที่นิคมพัฒนา ระยอง\n• รายละเอียด: ทดสอบระบบเสาอากาศ 4G และวัดค่าแรงดันไฟภายในตู้ ปกติเรียบร้อยดี",
+                link: "#"
+            },
+            {
+                date: "18 ต.ค. 2026",
+                title: "ติดตั้งอุปกรณ์ Smart Monitoring Box เพิ่มเติม",
+                desc: "• สถานที่: หม้อแปลงลูกที่ 2 (Rayong Plant)\n• รายละเอียด: เดินสายไฟ ควบคุมการยึดตู้ และเชื่อมต่อระบบ Monitoring สำเร็จ",
+                link: "#"
+            }
+        ];
+
+        let albums = JSON.parse(localStorage.getItem('qtc_smart_albums')) || defaultAlbums;
+
+        const albumContainer = document.getElementById('albumContainer');
+        const albumForm = document.getElementById('albumForm');
+
+        function renderAlbums() {
+            albumContainer.innerHTML = '';
+            albums.forEach((item, index) => {
+                const card = document.createElement('div');
+                card.className = 'album-card';
+                card.innerHTML = `
+                    <div class="album-header-bar">
+                        <span>📅 ${item.date}</span>
+                        <span style="color: #34d399;">● เสร็จสิ้น</span>
+                    </div>
+                    <div class="album-body">
+                        <div class="album-title">${item.title}</div>
+                        <div class="album-desc">${item.desc}</div>
+                        <a href="${item.link}" target="_blank" class="btn-album">🖼️ เปิดดูอัลบั้มภาพงานนี้</a>
+                        <button class="btn-delete" onclick="deleteAlbum(${index})">🗑️ ลบอัลบั้มนี้</button>
+                    </div>
+                `;
+                albumContainer.appendChild(card);
+            });
+        }
+
+        albumForm.addEventListener('submit', function(e) {
+            e.preventDefault();
+            const newAlbum = {
+                date: document.getElementById('albumDate').value,
+                title: document.getElementById('albumTitle').value,
+                desc: document.getElementById('albumDesc').value,
+                link: document.getElementById('albumLink').value
+            };
+
+            albums.unshift(newAlbum); // เพิ่มไว้บนสุด
+            localStorage.setItem('qtc_smart_albums', JSON.stringify(albums));
+            renderAlbums();
+            albumForm.reset();
+        });
+
+        function deleteAlbum(index) {
+            if(confirm('ต้องการลบอัลบั้มนี้ใช่หรือไม่?')) {
+                albums.splice(index, 1);
+                localStorage.setItem('qtc_smart_albums', JSON.stringify(albums));
+                renderAlbums();
+            }
+        }
+
+        // แสดงผลครั้งแรก
+        renderAlbums();
+    </script>
 </body>
 </html>
