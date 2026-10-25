@@ -172,15 +172,8 @@
             align-items: center;
         }
 
-        .album-footer-info {
-            font-size: 0.75rem;
-            color: #94a3b8;
-        }
-
-        .action-btns {
-            display: flex;
-            gap: 0.4rem;
-        }
+        .album-footer-info { font-size: 0.75rem; color: #94a3b8; }
+        .action-btns { display: flex; gap: 0.4rem; }
 
         .btn-action {
             padding: 0.3rem 0.6rem;
@@ -251,13 +244,9 @@
         .nav-prev { left: 10px; }
         .nav-next { right: 10px; }
 
-        .modal-counter {
-            color: #94a3b8;
-            margin-top: 1rem;
-            font-size: 0.9rem;
-        }
+        .modal-counter { color: #94a3b8; margin-top: 1rem; font-size: 0.9rem; }
 
-        /* Dialog สไตล์พรีเมียม (เหมือนหน้าเพิ่มอัลบั้ม) */
+        /* Dialog สไตล์พรีเมียม */
         .dialog-box {
             background-color: #1e293b;
             border: 1px solid #334155;
@@ -306,7 +295,7 @@
         .btn-cancel { background-color: #334155; color: #94a3b8; }
         .btn-cancel:hover { background-color: #475569; color: #fff; }
 
-        /* แถบโหลดดิ้งแบบเรืองแสง (Progress Bar Animation) */
+        /* แถบโหลดดิ้ง */
         .loading-spinner {
             width: 50px;
             height: 50px;
@@ -322,19 +311,8 @@
             100% { transform: rotate(360deg); }
         }
 
-        .loading-view {
-            text-align: center;
-            color: #38bdf8;
-            padding: 3rem;
-            font-size: 0.95rem;
-        }
-
-        .footer {
-            text-align: center;
-            margin-top: 2.5rem;
-            font-size: 0.75rem;
-            color: #94a3b8;
-        }
+        .loading-view { text-align: center; color: #38bdf8; padding: 3rem; font-size: 0.95rem; }
+        .footer { text-align: center; margin-top: 2.5rem; font-size: 0.75rem; color: #94a3b8; }
     </style>
 </head>
 <body>
@@ -406,12 +384,22 @@
         </div>
     </div>
 
-    <!-- Modal แสดงสถานะกำลังบันทึก (ดีไซน์พรีเมียมเรืองแสง) -->
+    <!-- Modal แสดงสถานะกำลังบันทึก -->
     <div id="loadingModal" class="modal" style="z-index: 1010;">
         <div class="dialog-box">
             <div class="loading-spinner"></div>
             <h3 id="loadingTitle" style="color: #38bdf8; margin-bottom: 0.4rem;">กำลังประมวลผล...</h3>
             <p id="loadingDesc" style="font-size: 0.82rem; color: #94a3b8;">ระบบกำลังอัปเดตข้อมูลไปยัง Google Drive</p>
+        </div>
+    </div>
+
+    <!-- 🌟 Custom Alert Popup (แทนที่ alert แบบเดิม) -->
+    <div id="customAlertModal" class="modal" style="z-index: 1020;">
+        <div class="dialog-box">
+            <div style="font-size: 2.5rem; margin-bottom: 0.5rem;" id="alertIcon">✨</div>
+            <h3 id="alertTitle" style="color: #38bdf8; margin-bottom: 0.5rem;">แจ้งเตือน</h3>
+            <p id="alertDesc" style="font-size: 0.88rem; color: #cbd5e1; margin-bottom: 1.2rem; line-height: 1.4;"></p>
+            <button class="btn-confirm" style="width: 100%; padding: 0.7rem;" onclick="closeCustomAlert()">ตกลง</button>
         </div>
     </div>
 
@@ -429,6 +417,22 @@
         let pendingAction = null;
         let selectedCategory = '';
         let selectedFolderName = '';
+
+        // 🌟 ฟังก์ชันเปิด Custom Alert แทน alert() เดิม
+        function showAlert(title, desc, isSuccess = true) {
+            document.getElementById('alertTitle').innerText = title;
+            document.getElementById('alertDesc').innerText = desc;
+            document.getElementById('alertIcon').innerText = isSuccess ? "✨" : "❌";
+            document.getElementById('customAlertModal').style.display = 'flex';
+        }
+
+        function closeCustomAlert() {
+            document.getElementById('customAlertModal').style.display = 'none';
+            // ถ้าสำเร็จให้รีเฟรชหน้าเว็บ
+            if(window.shouldReloadAfterAlert) {
+                location.reload();
+            }
+        }
 
         async function fetchAlbums() {
             try {
@@ -535,7 +539,7 @@
         function executeAction() {
             const password = document.getElementById('adminPasswordInput').value;
             if (!password) {
-                alert("กรุณากรอกรหัสผ่าน");
+                showAlert("แจ้งเตือน", "กรุณากรอกรหัสผ่าน", false);
                 return;
             }
             closePasswordModal();
@@ -553,7 +557,7 @@
         async function uploadAdditionalImages() {
             const fileInput = document.getElementById('additionalImagesInput');
             if (fileInput.files.length === 0) {
-                alert("กรุณาเลือกรูปภาพอย่างน้อย 1 รูป");
+                showAlert("แจ้งเตือน", "กรุณาเลือกรูปภาพอย่างน้อย 1 รูป", false);
                 return;
             }
             document.getElementById('addImagesModal').style.display = 'none';
@@ -619,14 +623,16 @@
                 document.getElementById('loadingModal').style.display = 'none';
 
                 if (result.status === "success") {
-                    alert("✨ ดำเนินการสำเร็จเรียบร้อย!");
-                    location.reload();
+                    window.shouldReloadAfterAlert = true;
+                    showAlert("สำเร็จ!", "ดำเนินการเรียบร้อยแล้ว", true);
                 } else {
-                    alert("❌ เกิดข้อผิดพลาด: " + (result.message || "รหัสผ่านไม่ถูกต้อง"));
+                    window.shouldReloadAfterAlert = false;
+                    showAlert("เกิดข้อผิดพลาด", result.message || "รหัสผ่านไม่ถูกต้อง", false);
                 }
             } catch (err) {
                 document.getElementById('loadingModal').style.display = 'none';
-                alert("⚠️ เกิดข้อผิดพลาดในการเชื่อมต่อกับเซิร์ฟเวอร์");
+                window.shouldReloadAfterAlert = false;
+                showAlert("เกิดข้อผิดพลาด", "ไม่สามารถเชื่อมต่อกับเซิร์ฟเวอร์ได้", false);
             }
         }
 
@@ -675,7 +681,7 @@
             const modal = document.getElementById('imageModal');
             if (modal.style.display === 'flex') {
                 if (e.key === 'ArrowRight') nextImage();
-                if (e.key === 'ArrowLeft') prevInfo();
+                if (e.key === 'ArrowLeft') prevImage();
                 if (e.key === 'Escape') closeModal();
             }
         });
