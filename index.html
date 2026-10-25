@@ -103,17 +103,38 @@
         }
         .btn-add:hover { background-color: #115e59; transform: translateY(-1px); }
 
+        /* แถบควบคุมตัวกรองและช่องค้นหา */
+        .controls-wrapper {
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+            flex-wrap: wrap;
+        }
+
         .filter-container {
             display: flex;
             gap: 0.8rem;
-            margin-bottom: 1.5rem;
             align-items: center;
             background-color: #323b4d;
             border: 1px solid #434e63;
             padding: 0.9rem 1.2rem;
             border-radius: 16px;
             box-shadow: 0 4px 15px rgba(0,0,0,0.2);
-            max-width: 400px;
+            flex: 1;
+            min-width: 250px;
+        }
+
+        .search-container {
+            display: flex;
+            gap: 0.8rem;
+            align-items: center;
+            background-color: #323b4d;
+            border: 1px solid #434e63;
+            padding: 0.9rem 1.2rem;
+            border-radius: 16px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+            flex: 2;
+            min-width: 280px;
         }
 
         .filter-label {
@@ -123,7 +144,7 @@
             white-space: nowrap;
         }
 
-        .filter-select {
+        .filter-select, .search-input {
             flex: 1;
             background-color: #262c38;
             color: #f8fafc;
@@ -133,10 +154,10 @@
             font-size: 0.92rem;
             font-weight: 600;
             outline: none;
-            cursor: pointer;
             transition: border-color 0.2s;
         }
-        .filter-select:focus { border-color: #38bdf8; }
+        .filter-select:focus, .search-input:focus { border-color: #38bdf8; }
+        .search-input::placeholder { color: #64748b; font-weight: 400; }
 
         .album-grid {
             display: grid;
@@ -369,13 +390,21 @@
             <a href="add.html" class="btn-add">➕ เพิ่มอัลบั้มใหม่</a>
         </div>
 
-        <div class="filter-container">
-            <span class="filter-label">🔍 หมวดหมู่:</span>
-            <select id="categorySelect" class="filter-select" onchange="filterCategory(this.value)">
-                <option value="all"> ทั้งหมด</option>
-                <option value="Smart"> Smart</option>
-                <option value="Smartแถม"> Smart (แถม)</option>
-            </select>
+        <!-- แถบกรองหมวดหมู่และช่องค้นหาชื่อหัวข้ออัลบั้ม -->
+        <div class="controls-wrapper">
+            <div class="filter-container">
+                <span class="filter-label">🔍 หมวดหมู่:</span>
+                <select id="categorySelect" class="filter-select" onchange="filterCategory(this.value)">
+                    <option value="all"> ทั้งหมด</option>
+                    <option value="Smart"> Smart</option>
+                    <option value="Smartแถม"> Smart (แถม)</option>
+                </select>
+            </div>
+
+            <div class="search-container">
+                <span class="filter-label">🔎 ค้นหา:</span>
+                <input type="text" id="searchInput" class="search-input" placeholder="พิมพ์ชื่อหัวข้ออัลบั้ม..." oninput="filterCategory(document.getElementById('categorySelect').value)">
+            </div>
         </div>
         
         <div id="loadingView" class="loading-view">⏳ กำลังโหลดอัลบั้ม...</div>
@@ -486,12 +515,20 @@
             albumContainer.innerHTML = '';
 
             let filteredAlbums = allAlbumsData;
+            
+            // กรองตามหมวดหมู่
             if (currentFilter !== 'all') {
-                filteredAlbums = allAlbumsData.filter(item => item.category === currentFilter);
+                filteredAlbums = filteredAlbums.filter(item => item.category === currentFilter);
+            }
+
+            // กรองตามชื่อหัวข้ออัลบั้มจากช่องค้นหา
+            const searchKeyword = document.getElementById('searchInput').value.trim().toLowerCase();
+            if (searchKeyword !== '') {
+                filteredAlbums = filteredAlbums.filter(item => item.folderName.toLowerCase().includes(searchKeyword));
             }
 
             if (!filteredAlbums || filteredAlbums.length === 0) {
-                albumContainer.innerHTML = '<p style="color: #6b7280; text-align: center; padding: 2.5rem; grid-column: 1/-1; font-weight: 500;">ไม่พบรายการอัลบั้มในหมวดหมู่นี้</p>';
+                albumContainer.innerHTML = '<p style="color: #6b7280; text-align: center; padding: 2.5rem; grid-column: 1/-1; font-weight: 500;">ไม่พบรายการอัลบั้มที่ค้นหา</p>';
                 return;
             }
 
@@ -634,88 +671,3 @@
                             height = maxDim;
                         }
                         canvas.width = width;
-                        canvas.height = height;
-                        const ctx = canvas.getContext('2d');
-                        ctx.drawImage(img, 0, 0, width, height);
-                        resolve(canvas.toDataURL('image/jpeg', 0.8));
-                    }
-                }
-            });
-        }
-
-        async function sendDriveRequest(payload) {
-            try {
-                const response = await fetch(SCRIPT_URL, {
-                    method: 'POST',
-                    body: JSON.stringify(payload)
-                });
-                const result = await response.json();
-                document.getElementById('loadingModal').style.display = 'none';
-
-                if (result.status === "success") {
-                    window.shouldReloadAfterAlert = true;
-                    showAlert("สำเร็จ", "ดำเนินการเรียบร้อยแล้ว", false);
-                } else {
-                    window.shouldReloadAfterAlert = false;
-                    showAlert("รหัสผ่านผิด", result.message || "รหัสผ่านไม่ถูกต้อง", true);
-                }
-            } catch (err) {
-                document.getElementById('loadingModal').style.display = 'none';
-                window.shouldReloadAfterAlert = false;
-                showAlert("เกิดข้อผิดพลาด", "ไม่สามารถเชื่อมต่อกับเซิร์ฟเวอร์ได้", true);
-            }
-        }
-
-        function openModal(imagesArray, index) {
-            currentAlbumImages = imagesArray;
-            currentIndex = index;
-            updateModalImage();
-            document.getElementById('imageModal').style.display = 'flex';
-        }
-
-        function updateModalImage() {
-            const modalImg = document.getElementById('modalImg');
-            const modalCounter = document.getElementById('modalCounter');
-            modalImg.src = currentAlbumImages[currentIndex];
-            modalCounter.innerText = `${currentIndex + 1} / ${currentAlbumImages.length}`;
-        }
-
-        function nextImage() {
-            currentIndex = (currentIndex + 1) % currentAlbumImages.length;
-            updateModalImage();
-        }
-
-        function prevImage() {
-            currentIndex = (currentIndex - 1 + currentAlbumImages.length) % currentAlbumImages.length;
-            updateModalImage();
-        }
-
-        function closeModal() {
-            document.getElementById('imageModal').style.display = 'none';
-        }
-
-        let touchStartX = 0;
-        let touchEndX = 0;
-        const modalWrapper = document.getElementById('modalWrapper');
-        modalWrapper.addEventListener('touchstart', e => { touchStartX = e.changedTouches[0].screenX; }, {passive: true});
-        modalWrapper.addEventListener('touchend', e => { touchEndX = e.changedTouches[0].screenX; handleSwipe(); }, {passive: true});
-
-        function handleSwipe() {
-            const threshold = 50;
-            if (touchEndX < touchStartX - threshold) nextImage();
-            if (touchEndX > touchStartX + threshold) prevImage();
-        }
-
-        document.addEventListener('keydown', function(e) {
-            const modal = document.getElementById('imageModal');
-            if (modal.style.display === 'flex') {
-                if (e.key === 'ArrowRight') nextImage();
-                if (e.key === 'ArrowLeft') prevImage();
-                if (e.key === 'Escape') closeModal();
-            }
-        });
-
-        fetchAlbums();
-    </script>
-</body>
-</html>
