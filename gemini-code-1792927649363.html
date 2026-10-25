@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ระบบแสดงผลและคลังภาพผลงาน (Work Gallery)</title>
+    <style>
+        * { box-sizing: border-box; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; margin: 0; padding: 0; }
+        body { background-color: #f8f9fa; color: #333; line-height: 1.6; }
+        header { background-color: #1e293b; color: white; padding: 2rem 1rem; text-align: center; }
+        header h1 { font-size: 1.8rem; margin-bottom: 0.5rem; }
+        header p { color: #94a3b8; font-size: 0.95rem; }
+        
+        .container { max-width: 1100px; margin: 2rem auto; padding: 0 1rem; }
+        
+        .section-title { font-size: 1.4rem; margin-bottom: 1rem; padding-bottom: 0.5rem; border-bottom: 2px solid #cbd5e1; color: #0f172a; }
+        
+        .gallery-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 1.5rem; margin-bottom: 2.5rem; }
+        
+        .card { background: white; border-radius: 8px; overflow: hidden; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1); border: 1px solid #e2e8f0; }
+        .card img { width: 100%; height: 220px; object-fit: cover; display: block; }
+        
+        .card-body { padding: 1.25rem; }
+        .badge { display: inline-block; padding: 0.25rem 0.6rem; font-size: 0.75rem; font-weight: bold; border-radius: 4px; margin-bottom: 0.5rem; }
+        .badge-success { background-color: #dcfce7; color: #166534; }
+        .badge-warning { background-color: #fef9c3; color: #854d0e; }
+        
+        .card-title { font-size: 1.1rem; margin-bottom: 0.5rem; color: #1e293b; }
+        .card-desc { font-size: 0.9rem; color: #64748b; margin-bottom: 1rem; }
+        .card-meta { font-size: 0.8rem; color: #94a3b8; margin-bottom: 1rem; display: flex; justify-content: space-between; }
+        
+        .btn { display: inline-block; width: 100%; text-align: center; padding: 0.6rem; background-color: #2563eb; color: white; text-decoration: none; border-radius: 5px; font-weight: 500; font-size: 0.9rem; }
+        .btn:hover { background-color: #1d4ed8; }
+    </style>
+</head>
+<body>
+
+    <header>
+        <h1>📋 คลังภาพและรายงานสรุปผลงาน</h1>
+        <p>รวบรวมภาพถ่ายการดำเนินงานและเอกสารสำหรับผู้บังคับบัญชาตรวจติดตาม</p>
+    </header>
+
+    <div class="container">
+        <h2 class="section-title">📂 หมวดหมู่งานที่ 1: รายงานผลการดำเนินงานล่าสุด</h2>
+        <div class="gallery-grid">
+            
+            <!-- การ์ดงานที่ 1 -->
+            <div class="card">
+                <!-- เปลี่ยนชื่อไฟล์รูปภาพตรง src -->
+                <img src="https://via.placeholder.com/400x250" alt="ภาพการทำงาน">
+                <div class="card-body">
+                    <span class="badge badge-success">เสร็จสิ้นแล้ว</span>
+                    <h3 class="card-title">งานตรวจเช็กและบำรุงรักษาประจำเดือน</h3>
+                    <p class="card-desc">สรุปภาพถ่ายขั้นตอนการตรวจสอบและซ่อมบำรุงอุปกรณ์ตามแผนงานประจำสัปดาห์</p>
+                    <div class="card-meta">
+                        <span>📅 วันที่: 24 ต.ค. 2026</span>
+                        <span>📸 12 ภาพ</span>
+                    </div>
+                    <!-- ใส่ลิงก์ดาวน์โหลดรูปทั้งหมดหรือไฟล์เอกสาร -->
+                    <a href="#" target="_blank" class="btn">ดูภาพทั้งหมด / ดาวน์โหลดไฟล์</a>
+                </div>
+            </div>
+
+            <!-- การ์ดงานที่ 2 -->
+            <div class="card">
+                <img src="https://via.placeholder.com/400x250" alt="ภาพการทำงาน">
+                <div class="card-body">
+                    <span class="badge badge-warning">กำลังดำเนินการ</span>
+                    <h3 class="card-title">โครงการปรับปรุงพื้นที่ดำเนินงาน</h3>
+                    <p class="card-desc">ภาพถ่ายความคืบหน้าการติดตั้งและเตรียมสถานที่ปฏิบัติงานล่าสุด</p>
+                    <div class="card-meta">
+                        <span>📅 วันที่: 25 ต.ค. 2026</span>
+                        <span>📸 8 ภาพ</span>
+                    </div>
+                    <a href="#" target="_blank" class="btn">ดูภาพทั้งหมด / ดาวน์โหลดไฟล์</a>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+</body>
+</html>
