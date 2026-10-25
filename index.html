@@ -214,17 +214,17 @@
     <div class="container">
         <!-- ส่วนหัว ข้อมูลภาพรวม -->
         <div class="header-card">
-            <img src="big.jpge" alt="Smart Monitoring Box Mascot" class="character-img">
+            <img src="big.jpeg" alt="Smart Monitoring Box Mascot" class="character-img">
             <div class="header-info">
                 <div class="company-tag">QTC Energy PCL. • Rayong Field</div>
                 <h1>Smart Monitoring Box - Work Archives</h1>
-                <p>คลังจัดเก็บอัลบั้มภาพถ่าย บันทึกประจำวัน และรายงานรายละเอียดการติดตั้ง / บำรุงรักษาอุปกรณ์ตู้ควบคุมสนาม</p>
+                <p>คลังจัดเก็บอัลบั้มภาพถ่าย Smart</p>
             </div>
         </div>
 
-        <!-- ฟอร์มเพิ่มอัลบั้มใหม่ (รองรับเลือกรูปจากโทรศัพท์) -->
+        <!-- เพิ่มอัลบั้มใหม่ -->
         <div class="form-card">
-            <h3>➕ เพิ่มอัลบั้มงานใหม่พร้อมรูปภาพ</h3>
+            <h3>➕ เพิ่มอัลบั้มงานใหม่</h3>
             <form id="albumForm">
                 <div class="form-group">
                     <label>วันที่ปฏิบัติงาน</label>
@@ -232,17 +232,17 @@
                 </div>
                 <div class="form-group">
                     <label>ชื่องาน / หัวข้ออัลบั้ม</label>
-                    <input type="text" id="albumTitle" class="form-control" placeholder="เช่น ตรวจเช็กระบบสัญญาณประจำเดือน" required>
+                    <input type="text" id="albumTitle" class="form-control" required>
                 </div>
                 <div class="form-group">
-                    <label>รายละเอียดงานและสถานที่</label>
-                    <textarea id="albumDesc" class="form-control" rows="2" placeholder="เช่น • สถานที่: นิคมพัฒนา ระยอง&#10;• รายละเอียด: ทดสอบระบบเรียบร้อย" required></textarea>
+                    <label>รายละเอียด</label>
+                    <textarea id="albumDesc" class="form-control" rows="2" placeholder="วันที่/SOD/S/N/TR" required></textarea>
                 </div>
                 <div class="form-group">
-                    <label>เลือกรูปภาพหน้าปกอัลบั้ม (จากมือถือ / คอมพิวเตอร์)</label>
+                    <label>เลือกรูปภาพ (จากมือถือ / คอมพิวเตอร์)</label>
                     <input type="file" id="albumImageFile" class="form-control" accept="image/*" required>
                 </div>
-                <button type="submit" class="btn-submit">💾 บันทึกและเพิ่มอัลบั้มลงเว็บ</button>
+                <button type="submit" class="btn-submit">💾 บันทึก</button>
             </form>
         </div>
 
