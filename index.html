@@ -611,7 +611,7 @@
                 }
 
                 if (pendingAction === 'delete') {
-                    showLoading("กำลังลบอัลบั้ม...", "ระบบกำลังดำเนินการลบออกจาก Google Drive");
+                    showLoading("กำลังลบอัลบั้ม...", "ระบบกำลังดำเนินการลบ...");
                     sendDriveRequest({ action: 'delete', optionType: selectedCategory, folderName: selectedFolderName, password: password });
                 } else if (pendingAction === 'add') {
                     window.verifiedPasswordForAdd = password;
