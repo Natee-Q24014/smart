@@ -6,31 +6,31 @@
     <title>Smart Monitoring Box - Work Archives</title>
     <style>
         * { box-sizing: border-box; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; margin: 0; padding: 0; }
-        body { background-color: #0f172a; color: #f8fafc; min-height: 100vh; padding: 1.5rem 1rem; }
+        body { background-color: #0f172a; color: #f8fafc; min-height: 100vh; padding: 1rem; }
         
         .container { max-width: 1200px; margin: 0 auto; }
 
         .header-card {
             background-color: #1e293b;
             border: 1px solid #334155;
-            padding: 1.5rem;
-            border-radius: 16px;
+            padding: 1.2rem;
+            border-radius: 14px;
             text-align: center;
             box-shadow: 0 10px 25px rgba(0,0,0,0.4);
-            margin-bottom: 1.5rem;
+            margin-bottom: 1.2rem;
             display: flex;
             flex-direction: column;
             align-items: center;
-            gap: 1rem;
+            gap: 0.8rem;
         }
 
         @media(min-width: 768px) {
-            .header-card { flex-direction: row; text-align: left; }
+            .header-card { flex-direction: row; text-align: left; padding: 1.5rem; }
         }
 
         .character-img {
-            width: 120px;
-            height: 120px;
+            width: 100px;
+            height: 100px;
             object-fit: cover;
             border-radius: 12px;
             border: 2px solid #38bdf8;
@@ -38,7 +38,7 @@
         }
 
         .header-info .company-tag {
-            font-size: 0.75rem;
+            font-size: 0.7rem;
             color: #38bdf8;
             font-weight: 700;
             letter-spacing: 1.5px;
@@ -46,18 +46,22 @@
             margin-bottom: 0.2rem;
         }
 
-        .header-info h1 { font-size: 1.3rem; color: #f8fafc; margin-bottom: 0.3rem; }
-        .header-info p { font-size: 0.85rem; color: #94a3b8; }
+        .header-info h1 { font-size: 1.15rem; color: #f8fafc; margin-bottom: 0.2rem; }
+        .header-info p { font-size: 0.8rem; color: #94a3b8; }
 
         .nav-bar {
-            margin-bottom: 1.5rem;
+            margin-bottom: 1.2rem;
             display: flex;
-            justify-content: space-between;
-            align-items: center;
+            flex-direction: column;
+            gap: 0.8rem;
+        }
+
+        @media(min-width: 550px) {
+            .nav-bar { flex-direction: row; justify-content: space-between; align-items: center; }
         }
 
         .section-title {
-            font-size: 1.1rem;
+            font-size: 0.95rem;
             color: #38bdf8;
             font-weight: 600;
             border-left: 4px solid #38bdf8;
@@ -73,6 +77,7 @@
             font-weight: 600;
             text-decoration: none;
             display: flex;
+            justify-content: center;
             align-items: center;
             gap: 0.4rem;
             box-shadow: 0 4px 10px rgba(16, 185, 129, 0.3);
@@ -81,17 +86,18 @@
 
         .btn-add:hover { background-color: #059669; }
 
-        /* จัดแบ่งหน้าจอเป็น 2 ฝั่ง (Smart / Smartแถม) ฝั่งละ 50% */
+        /* ระบบจัดแบ่งหน้าจอ: มือถือเรียงเดี่ยว / จอใหญ่แบ่งครึ่ง 50% */
         .split-layout {
             display: grid;
             grid-template-columns: 1fr;
-            gap: 2rem;
+            gap: 1.2rem;
         }
 
         @media(min-width: 900px) {
             .split-layout {
-                grid-template-columns: 1fr 1fr; /* ซ้าย 50% ขวา 50% */
+                grid-template-columns: 1fr 1fr;
                 align-items: start;
+                gap: 1.5rem;
             }
         }
 
@@ -99,15 +105,15 @@
             background-color: #1e293b;
             border: 1px solid #334155;
             border-radius: 14px;
-            padding: 1.2rem;
+            padding: 1rem;
             box-shadow: 0 4px 6px rgba(0,0,0,0.2);
         }
 
         .column-header {
-            font-size: 1.1rem;
+            font-size: 1rem;
             font-weight: bold;
-            padding-bottom: 0.8rem;
-            margin-bottom: 1rem;
+            padding-bottom: 0.7rem;
+            margin-bottom: 0.8rem;
             border-bottom: 2px solid #334155;
             display: flex;
             justify-content: space-between;
@@ -120,7 +126,7 @@
         .album-list {
             display: flex;
             flex-direction: column;
-            gap: 1rem;
+            gap: 0.8rem;
         }
 
         .album-card {
@@ -133,25 +139,26 @@
 
         .album-header-bar {
             background-color: #1e293b;
-            padding: 0.6rem 0.9rem;
-            font-size: 0.85rem;
+            padding: 0.55rem 0.8rem;
+            font-size: 0.8rem;
             color: #f8fafc;
             font-weight: 600;
             border-bottom: 1px solid #334155;
+            word-break: break-all;
         }
 
         .album-images-container {
-            padding: 0.6rem;
+            padding: 0.5rem;
             display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(80px, 1fr));
-            gap: 0.4rem;
-            max-height: 220px;
+            grid-template-columns: repeat(auto-fill, minmax(70px, 1fr));
+            gap: 0.35rem;
+            max-height: 200px;
             overflow-y: auto;
         }
 
         .thumb-img {
             width: 100%;
-            height: 80px;
+            height: 70px;
             object-fit: cover;
             border-radius: 5px;
             border: 1px solid #475569;
@@ -165,28 +172,28 @@
         }
 
         .album-footer {
-            padding: 0.6rem 0.9rem;
-            font-size: 0.75rem;
+            padding: 0.5rem 0.8rem;
+            font-size: 0.72rem;
             color: #94a3b8;
             text-align: right;
             border-top: 1px solid #334155;
         }
 
-        /* Modal สำหรับกดดูรูปขนาดใหญ่ */
+        /* Modal สำหรับขยายรูปดู */
         .modal {
             display: none;
             position: fixed;
             z-index: 999;
             top: 0; left: 0; width: 100%; height: 100%;
-            background-color: rgba(0,0,0,0.85);
+            background-color: rgba(0,0,0,0.9);
             justify-content: center;
             align-items: center;
-            padding: 1rem;
+            padding: 0.5rem;
         }
 
         .modal-content {
-            max-width: 90%;
-            max-height: 90vh;
+            max-width: 95%;
+            max-height: 85vh;
             border-radius: 8px;
             border: 2px solid #38bdf8;
             object-fit: contain;
@@ -194,8 +201,8 @@
 
         .modal-close {
             position: absolute;
-            top: 20px; right: 30px;
-            color: #fff; font-size: 2rem; font-weight: bold;
+            top: 15px; right: 20px;
+            color: #fff; font-size: 2.2rem; font-weight: bold;
             cursor: pointer;
         }
 
@@ -203,14 +210,13 @@
             text-align: center;
             color: #38bdf8;
             padding: 3rem;
-            font-size: 1rem;
-            grid-column: span 2;
+            font-size: 0.95rem;
         }
 
         .footer {
             text-align: center;
-            margin-top: 2.5rem;
-            font-size: 0.75rem;
+            margin-top: 2rem;
+            font-size: 0.7rem;
             color: #64748b;
         }
     </style>
@@ -222,41 +228,37 @@
             <img src="big.jpeg" alt="Smart Monitoring Box Mascot" class="character-img">
             <div class="header-info">
                 <div class="company-tag">QTC Energy PCL. • Rayong</div>
-                <h1>Smart Monitoring Box - Work Archives</h1>
+                <h1>Smart Monitoring Box</h1>
                 <p>คลังจัดเก็บอัลบั้มภาพถ่ายสำหรับตรวจสอบการปฏิบัติงาน</p>
             </div>
         </div>
 
         <div class="nav-bar">
-            <div class="section-title">📂 รายการอัลบั้มงานทั้งหมดแยกตามประเภท</div>
+            <div class="section-title">📂 รายการอัลบั้มงานทั้งหมด</div>
             <a href="add.html" class="btn-add">➕ เพิ่มอัลบั้มใหม่</a>
         </div>
         
         <div id="loadingView" class="loading-view">⏳ กำลังโหลดอัลบั้มจาก Google Drive...</div>
 
-        <!-- โครงสร้างแบ่งครึ่ง 2 ฝั่ง (ซ้าย: Smart | ขวา: Smartแถม) -->
+        <!-- โครงสร้างแสดงผล -->
         <div class="split-layout" id="splitLayout" style="display: none;">
             
-            <!-- ฝั่งซ้าย: Smart -->
+            <!-- ฝั่ง Smart -->
             <div class="column-box">
                 <div class="column-header col-smart">
                     <span>📁 หมวด Smart (ไม่แถม)</span>
-                    <span id="smartCount" style="font-size: 0.85rem; background: #0284c7; padding: 0.2rem 0.6rem; border-radius: 6px; color: #fff;">0 อัลบั้ม</span>
+                    <span id="smartCount" style="font-size: 0.75rem; background: #0284c7; padding: 0.2rem 0.5rem; border-radius: 6px; color: #fff;">0 อัลบั้ม</span>
                 </div>
-                <div class="album-list" id="smartList">
-                    <!-- รายการ Smart จะแสดงตรงนี้ -->
-                </div>
+                <div class="album-list" id="smartList"></div>
             </div>
 
-            <!-- ฝั่งขวา: Smartแถม -->
+            <!-- ฝั่ง Smartแถม -->
             <div class="column-box">
                 <div class="column-header col-free">
                     <span>📁 หมวด Smartแถม</span>
-                    <span id="freeCount" style="font-size: 0.85rem; background: #d97706; padding: 0.2rem 0.6rem; border-radius: 6px; color: #fff;">0 อัลบั้ม</span>
+                    <span id="freeCount" style="font-size: 0.75rem; background: #d97706; padding: 0.2rem 0.5rem; border-radius: 6px; color: #fff;">0 อัลบั้ม</span>
                 </div>
-                <div class="album-list" id="freeList">
-                    <!-- รายการ Smartแถม จะแสดงตรงนี้ -->
-                </div>
+                <div class="album-list" id="freeList"></div>
             </div>
 
         </div>
@@ -300,13 +302,13 @@
                 freeCount.innerText = `${freeAlbums.length} อัลบั้ม`;
 
                 if (smartAlbums.length === 0) {
-                    smartList.innerHTML = '<p style="color: #64748b; text-align: center; padding: 1.5rem; font-size: 0.85rem;">ยังไม่มีอัลบั้มในหมวดนี้</p>';
+                    smartList.innerHTML = '<p style="color: #64748b; text-align: center; padding: 1.2rem; font-size: 0.8rem;">ยังไม่มีอัลบั้มในหมวดนี้</p>';
                 } else {
                     smartAlbums.forEach(item => smartList.appendChild(createAlbumCard(item)));
                 }
 
                 if (freeAlbums.length === 0) {
-                    freeList.innerHTML = '<p style="color: #64748b; text-align: center; padding: 1.5rem; font-size: 0.85rem;">ยังไม่มีอัลบั้มในหมวดนี้</p>';
+                    freeList.innerHTML = '<p style="color: #64748b; text-align: center; padding: 1.2rem; font-size: 0.8rem;">ยังไม่มีอัลบั้มในหมวดนี้</p>';
                 } else {
                     freeAlbums.forEach(item => freeList.appendChild(createAlbumCard(item)));
                 }
