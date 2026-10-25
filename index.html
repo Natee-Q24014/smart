@@ -1,0 +1,220 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Smart Monitoring Box - Work Albums & Reports</title>
+    <style>
+        * { box-sizing: border-box; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; margin: 0; padding: 0; }
+        body { background-color: #0f172a; color: #f8fafc; min-height: 100vh; padding: 2rem 1rem; }
+        
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+        }
+
+        /* ส่วนหัวเว็บไซต์ */
+        .header-card {
+            background-color: #1e293b;
+            border: 1px solid #334155;
+            padding: 2rem;
+            border-radius: 16px;
+            text-align: center;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.4);
+            margin-bottom: 2rem;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        @media(min-width: 768px) {
+            .header-card { flex-direction: row; text-align: left; }
+        }
+
+        .character-img {
+            width: 140px;
+            height: 140px;
+            object-fit: cover;
+            border-radius: 12px;
+            border: 2px solid #38bdf8;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+        }
+
+        .header-info .company-tag {
+            font-size: 0.75rem;
+            color: #38bdf8;
+            font-weight: 700;
+            letter-spacing: 1.5px;
+            text-transform: uppercase;
+            margin-bottom: 0.2rem;
+        }
+
+        .header-info h1 { font-size: 1.5rem; color: #f8fafc; margin-bottom: 0.4rem; }
+        .header-info p { font-size: 0.85rem; color: #94a3b8; }
+
+        /* ส่วนของอัลบั้มงาน */
+        .section-title {
+            font-size: 1.1rem;
+            color: #38bdf8;
+            margin-bottom: 1rem;
+            font-weight: 600;
+            border-left: 4px solid #38bdf8;
+            padding-left: 0.5rem;
+        }
+
+        .album-grid {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 1.2rem;
+        }
+
+        @media(min-width: 640px) {
+            .album-grid { grid-template-columns: repeat(2, 1fr); }
+        }
+
+        .album-card {
+            background-color: #1e293b;
+            border: 1px solid #334155;
+            border-radius: 12px;
+            overflow: hidden;
+            transition: transform 0.2s, border-color 0.2s;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.2);
+        }
+
+        .album-card:hover {
+            transform: translateY(-3px);
+            border-color: #38bdf8;
+        }
+
+        .album-header-bar {
+            background-color: #0f172a;
+            padding: 0.75rem 1rem;
+            font-size: 0.8rem;
+            color: #38bdf8;
+            font-weight: 600;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid #334155;
+        }
+
+        .album-body {
+            padding: 1.2rem;
+        }
+
+        .album-title {
+            font-size: 1rem;
+            font-weight: 600;
+            color: #f8fafc;
+            margin-bottom: 0.4rem;
+        }
+
+        .album-desc {
+            font-size: 0.85rem;
+            color: #94a3b8;
+            margin-bottom: 1rem;
+            line-height: 1.4;
+        }
+
+        .btn-album {
+            display: inline-block;
+            background-color: #0284c7;
+            color: white;
+            padding: 0.5rem 1rem;
+            border-radius: 6px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            text-decoration: none;
+            transition: background-color 0.2s;
+            width: 100%;
+            text-align: center;
+        }
+
+        .btn-album:hover { background-color: #0369a1; }
+
+        .footer {
+            text-align: center;
+            margin-top: 2.5rem;
+            font-size: 0.75rem;
+            color: #64748b;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <!-- ส่วนหัว ข้อมูลภาพรวม -->
+        <div class="header-card">
+            <!-- ใช้รูปคาแรตเตอร์ที่คุณอัปโหลดไว้ (เปลี่ยนชื่อไฟล์ตามที่คุณตั้งจริง เช่น character.jpg) -->
+            <img src="character.jpg" alt="Smart Monitoring Box Mascot" class="character-img">
+            <div class="header-info">
+                <div class="company-tag">QTC Energy PCL. • Rayong Field</div>
+                <h1>Smart Monitoring Box - Work Archives</h1>
+                <p>คลังจัดเก็บอัลบั้มภาพถ่าย บันทึกประจำวัน และรายงานรายละเอียดการติดตั้ง / บำรุงรักษาอุปกรณ์ตู้ควบคุมสนาม</p>
+            </div>
+        </div>
+
+        <!-- รายการอัลบั้มงานแยกตามวันที่ -->
+        <div class="section-title">📂 รายการอัลบั้มงานและรายงานย้อนหลัง</div>
+        
+        <div class="album-grid">
+            
+            <!-- อัลบั้มที่ 1 (ตัวอย่างล่าสุด) -->
+            <div class="album-card">
+                <div class="album-header-bar">
+                    <span>📅 25 ต.ค. 2026</span>
+                    <span style="color: #34d399;">● เสร็จสิ้น</span>
+                </div>
+                <div class="album-body">
+                    <div class="album-title">ตรวจเช็กระบบสัญญาณและตู้ควบคุมประจำเดือน</div>
+                    <div class="album-desc">
+                        • สถานที่: พื้นที่นิคมพัฒนา ระยอง<br>
+                        • รายละเอียด: ทดสอบระบบเสาอากาศ 4G และวัดค่าแรงดันไฟภายในตู้ ปกติเรียบร้อยดี
+                    </div>
+                    <!-- ตรง href สามารถใส่ลิงก์อัลบั้มรูปภาพเต็ม (เช่น Google Drive, โฟลเดอร์ย่อย) หรือลิงก์รูปภาพ -->
+                    <a href="#" class="btn-album">🖼️ เปิดดูอัลบั้มภาพงานนี้</a>
+                </div>
+            </div>
+
+            <!-- อัลบั้มที่ 2 -->
+            <div class="album-card">
+                <div class="album-header-bar">
+                    <span>📅 18 ต.ค. 2026</span>
+                    <span style="color: #34d399;">● เสร็จสิ้น</span>
+                </div>
+                <div class="album-body">
+                    <div class="album-title">ติดตั้งอุปกรณ์ Smart Monitoring Box เพิ่มเติม</div>
+                    <div class="album-desc">
+                        • สถานที่: หม้อแปลงลูกที่ 2 (Rayong Plant)<br>
+                        • รายละเอียด: เดินสายไฟ ควบคุมการยึดตู้ และเชื่อมต่อระบบ Monitoring สำเร็จ
+                    </div>
+                    <a href="#" class="btn-album">🖼️ เปิดดูอัลบั้มภาพงานนี้</a>
+                </div>
+            </div>
+
+            <!-- อัลบั้มที่ 3 (เพิ่มอัลบั้มอื่นๆ ตามต้องการในอนาคต) -->
+            <div class="album-card">
+                <div class="album-header-bar">
+                    <span>📅 10 ต.ค. 2026</span>
+                    <span style="color: #34d399;">● เสร็จสิ้น</span>
+                </div>
+                <div class="album-body">
+                    <div class="album-title">บำรุงรักษาและทำความสะอาดชุดสายไฟขั้วต่อ</div>
+                    <div class="album-desc">
+                        • สถานที่: ภาคสนามโซน A<br>
+                        • รายละเอียด: เปลี่ยนซีลกันน้ำ เปลี่ยนจุดยึดสายเคเบิล และตรวจสอบความแน่นหนา
+                    </div>
+                    <a href="#" class="btn-album">🖼️ เปิดดูอัลบั้มภาพงานนี้</a>
+                </div>
+            </div>
+
+        </div>
+
+        <div class="footer">
+            ระบบบันทึกข้อมูลภาคสนามอัตโนมัติ • QTC Energy PCL.
+        </div>
+    </div>
+
+</body>
+</html>
