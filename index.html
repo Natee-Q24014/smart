@@ -80,7 +80,6 @@
         }
         .btn-add:hover { background-color: #059669; }
 
-        /* แถบตัวเลือกหมวดหมู่ (Filter Buttons) */
         .filter-container {
             display: flex;
             gap: 0.5rem;
@@ -102,17 +101,8 @@
             transition: all 0.2s;
         }
 
-        .filter-btn:hover {
-            color: #fff;
-            border-color: #475569;
-        }
-
-        .filter-btn.active {
-            background-color: #38bdf8;
-            color: #0f172a;
-            border-color: #38bdf8;
-            box-shadow: 0 0 12px rgba(56, 189, 248, 0.4);
-        }
+        .filter-btn:hover { color: #fff; border-color: #475569; }
+        .filter-btn.active { background-color: #38bdf8; color: #0f172a; border-color: #38bdf8; box-shadow: 0 0 12px rgba(56, 189, 248, 0.4); }
 
         .album-grid {
             display: grid;
@@ -147,12 +137,7 @@
             word-break: break-all;
         }
 
-        .badge-tag {
-            font-size: 0.7rem;
-            padding: 0.15rem 0.5rem;
-            border-radius: 4px;
-            font-weight: 600;
-        }
+        .badge-tag { font-size: 0.7rem; padding: 0.15rem 0.5rem; border-radius: 4px; font-weight: 600; }
         .badge-smart { background-color: #0284c7; color: #fff; }
         .badge-free { background-color: #d97706; color: #fff; }
 
@@ -175,11 +160,7 @@
             cursor: pointer;
             transition: transform 0.2s, border-color 0.2s;
         }
-
-        .thumb-img:hover {
-            transform: scale(1.03);
-            border-color: #38bdf8;
-        }
+        .thumb-img:hover { transform: scale(1.03); border-color: #38bdf8; }
 
         .album-footer {
             padding: 0.55rem 0.8rem;
@@ -190,21 +171,30 @@
             margin-top: auto;
         }
 
-        /* Modal สำหรับขยายรูปดู */
+        /* Modal สำหรับดูรูปภาพแบบ Slideshow (มีปุ่มซ้าย-ขวา และตัวนับรูป) */
         .modal {
             display: none;
             position: fixed;
             z-index: 999;
             top: 0; left: 0; width: 100%; height: 100%;
-            background-color: rgba(0,0,0,0.9);
+            background-color: rgba(0,0,0,0.92);
             justify-content: center;
             align-items: center;
-            padding: 0.5rem;
+            flex-direction: column;
+        }
+
+        .modal-content-wrapper {
+            position: relative;
+            max-width: 90%;
+            max-height: 80vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
         }
 
         .modal-content {
-            max-width: 95%;
-            max-height: 85vh;
+            max-width: 100%;
+            max-height: 80vh;
             border-radius: 8px;
             border: 2px solid #38bdf8;
             object-fit: contain;
@@ -212,9 +202,49 @@
 
         .modal-close {
             position: absolute;
-            top: 15px; right: 20px;
-            color: #fff; font-size: 2.2rem; font-weight: bold;
+            top: 20px; right: 25px;
+            color: #fff; font-size: 2.5rem; font-weight: bold;
             cursor: pointer;
+            z-index: 1000;
+            background: rgba(0,0,0,0.5);
+            width: 45px; height: 45px;
+            border-radius: 50%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            line-height: 1;
+        }
+
+        .modal-nav-btn {
+            position: absolute;
+            top: 50%;
+            transform: translateY(-50%);
+            background-color: rgba(56, 189, 248, 0.3);
+            color: white;
+            border: 2px solid #38bdf8;
+            width: 50px; height: 50px;
+            border-radius: 50%;
+            font-size: 1.5rem;
+            cursor: pointer;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            transition: background 0.2s;
+            z-index: 1000;
+        }
+        .modal-nav-btn:hover { background-color: rgba(56, 189, 248, 0.7); }
+        .nav-prev { left: 15px; }
+        .nav-next { right: 15px; }
+
+        .modal-counter {
+            color: #38bdf8;
+            margin-top: 1rem;
+            font-size: 1rem;
+            font-weight: 600;
+            background: rgba(30, 41, 59, 0.8);
+            padding: 0.4rem 1rem;
+            border-radius: 20px;
+            border: 1px solid #334155;
         }
 
         .loading-view {
@@ -249,7 +279,6 @@
             <a href="add.html" class="btn-add">➕ เพิ่มอัลบั้มใหม่</a>
         </div>
 
-        <!-- แถบเลือกตัวกรองหมวดหมู่ถัดลงมาจากหัวข้อ -->
         <div class="filter-container">
             <button class="filter-btn active" onclick="filterCategory('all', this)">🌐 ทั้งหมด (<span id="countAll">0</span>)</button>
             <button class="filter-btn" onclick="filterCategory('Smart', this)">⚡ Smart (<span id="countSmart">0</span>)</button>
@@ -258,7 +287,6 @@
         
         <div id="loadingView" class="loading-view">⏳ กำลังโหลดอัลบั้มจาก Google Drive...</div>
 
-        <!-- พื้นที่แสดงอัลบั้มรูปภาพ -->
         <div class="album-grid" id="albumContainer"></div>
 
         <div class="footer">
@@ -266,10 +294,17 @@
         </div>
     </div>
 
-    <!-- Modal สำหรับขยายรูปดู -->
-    <div id="imageModal" class="modal" onclick="closeModal()">
-        <span class="modal-close">&times;</span>
-        <img class="modal-content" id="modalImg">
+    <!-- Modal สำหรับดูรูปภาพแบบเลื่อนได้ -->
+    <div id="imageModal" class="modal">
+        <span class="modal-close" onclick="closeModal()">&times;</span>
+        <button class="modal-nav-btn nav-prev" onclick="prevImage()">&#10094;</button>
+        
+        <div class="modal-content-wrapper">
+            <img class="modal-content" id="modalImg">
+        </div>
+
+        <button class="modal-nav-btn nav-next" onclick="nextImage()">&#10095;</button>
+        <div id="modalCounter" class="modal-counter">1 / 1</div>
     </div>
 
     <script>
@@ -281,6 +316,10 @@
         let allAlbumsData = [];
         let currentFilter = 'all';
 
+        // ตัวแปรสำหรับระบบเลื่อนรูปภาพ
+        let currentAlbumImages = [];
+        let currentIndex = 0;
+
         async function fetchAlbums() {
             try {
                 const response = await fetch(SCRIPT_URL);
@@ -288,7 +327,6 @@
                 
                 loadingView.style.display = 'none';
 
-                // อัปเดตตัวเลขจำนวนอัลบั้มในแต่ละปุ่ม
                 const smartCount = allAlbumsData.filter(item => item.category === "Smart").length;
                 const freeCount = allAlbumsData.filter(item => item.category === "Smartแถม").length;
 
@@ -327,8 +365,9 @@
                 let imagesHtml = '';
                 if (item.images && item.images.length > 0) {
                     imagesHtml = `<div class="album-images-container">`;
-                    item.images.forEach(imgSrc => {
-                        imagesHtml += `<img src="${imgSrc}" class="thumb-img" onclick="openModal('${imgSrc}')" alt="Work Photo">`;
+                    // ส่งอาร์เรย์รูปทั้งหมด และ index ของรูปไปเปิดใน Modal
+                    item.images.forEach((imgSrc, imgIndex) => {
+                        imagesHtml += `<img src="${imgSrc}" class="thumb-img" onclick='openModal(${JSON.stringify(item.images)}, ${imgIndex})' alt="Work Photo">`;
                     });
                     imagesHtml += `</div>`;
                 }
@@ -349,25 +388,51 @@
 
         function filterCategory(category, btnElement) {
             currentFilter = category;
-
-            // สลับสถานะปุ่ม Active
             const buttons = document.querySelectorAll('.filter-btn');
             buttons.forEach(btn => btn.classList.remove('active'));
             btnElement.classList.add('active');
-
             renderAlbums();
         }
 
-        function openModal(imgSrc) {
-            const modal = document.getElementById('imageModal');
+        // เปิด Modal พร้อมเก็บข้อมูลรูปภาพทั้งหมดในอัลบั้มนั้นๆ
+        function openModal(imagesArray, index) {
+            currentAlbumImages = imagesArray;
+            currentIndex = index;
+            updateModalImage();
+            document.getElementById('imageModal').style.display = 'flex';
+        }
+
+        function updateModalImage() {
             const modalImg = document.getElementById('modalImg');
-            modal.style.display = 'flex';
-            modalImg.src = imgSrc;
+            const modalCounter = document.getElementById('modalCounter');
+            
+            modalImg.src = currentAlbumImages[currentIndex];
+            modalCounter.innerText = `${currentIndex + 1} / ${currentAlbumImages.length}`;
+        }
+
+        function nextImage() {
+            currentIndex = (currentIndex + 1) % currentAlbumImages.length;
+            updateModalImage();
+        }
+
+        function prevImage() {
+            currentIndex = (currentIndex - 1 + currentAlbumImages.length) % currentAlbumImages.length;
+            updateModalImage();
         }
 
         function closeModal() {
             document.getElementById('imageModal').style.display = 'none';
         }
+
+        // รองรับการกดปุ่มลูกศรซ้าย/ขวา บนคีย์บอร์ด
+        document.addEventListener('keydown', function(e) {
+            const modal = document.getElementById('imageModal');
+            if (modal.style.display === 'flex') {
+                if (e.key === 'ArrowRight') nextImage();
+                if (e.key === 'ArrowLeft') prevImage();
+                if (e.key === 'Escape') closeModal();
+            }
+        });
 
         fetchAlbums();
     </script>
