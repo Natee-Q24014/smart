@@ -8,7 +8,7 @@
         * { box-sizing: border-box; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; margin: 0; padding: 0; }
         body { background-color: #0f172a; color: #f8fafc; min-height: 100vh; padding: 1.5rem 1rem; }
         
-        .container { max-width: 900px; margin: 0 auto; }
+        .container { max-width: 1200px; margin: 0 auto; }
 
         .header-card {
             background-color: #1e293b;
@@ -81,52 +81,79 @@
 
         .btn-add:hover { background-color: #059669; }
 
-        .album-grid {
+        /* จัดแบ่งหน้าจอเป็น 2 ฝั่ง (Smart / Smartแถม) ฝั่งละ 50% */
+        .split-layout {
             display: grid;
             grid-template-columns: 1fr;
-            gap: 1.5rem;
+            gap: 2rem;
         }
 
-        .album-card {
+        @media(min-width: 900px) {
+            .split-layout {
+                grid-template-columns: 1fr 1fr; /* ซ้าย 50% ขวา 50% */
+                align-items: start;
+            }
+        }
+
+        .column-box {
             background-color: #1e293b;
             border: 1px solid #334155;
-            border-radius: 12px;
-            overflow: hidden;
+            border-radius: 14px;
+            padding: 1.2rem;
             box-shadow: 0 4px 6px rgba(0,0,0,0.2);
-            display: flex;
-            flex-direction: column;
         }
 
-        .album-header-bar {
-            background-color: #0f172a;
-            padding: 0.75rem 1rem;
-            font-size: 0.85rem;
-            color: #38bdf8;
-            font-weight: 600;
+        .column-header {
+            font-size: 1.1rem;
+            font-weight: bold;
+            padding-bottom: 0.8rem;
+            margin-bottom: 1rem;
+            border-bottom: 2px solid #334155;
             display: flex;
             justify-content: space-between;
             align-items: center;
+        }
+
+        .col-smart { color: #38bdf8; border-color: #0284c7; }
+        .col-free { color: #ffb703; border-color: #d97706; }
+
+        .album-list {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+
+        .album-card {
+            background-color: #0f172a;
+            border: 1px solid #334155;
+            border-radius: 10px;
+            overflow: hidden;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+        }
+
+        .album-header-bar {
+            background-color: #1e293b;
+            padding: 0.6rem 0.9rem;
+            font-size: 0.85rem;
+            color: #f8fafc;
+            font-weight: 600;
             border-bottom: 1px solid #334155;
         }
 
-        .badge-smart { background-color: #0284c7; color: white; padding: 0.2rem 0.6rem; border-radius: 4px; font-size: 0.75rem; }
-        .badge-free { background-color: #d97706; color: white; padding: 0.2rem 0.6rem; border-radius: 4px; font-size: 0.75rem; }
-
         .album-images-container {
-            padding: 0.8rem;
+            padding: 0.6rem;
             display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(90px, 1fr));
-            gap: 0.5rem;
-            background-color: #0f172a;
-            max-height: 250px;
+            grid-template-columns: repeat(auto-fill, minmax(80px, 1fr));
+            gap: 0.4rem;
+            max-height: 220px;
             overflow-y: auto;
         }
 
         .thumb-img {
             width: 100%;
-            height: 90px;
+            height: 80px;
             object-fit: cover;
-            border-radius: 6px;
+            border-radius: 5px;
             border: 1px solid #475569;
             cursor: pointer;
             transition: transform 0.2s, border-color 0.2s;
@@ -137,17 +164,12 @@
             border-color: #38bdf8;
         }
 
-        .album-body {
-            padding: 1rem;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-
-        .album-title {
-            font-size: 1rem;
-            font-weight: 600;
-            color: #f8fafc;
+        .album-footer {
+            padding: 0.6rem 0.9rem;
+            font-size: 0.75rem;
+            color: #94a3b8;
+            text-align: right;
+            border-top: 1px solid #334155;
         }
 
         /* Modal สำหรับกดดูรูปขนาดใหญ่ */
@@ -182,6 +204,7 @@
             color: #38bdf8;
             padding: 3rem;
             font-size: 1rem;
+            grid-column: span 2;
         }
 
         .footer {
@@ -205,12 +228,38 @@
         </div>
 
         <div class="nav-bar">
-            <div class="section-title">📂 รายการอัลบั้มงานทั้งหมดจาก Google Drive</div>
+            <div class="section-title">📂 รายการอัลบั้มงานทั้งหมดแยกตามประเภท</div>
             <a href="add.html" class="btn-add">➕ เพิ่มอัลบั้มใหม่</a>
         </div>
         
         <div id="loadingView" class="loading-view">⏳ กำลังโหลดอัลบั้มจาก Google Drive...</div>
-        <div class="album-grid" id="albumContainer"></div>
+
+        <!-- โครงสร้างแบ่งครึ่ง 2 ฝั่ง (ซ้าย: Smart | ขวา: Smartแถม) -->
+        <div class="split-layout" id="splitLayout" style="display: none;">
+            
+            <!-- ฝั่งซ้าย: Smart -->
+            <div class="column-box">
+                <div class="column-header col-smart">
+                    <span>📁 หมวด Smart (ไม่แถม)</span>
+                    <span id="smartCount" style="font-size: 0.85rem; background: #0284c7; padding: 0.2rem 0.6rem; border-radius: 6px; color: #fff;">0 อัลบั้ม</span>
+                </div>
+                <div class="album-list" id="smartList">
+                    <!-- รายการ Smart จะแสดงตรงนี้ -->
+                </div>
+            </div>
+
+            <!-- ฝั่งขวา: Smartแถม -->
+            <div class="column-box">
+                <div class="column-header col-free">
+                    <span>📁 หมวด Smartแถม</span>
+                    <span id="freeCount" style="font-size: 0.85rem; background: #d97706; padding: 0.2rem 0.6rem; border-radius: 6px; color: #fff;">0 อัลบั้ม</span>
+                </div>
+                <div class="album-list" id="freeList">
+                    <!-- รายการ Smartแถม จะแสดงตรงนี้ -->
+                </div>
+            </div>
+
+        </div>
 
         <div class="footer">
             ระบบบันทึกข้อมูลอัตโนมัติ • QTC Energy PCL.
@@ -224,11 +273,14 @@
     </div>
 
     <script>
-        // 👉 นำ URL ของ Google Apps Script มาวางตรงนี้
         const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyASRCNjL0XhJBWJyNkSRsqiF17vCEXWSX00i59xIaKpY5tWBY448bl0t1P7Fyq0d1Xgg/exec";
 
-        const albumContainer = document.getElementById('albumContainer');
         const loadingView = document.getElementById('loadingView');
+        const splitLayout = document.getElementById('splitLayout');
+        const smartList = document.getElementById('smartList');
+        const freeList = document.getElementById('freeList');
+        const smartCount = document.getElementById('smartCount');
+        const freeCount = document.getElementById('freeCount');
 
         async function fetchAlbums() {
             try {
@@ -236,45 +288,57 @@
                 const albums = await response.json();
                 
                 loadingView.style.display = 'none';
-                albumContainer.innerHTML = '';
+                splitLayout.style.display = 'grid';
 
-                if (!albums || albums.length === 0) {
-                    albumContainer.innerHTML = '<p style="color: #64748b; text-align: center; padding: 2rem;">ยังไม่มีอัลบั้มงานใน Google Drive</p>';
-                    return;
+                smartList.innerHTML = '';
+                freeList.innerHTML = '';
+
+                let smartAlbums = albums.filter(item => item.category === "Smart");
+                let freeAlbums = albums.filter(item => item.category === "Smartแถม");
+
+                smartCount.innerText = `${smartAlbums.length} อัลบั้ม`;
+                freeCount.innerText = `${freeAlbums.length} อัลบั้ม`;
+
+                if (smartAlbums.length === 0) {
+                    smartList.innerHTML = '<p style="color: #64748b; text-align: center; padding: 1.5rem; font-size: 0.85rem;">ยังไม่มีอัลบั้มในหมวดนี้</p>';
+                } else {
+                    smartAlbums.forEach(item => smartList.appendChild(createAlbumCard(item)));
                 }
 
-                albums.forEach(item => {
-                    const card = document.createElement('div');
-                    card.className = 'album-card';
-                    
-                    const badgeClass = (item.category === "Smartแถม") ? "badge-free" : "badge-smart";
-                    
-                    let imagesHtml = '';
-                    if (item.images && item.images.length > 0) {
-                        imagesHtml = `<div class="album-images-container">`;
-                        item.images.forEach(imgSrc => {
-                            imagesHtml += `<img src="${imgSrc}" class="thumb-img" onclick="openModal('${imgSrc}')" alt="Work Photo">`;
-                        });
-                        imagesHtml += `</div>`;
-                    }
-
-                    card.innerHTML = `
-                        <div class="album-header-bar">
-                            <span>📁 ${item.folderName}</span>
-                            <span class="${badgeClass}">${item.category}</span>
-                        </div>
-                        ${imagesHtml}
-                        <div class="album-body">
-                            <div class="album-title">รูปภาพทั้งหมดในอัลบั้ม</div>
-                            <span style="color: #34d399; font-size: 0.85rem;">● ${item.images.length} รูป</span>
-                        </div>
-                    `;
-                    albumContainer.appendChild(card);
-                });
+                if (freeAlbums.length === 0) {
+                    freeList.innerHTML = '<p style="color: #64748b; text-align: center; padding: 1.5rem; font-size: 0.85rem;">ยังไม่มีอัลบั้มในหมวดนี้</p>';
+                } else {
+                    freeAlbums.forEach(item => freeList.appendChild(createAlbumCard(item)));
+                }
 
             } catch (error) {
                 loadingView.innerText = 'เกิดข้อผิดพลาดในการโหลดข้อมูลจาก Google Drive';
             }
+        }
+
+        function createAlbumCard(item) {
+            const card = document.createElement('div');
+            card.className = 'album-card';
+            
+            let imagesHtml = '';
+            if (item.images && item.images.length > 0) {
+                imagesHtml = `<div class="album-images-container">`;
+                item.images.forEach(imgSrc => {
+                    imagesHtml += `<img src="${imgSrc}" class="thumb-img" onclick="openModal('${imgSrc}')" alt="Work Photo">`;
+                });
+                imagesHtml += `</div>`;
+            }
+
+            card.innerHTML = `
+                <div class="album-header-bar">
+                    📅 ${item.folderName}
+                </div>
+                ${imagesHtml}
+                <div class="album-footer">
+                    รูปภาพทั้งหมด: <span style="color: #34d399; font-weight: 600;">${item.images.length} รูป</span>
+                </div>
+            `;
+            return card;
         }
 
         function openModal(imgSrc) {
