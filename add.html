@@ -151,10 +151,10 @@
                     <label>ประเภทงาน</label>
                     <div class="radio-group">
                         <label class="radio-label">
-                            <input type="radio" name="optionType" value="ไม่แถม" checked> ไม่แถม (เข้าโฟลเดอร์ Smart)
+                            <input type="radio" name="optionType" value="ไม่แถม" checked> ไม่แถม
                         </label>
                         <label class="radio-label">
-                            <input type="radio" name="optionType" value="แถม"> แถม (เข้าโฟลเดอร์ Smart(แถม))
+                            <input type="radio" name="optionType" value="แถม"> แถม
                         </label>
                     </div>
                 </div>
@@ -165,10 +165,6 @@
                 <div class="form-group">
                     <label>ชื่องาน / หัวข้ออัลบั้ม</label>
                     <input type="text" id="albumTitle" class="form-control" placeholder="เช่น SOD-260123 TR.1234" required>
-                </div>
-                <div class="form-group">
-                    <label>รายละเอียดงาน</label>
-                    <textarea id="albumDesc" class="form-control" rows="3" placeholder="ระบุรายละเอียดงาน..." required></textarea>
                 </div>
                 <div class="form-group">
                     <label>เลือกรูปภาพ (เลือกได้หลายรูป)</label>
@@ -202,30 +198,26 @@
 
             if (files.length === 0) return;
 
-            // ดึงค่าประเภทงานที่เลือก (แถม หรือ ไม่แถม)
             const optionType = document.querySelector('input[name="optionType"]:checked').value;
 
-            // แสดงหน้าจอโหลดพร้อมตัวนับ
             loadingOverlay.style.display = 'flex';
             uploadCounter.innerText = `กำลังเตรียมอัปโหลด (0/${files.length})`;
 
             try {
                 let base64Images = [];
                 for (let i = 0; i < files.length; i++) {
-                    // แสดงตัวเลขไฟล์แบบ (1/20) ตามที่คุณต้องการ
                     uploadCounter.innerText = `กำลังประมวลผลรูปที่ ${i + 1} จาก ${files.length}`;
-                    
                     let base64 = await readFileAsBase64(files[i]);
                     base64Images.push(base64);
                 }
 
-                uploadCounter.innerText = `กำลังส่งข้อมูลเข้า...`;
+                uploadCounter.innerText = `กำลังส่งข้อมูล...`;
 
                 const payload = {
                     optionType: optionType,
                     date: document.getElementById('albumDate').value,
                     title: document.getElementById('albumTitle').value,
-                    desc: document.getElementById('albumDesc').value,
+                    desc: "", // ส่งค่าว่างไปแทนช่องรายละเอียดที่ตัดออก
                     images: base64Images
                 };
 
@@ -236,7 +228,6 @@
                     body: JSON.stringify(payload)
                 });
 
-                // ซ่อนหน้าจอโหลด แล้วแสดงกรอบข้อความสำเร็จ
                 loadingOverlay.style.display = 'none';
                 successModal.style.display = 'flex';
 
