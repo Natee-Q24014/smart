@@ -84,7 +84,6 @@
         .btn-back { background-color: #334155; color: #94a3b8; }
         .btn-back:hover { background-color: #475569; color: #fff; }
 
-        /* Modal โหลดดิ้ง / แจ้งเตือน */
         .modal {
             display: none;
             position: fixed;
@@ -168,7 +167,7 @@
         </div>
     </div>
 
-    <!-- Modal แจ้งเตือนสำเร็จ/ผิดพลาด -->
+    <!-- Modal แจ้งเตือน -->
     <div id="alertModal" class="modal">
         <div class="dialog-box">
             <h3 id="alertTitle" style="color: #38bdf8; margin-bottom: 0.5rem; font-size: 1.1rem;">แจ้งเตือน</h3>
@@ -180,9 +179,7 @@
     <script>
         const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyASRCNjL0XhJBWJyNkSRsqiF17vCEXWSX00i59xIaKpY5tWBY448bl0t1P7Fyq0d1Xgg/exec";
 
-        // ตั้งค่าวันที่ปัจจุบันให้อัตโนมัติ
         document.getElementById('workDate').valueAsDate = new Date();
-
         let selectedFilesData = [];
 
         function previewImages(event) {
@@ -245,7 +242,6 @@
 
                 document.getElementById('loadingDesc').innerText = "กำลังอัปโหลดข้อมูลไปยัง Google Drive...";
 
-                // 📌 โครงสร้างข้อมูลที่ส่งไปสอดคล้องกับ Apps Script ตัวใหม่
                 const payload = {
                     action: "create",
                     optionType: optionType,
@@ -286,7 +282,7 @@
                         const canvas = document.createElement('canvas');
                         let width = img.width;
                         let height = img.height;
-                        const maxDim = 1200; // กำหนดขนาดพิกเซลสูงสุดเพื่อประหยัดพื้นที่ Drive
+                        const maxDim = 1200;
                         if (width > height && width > maxDim) {
                             height *= maxDim / width;
                             width = maxDim;
@@ -298,7 +294,7 @@
                         canvas.height = height;
                         const ctx = canvas.getContext('2d');
                         ctx.drawImage(img, 0, 0, width, height);
-                        resolve(canvas.toDataURL('image/jpeg', 0.8)); // คุณภาพความคมชัด 80%
+                        resolve(canvas.toDataURL('image/jpeg', 0.8));
                     }
                 }
             });
