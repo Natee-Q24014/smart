@@ -23,7 +23,35 @@
         .form-group { margin-bottom: 1rem; }
         label { display: block; font-size: 0.85rem; color: #94a3b8; margin-bottom: 0.4rem; font-weight: 500; }
 
-        input[type="date"], input[type="text"], select {
+        /* สไตล์ปุ่มเลือกหมวดหมู่แบบแท็บ (ดีไซน์เดิม) */
+        .category-selector {
+            display: flex;
+            gap: 0.5rem;
+        }
+
+        .cat-btn {
+            flex: 1;
+            background-color: #0f172a;
+            color: #94a3b8;
+            border: 1px solid #475569;
+            padding: 0.7rem;
+            border-radius: 8px;
+            font-size: 0.9rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+            text-align: center;
+        }
+
+        .cat-btn:hover { color: #fff; border-color: #64748b; }
+        .cat-btn.active {
+            background-color: #38bdf8;
+            color: #0f172a;
+            border-color: #38bdf8;
+            box-shadow: 0 0 12px rgba(56, 189, 248, 0.4);
+        }
+
+        input[type="date"], input[type="text"] {
             width: 100%;
             padding: 0.7rem;
             background-color: #0f172a;
@@ -130,10 +158,10 @@
         
         <div class="form-group">
             <label>หมวดหมู่ผลงาน:</label>
-            <select id="optionType">
-                <option value="Smart">⚡ Smart</option>
-                <option value="Smartแถม">🎁 Smart (แถม)</option>
-            </select>
+            <div class="category-selector">
+                <button type="button" class="cat-btn active" id="btnSmart" onclick="selectCategory('Smart')">⚡ Smart</button>
+                <button type="button" class="cat-btn" id="btnSmartFree" onclick="selectCategory('Smartแถม')">🎁 Smart (แถม)</button>
+            </div>
         </div>
 
         <div class="form-group">
@@ -181,6 +209,19 @@
 
         document.getElementById('workDate').valueAsDate = new Date();
         let selectedFilesData = [];
+        let selectedCategoryValue = 'Smart'; // ค่าเริ่มต้นเป็น Smart
+
+        function selectCategory(category) {
+            selectedCategoryValue = category;
+            document.getElementById('btnSmart').classList.remove('active');
+            document.getElementById('btnSmartFree').classList.remove('active');
+
+            if (category === 'Smart') {
+                document.getElementById('btnSmart').classList.add('active');
+            } else {
+                document.getElementById('btnSmartFree').classList.add('active');
+            }
+        }
 
         function previewImages(event) {
             const container = document.getElementById('previewContainer');
@@ -216,7 +257,6 @@
         }
 
         async function submitAlbum() {
-            const optionType = document.getElementById('optionType').value;
             const dateStr = document.getElementById('workDate').value;
             const titleStr = document.getElementById('workTitle').value.trim();
 
@@ -244,7 +284,7 @@
 
                 const payload = {
                     action: "create",
-                    optionType: optionType,
+                    optionType: selectedCategoryValue,
                     date: dateStr,
                     title: titleStr,
                     images: compressedImages
