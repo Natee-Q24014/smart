@@ -6,49 +6,49 @@
     <title>Smart Monitoring Box - Work Archives</title>
     <style>
         * { box-sizing: border-box; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; margin: 0; padding: 0; }
-        body { background-color: #0f172a; color: #f8fafc; min-height: 100vh; padding: 1rem; }
+        body { background-color: #f1f5f9; color: #1e293b; min-height: 100vh; padding: 1.2rem; }
         
         .container { max-width: 900px; margin: 0 auto; }
 
         .header-card {
-            background-color: #1e293b;
-            border: 1px solid #334155;
-            padding: 1.2rem;
-            border-radius: 14px;
+            background-color: #ffffff;
+            border: 1px solid #e2e8f0;
+            padding: 1.5rem;
+            border-radius: 16px;
             text-align: center;
-            box-shadow: 0 10px 25px rgba(0,0,0,0.4);
+            box-shadow: 0 4px 20px rgba(0,0,0,0.05);
             margin-bottom: 1.2rem;
             display: flex;
             flex-direction: column;
             align-items: center;
-            gap: 0.8rem;
+            gap: 1rem;
         }
 
         @media(min-width: 768px) {
-            .header-card { flex-direction: row; text-align: left; padding: 1.5rem; }
+            .header-card { flex-direction: row; text-align: left; padding: 1.8rem; }
         }
 
         .character-img {
-            width: 90px;
-            height: 90px;
+            width: 95px;
+            height: 95px;
             object-fit: cover;
-            border-radius: 12px;
-            border: 2px solid #38bdf8;
-            box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+            border-radius: 14px;
+            border: 2px solid #0ea5e9;
+            box-shadow: 0 4px 12px rgba(14, 165, 233, 0.2);
         }
 
         .header-info .company-tag {
-            font-size: 0.7rem;
-            color: #38bdf8;
+            font-size: 0.75rem;
+            color: #0ea5e9;
             font-weight: 700;
-            letter-spacing: 1.5px;
+            letter-spacing: 1.2px;
             text-transform: uppercase;
-            margin-bottom: 0.2rem;
+            margin-bottom: 0.3rem;
         }
 
-        .header-info h1 { font-size: 1.15rem; color: #f8fafc; margin-bottom: 0.2rem; }
-        .header-info .creator-text { font-size: 0.85rem; color: #ffffff; font-weight: 500; margin-bottom: 0.3rem; }
-        .header-info p { font-size: 0.8rem; color: #94a3b8; }
+        .header-info h1 { font-size: 1.3rem; color: #0f172a; margin-bottom: 0.2rem; font-weight: 700; }
+        .header-info .creator-text { font-size: 0.9rem; color: #475569; font-weight: 600; margin-bottom: 0.3rem; }
+        .header-info p { font-size: 0.85rem; color: #64748b; }
 
         .top-action-bar {
             display: flex;
@@ -58,57 +58,68 @@
         }
 
         .section-title {
-            font-size: 1rem;
-            color: #38bdf8;
-            font-weight: 600;
-            border-left: 4px solid #38bdf8;
-            padding-left: 0.5rem;
+            font-size: 1.05rem;
+            color: #0ea5e9;
+            font-weight: 700;
+            border-left: 4px solid #0ea5e9;
+            padding-left: 0.6rem;
         }
 
         .btn-add {
             background-color: #10b981;
             color: white;
-            padding: 0.5rem 0.9rem;
-            border-radius: 8px;
-            font-size: 0.85rem;
+            padding: 0.6rem 1.1rem;
+            border-radius: 12px;
+            font-size: 0.88rem;
             font-weight: 600;
             text-decoration: none;
             display: inline-flex;
             align-items: center;
-            gap: 0.3rem;
-            box-shadow: 0 4px 10px rgba(16, 185, 129, 0.3);
-            transition: background-color 0.2s;
-        }
-        .btn-add:hover { background-color: #059669; }
-
-        .filter-container {
-            display: flex;
-            gap: 0.5rem;
-            margin-bottom: 1.2rem;
-            overflow-x: auto;
-            padding-bottom: 0.3rem;
-        }
-
-        .filter-btn {
-            background-color: #1e293b;
-            color: #94a3b8;
-            border: 1px solid #334155;
-            padding: 0.5rem 1rem;
-            border-radius: 20px;
-            font-size: 0.85rem;
-            font-weight: 600;
-            cursor: pointer;
-            white-space: nowrap;
+            gap: 0.4rem;
+            box-shadow: 0 4px 12px rgba(16, 185, 129, 0.25);
             transition: all 0.2s;
         }
+        .btn-add:hover { background-color: #059669; transform: translateY(-1px); }
 
-        .filter-btn:hover { color: #fff; border-color: #475569; }
-        .filter-btn.active { background-color: #38bdf8; color: #0f172a; border-color: #38bdf8; box-shadow: 0 0 12px rgba(56, 189, 248, 0.4); }
+        /* แถบเลือกหมวดหมู่คลีนๆ ปุ่มมน */
+        .filter-container {
+            display: flex;
+            gap: 0.8rem;
+            margin-bottom: 1.2rem;
+            align-items: center;
+            background-color: #ffffff;
+            border: 1px solid #e2e8f0;
+            padding: 0.9rem 1.2rem;
+            border-radius: 14px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.03);
+        }
+
+        .filter-label {
+            font-size: 0.9rem;
+            color: #64748b;
+            font-weight: 600;
+            white-space: nowrap;
+        }
+
+        .filter-select {
+            flex: 1;
+            background-color: #f8fafc;
+            color: #1e293b;
+            border: 1px solid #cbd5e1;
+            padding: 0.7rem 1rem;
+            border-radius: 10px;
+            font-size: 0.92rem;
+            font-weight: 600;
+            outline: none;
+            cursor: pointer;
+            transition: border-color 0.2s;
+        }
+        .filter-select:focus { border-color: #0ea5e9; }
 
         .album-grid {
             display: grid;
             grid-template-columns: 1fr;
-            gap: 1rem;
+            gap: 1.2rem;
         }
 
         @media(min-width: 650px) {
@@ -116,85 +127,85 @@
         }
 
         .album-card {
-            background-color: #1e293b;
-            border: 1px solid #334155;
-            border-radius: 12px;
+            background-color: #ffffff;
+            border: 1px solid #e2e8f0;
+            border-radius: 16px;
             overflow: hidden;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.2);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.04);
             display: flex;
             flex-direction: column;
         }
 
         .album-header-bar {
-            background-color: #0f172a;
-            padding: 0.6rem 0.9rem;
-            font-size: 0.82rem;
-            color: #f8fafc;
-            font-weight: 600;
+            background-color: #f8fafc;
+            padding: 0.8rem 1rem;
+            font-size: 0.88rem;
+            color: #0f172a;
+            font-weight: 700;
             display: flex;
             justify-content: space-between;
             align-items: center;
-            border-bottom: 1px solid #334155;
+            border-bottom: 1px solid #e2e8f0;
             word-break: break-all;
         }
 
-        .badge-tag { font-size: 0.7rem; padding: 0.15rem 0.5rem; border-radius: 4px; font-weight: 600; }
-        .badge-smart { background-color: #0284c7; color: #fff; }
-        .badge-free { background-color: #d97706; color: #fff; }
+        .badge-tag { font-size: 0.72rem; padding: 0.2rem 0.6rem; border-radius: 6px; font-weight: 700; }
+        .badge-smart { background-color: #e0f2fe; color: #0284c7; }
+        .badge-free { background-color: #fef3c7; color: #d97706; }
 
         .album-images-container {
-            padding: 0.5rem;
+            padding: 0.6rem;
             display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(75px, 1fr));
-            gap: 0.4rem;
-            max-height: 200px;
+            grid-template-columns: repeat(auto-fill, minmax(78px, 1fr));
+            gap: 0.5rem;
+            max-height: 210px;
             overflow-y: auto;
-            background-color: #0f172a;
+            background-color: #ffffff;
         }
 
         .thumb-img {
             width: 100%;
-            height: 75px;
+            height: 78px;
             object-fit: cover;
-            border-radius: 5px;
-            border: 1px solid #475569;
+            border-radius: 8px;
+            border: 1px solid #e2e8f0;
             cursor: pointer;
-            transition: transform 0.2s, border-color 0.2s;
+            transition: transform 0.2s, box-shadow 0.2s;
         }
-        .thumb-img:hover { transform: scale(1.03); border-color: #38bdf8; }
+        .thumb-img:hover { transform: scale(1.03); box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
 
         .album-action-bar {
-            padding: 0.6rem 0.9rem;
-            background-color: #1e293b;
-            border-top: 1px solid #334155;
+            padding: 0.8rem 1rem;
+            background-color: #f8fafc;
+            border-top: 1px solid #e2e8f0;
             display: flex;
             justify-content: space-between;
             align-items: center;
         }
 
-        .album-footer-info { font-size: 0.75rem; color: #94a3b8; }
-        .action-btns { display: flex; gap: 0.4rem; }
+        .album-footer-info { font-size: 0.8rem; color: #64748b; font-weight: 500; }
+        .action-btns { display: flex; gap: 0.5rem; }
 
         .btn-action {
-            padding: 0.3rem 0.6rem;
-            border-radius: 6px;
-            font-size: 0.75rem;
+            padding: 0.4rem 0.8rem;
+            border-radius: 8px;
+            font-size: 0.78rem;
             font-weight: 600;
             cursor: pointer;
             border: none;
-            transition: opacity 0.2s;
+            transition: all 0.2s;
         }
-        .btn-action:hover { opacity: 0.85; }
-        .btn-add-img { background-color: #3b82f6; color: white; }
-        .btn-del-album { background-color: #ef4444; color: white; }
+        .btn-action:hover { opacity: 0.9; transform: translateY(-1px); }
+        .btn-add-img { background-color: #0ea5e9; color: white; box-shadow: 0 2px 8px rgba(14, 165, 233, 0.25); }
+        .btn-del-album { background-color: #fee2e2; color: #ef4444; }
 
-        /* Modal ทั่วไป */
+        /* Modal โทนสว่างสะอาดตา */
         .modal {
             display: none;
             position: fixed;
             z-index: 999;
             top: 0; left: 0; width: 100%; height: 100%;
-            background-color: rgba(0,0,0,0.92);
+            background-color: rgba(15, 23, 42, 0.85);
             justify-content: center;
             align-items: center;
             flex-direction: column;
@@ -212,7 +223,7 @@
         .modal-content {
             max-width: 100%;
             max-height: 80vh;
-            border-radius: 6px;
+            border-radius: 8px;
             object-fit: contain;
             user-select: none;
         }
@@ -234,7 +245,7 @@
             transform: translateY(-50%);
             background: none;
             border: none;
-            color: rgba(255, 255, 255, 0.7);
+            color: rgba(255, 255, 255, 0.8);
             font-size: 3rem;
             cursor: pointer;
             padding: 1rem;
@@ -244,18 +255,17 @@
         .nav-prev { left: 10px; }
         .nav-next { right: 10px; }
 
-        .modal-counter { color: #94a3b8; margin-top: 1rem; font-size: 0.9rem; }
+        .modal-counter { color: #cbd5e1; margin-top: 1rem; font-size: 0.9rem; font-weight: 600; }
 
-        /* Dialog สไตล์เรียบง่าย เข้าธีมดาร์กโมเดิร์น */
         .dialog-box {
-            background-color: #1e293b;
-            border: 1px solid #334155;
-            padding: 1.5rem;
-            border-radius: 12px;
+            background-color: #ffffff;
+            border: 1px solid #e2e8f0;
+            padding: 1.8rem;
+            border-radius: 18px;
             width: 90%;
-            max-width: 300px;
+            max-width: 320px;
             text-align: center;
-            box-shadow: 0 10px 25px rgba(0,0,0,0.5);
+            box-shadow: 0 15px 35px rgba(0,0,0,0.1);
             animation: popIn 0.2s ease-out;
         }
 
@@ -264,46 +274,45 @@
             100% { transform: scale(1); opacity: 1; }
         }
 
-        .dialog-box h3 { color: #f8fafc; margin-bottom: 0.4rem; font-size: 1.05rem; font-weight: 600; }
+        .dialog-box h3 { color: #0f172a; margin-bottom: 0.5rem; font-size: 1.15rem; font-weight: 700; }
         
         .dialog-box input[type="password"],
         .dialog-box input[type="file"] {
             width: 100%;
-            padding: 0.6rem;
-            border-radius: 6px;
-            border: 1px solid #475569;
-            background: #0f172a;
-            color: #fff;
-            margin-bottom: 1rem;
+            padding: 0.7rem;
+            border-radius: 10px;
+            border: 1px solid #cbd5e1;
+            background: #f8fafc;
+            color: #1e293b;
+            margin-bottom: 1.2rem;
             text-align: center;
             font-size: 1.2rem;
             letter-spacing: 5px;
         }
 
-        .dialog-btns { display: flex; gap: 0.6rem; justify-content: center; }
+        .dialog-btns { display: flex; gap: 0.8rem; justify-content: center; }
         .dialog-btns button {
             flex: 1;
-            padding: 0.5rem;
-            border-radius: 6px;
+            padding: 0.6rem;
+            border-radius: 10px;
             font-weight: 600;
             cursor: pointer;
             border: none;
-            font-size: 0.85rem;
+            font-size: 0.9rem;
         }
-        .btn-confirm { background-color: #38bdf8; color: #0f172a; }
-        .btn-confirm:hover { background-color: #0ea5e9; }
-        .btn-cancel { background-color: #334155; color: #94a3b8; }
-        .btn-cancel:hover { background-color: #475569; color: #fff; }
+        .btn-confirm { background-color: #0ea5e9; color: #ffffff; box-shadow: 0 4px 10px rgba(14, 165, 233, 0.25); }
+        .btn-confirm:hover { background-color: #0284c7; }
+        .btn-cancel { background-color: #f1f5f9; color: #64748b; }
+        .btn-cancel:hover { background-color: #e2e8f0; color: #1e293b; }
 
-        /* แถบโหลดดิ้ง */
         .loading-spinner {
-            width: 40px;
-            height: 40px;
-            border: 3px solid #334155;
-            border-top: 3px solid #38bdf8;
+            width: 42px;
+            height: 42px;
+            border: 3px solid #e2e8f0;
+            border-top: 3px solid #0ea5e9;
             border-radius: 50%;
             animation: spin 1s linear infinite;
-            margin: 0 auto 0.8rem auto;
+            margin: 0 auto 0.9rem auto;
         }
 
         @keyframes spin {
@@ -311,8 +320,8 @@
             100% { transform: rotate(360deg); }
         }
 
-        .loading-view { text-align: center; color: #38bdf8; padding: 3rem; font-size: 0.95rem; }
-        .footer { text-align: center; margin-top: 2.5rem; font-size: 0.75rem; color: #94a3b8; }
+        .loading-view { text-align: center; color: #0ea5e9; padding: 3rem; font-size: 1rem; font-weight: 600; }
+        .footer { text-align: center; margin-top: 3rem; font-size: 0.8rem; color: #94a3b8; font-weight: 500; }
     </style>
 </head>
 <body>
@@ -333,10 +342,14 @@
             <a href="add.html" class="btn-add">➕ เพิ่มอัลบั้มใหม่</a>
         </div>
 
+        <!-- ตัวเลือกหมวดหมู่แบบ Dropdown ดีไซน์คลีนสว่าง -->
         <div class="filter-container">
-            <button class="filter-btn active" onclick="filterCategory('all', this)">🌐 ทั้งหมด (<span id="countAll">0</span>)</button>
-            <button class="filter-btn" onclick="filterCategory('Smart', this)">⚡ Smart (<span id="countSmart">0</span>)</button>
-            <button class="filter-btn" onclick="filterCategory('Smartแถม', this)">🎁 Smart (แถม) (<span id="countFree">0</span>)</button>
+            <span class="filter-label">🔍 หมวดหมู่:</span>
+            <select id="categorySelect" class="filter-select" onchange="filterCategory(this.value)">
+                <option value="all">🌐 ทั้งหมด</option>
+                <option value="Smart">⚡ Smart</option>
+                <option value="Smartแถม">🎁 Smart (แถม)</option>
+            </select>
         </div>
         
         <div id="loadingView" class="loading-view">⏳ กำลังโหลดอัลบั้มจาก Google Drive...</div>
@@ -358,11 +371,11 @@
         <div id="modalCounter" class="modal-counter">1 / 1</div>
     </div>
 
-    <!-- Modal ใส่รหัสผ่านแบบ Auto-Submit (ครบ 4 หลัก) -->
+    <!-- Modal ใส่รหัสผ่าน -->
     <div id="passwordModal" class="modal" style="z-index: 1005;">
         <div class="dialog-box">
             <h3 id="dialogTitle">🔒 ใส่รหัสผ่าน 4 หลัก</h3>
-            <p style="font-size: 0.75rem; color: #94a3b8; margin-bottom: 0.8rem;">กรอกรหัสผ่านเพื่อดำเนินการต่อ</p>
+            <p style="font-size: 0.8rem; color: #64748b; margin-bottom: 0.8rem;">กรอกรหัสผ่านเพื่อดำเนินการต่อ</p>
             <input type="password" id="adminPasswordInput" maxlength="4" placeholder="••••" oninput="checkPasswordLength(this)">
             <div class="dialog-btns">
                 <button class="btn-cancel" onclick="closePasswordModal()">ยกเลิก</button>
@@ -374,8 +387,8 @@
     <div id="addImagesModal" class="modal" style="z-index: 1005;">
         <div class="dialog-box">
             <h3>📷 เพิ่มรูปภาพในอัลบั้ม</h3>
-            <p id="targetAlbumLabel" style="font-size: 0.75rem; color: #38bdf8; margin-bottom: 0.8rem; word-break: break-all;"></p>
-            <input type="file" id="additionalImagesInput" multiple accept="image/*">
+            <p id="targetAlbumLabel" style="font-size: 0.8rem; color: #0ea5e9; margin-bottom: 0.8rem; word-break: break-all; font-weight: 600;"></p>
+            <input type="file" id="additionalImagesInput" multiple accept="image/*" style="font-size: 0.85rem; padding: 0.5rem;">
             <div class="dialog-btns">
                 <button class="btn-cancel" onclick="document.getElementById('addImagesModal').style.display='none'">ยกเลิก</button>
                 <button class="btn-confirm" onclick="uploadAdditionalImages()">อัปโหลด</button>
@@ -387,17 +400,17 @@
     <div id="loadingModal" class="modal" style="z-index: 1010;">
         <div class="dialog-box">
             <div class="loading-spinner"></div>
-            <h3 id="loadingTitle" style="color: #38bdf8; margin-bottom: 0.3rem; font-size: 1rem;">กำลังประมวลผล...</h3>
-            <p id="loadingDesc" style="font-size: 0.78rem; color: #94a3b8;">ระบบกำลังอัปเดตข้อมูลไปยัง Google Drive</p>
+            <h3 id="loadingTitle" style="color: #0ea5e9; margin-bottom: 0.3rem; font-size: 1.05rem;">กำลังประมวลผล...</h3>
+            <p id="loadingDesc" style="font-size: 0.82rem; color: #64748b;">ระบบกำลังอัปเดตข้อมูลไปยัง Google Drive</p>
         </div>
     </div>
 
-    <!-- 🌟 Custom Alert Popup (ธีมดาร์กโมเดิร์นกลมกลืน) -->
+    <!-- Custom Alert Popup -->
     <div id="customAlertModal" class="modal" style="z-index: 1020;">
         <div class="dialog-box">
             <h3 id="alertTitle" style="color: #ef4444; margin-bottom: 0.4rem;">รหัสผ่านผิด</h3>
-            <p id="alertDesc" style="font-size: 0.82rem; color: #94a3b8; margin-bottom: 1rem; line-height: 1.4;">กรุณากรอกรหัสผ่านให้ถูกต้องใหม่อีกครั้ง</p>
-            <button class="btn-confirm" style="width: 100%; padding: 0.5rem;" onclick="closeCustomAlert()">ตกลง</button>
+            <p id="alertDesc" style="font-size: 0.85rem; color: #64748b; margin-bottom: 1.2rem; line-height: 1.4;">กรุณากรอกรหัสผ่านให้ถูกต้องใหม่อีกครั้ง</p>
+            <button class="btn-confirm" style="width: 100%; padding: 0.6rem;" onclick="closeCustomAlert()">ตกลง</button>
         </div>
     </div>
 
@@ -418,7 +431,7 @@
 
         function showAlert(title, desc, isError = false) {
             document.getElementById('alertTitle').innerText = title;
-            document.getElementById('alertTitle').style.color = isError ? "#ef4444" : "#38bdf8";
+            document.getElementById('alertTitle').style.color = isError ? "#ef4444" : "#0ea5e9";
             document.getElementById('alertDesc').innerText = desc;
             document.getElementById('customAlertModal').style.display = 'flex';
         }
@@ -436,14 +449,6 @@
                 allAlbumsData = await response.json();
                 
                 loadingView.style.display = 'none';
-
-                const smartCount = allAlbumsData.filter(item => item.category === "Smart").length;
-                const freeCount = allAlbumsData.filter(item => item.category === "Smartแถม").length;
-
-                document.getElementById('countAll').innerText = allAlbumsData.length;
-                document.getElementById('countSmart').innerText = smartCount;
-                document.getElementById('countFree').innerText = freeCount;
-
                 renderAlbums();
 
             } catch (error) {
@@ -460,7 +465,7 @@
             }
 
             if (!filteredAlbums || filteredAlbums.length === 0) {
-                albumContainer.innerHTML = '<p style="color: #64748b; text-align: center; padding: 2rem; grid-column: 1/-1;">ไม่พบรายการอัลบั้มในหมวดหมู่นี้</p>';
+                albumContainer.innerHTML = '<p style="color: #94a3b8; text-align: center; padding: 2.5rem; grid-column: 1/-1; font-weight: 500;">ไม่พบรายการอัลบั้มในหมวดหมู่นี้</p>';
                 return;
             }
 
@@ -490,7 +495,7 @@
                     ${imagesHtml}
                     <div class="album-action-bar">
                         <div class="album-footer-info">
-                            รูปภาพ: <span style="color: #34d399; font-weight: 600;">${item.images.length} รูป</span>
+                            รูปภาพ: <span style="color: #0284c7; font-weight: 700;">${item.images.length} รูป</span>
                         </div>
                         <div class="action-btns">
                             <button class="btn-action btn-add-img" onclick="promptAddImages('${item.category}', '${item.folderName}')">➕ เพิ่มรูป</button>
@@ -502,11 +507,8 @@
             });
         }
 
-        function filterCategory(category, btnElement) {
+        function filterCategory(category) {
             currentFilter = category;
-            const buttons = document.querySelectorAll('.filter-btn');
-            buttons.forEach(btn => btn.classList.remove('active'));
-            btnElement.classList.add('active');
             renderAlbums();
         }
 
@@ -534,7 +536,6 @@
             document.getElementById('passwordModal').style.display = 'none';
         }
 
-        // 🌟 ตรวจสอบรหัสผ่าน 4 หลักอัตโนมัติทันทีที่พิมพ์ครบ
         function checkPasswordLength(input) {
             if (input.value.length === 4) {
                 const password = input.value;
@@ -639,7 +640,6 @@
             }
         }
 
-        // --- ระบบดูรูปภาพ Modal ---
         function openModal(imagesArray, index) {
             currentAlbumImages = imagesArray;
             currentIndex = index;
