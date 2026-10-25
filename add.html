@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Smart Monitoring Box - เพิ่มอัลบั้มใหม่</title>
+    <style>
+        * { box-sizing: border-box; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; margin: 0; padding: 0; }
+        body { background-color: #0f172a; color: #f8fafc; min-height: 100vh; padding: 1.5rem 1rem; }
+        
+        .container { max-width: 600px; margin: 0 auto; }
+
+        .form-card {
+            background-color: #1e293b;
+            border: 1px solid #334155;
+            padding: 2rem;
+            border-radius: 16px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.4);
+        }
+
+        .form-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.5rem;
+            border-bottom: 1px solid #334155;
+            padding-bottom: 1rem;
+        }
+
+        .form-header h2 {
+            font-size: 1.2rem;
+            color: #38bdf8;
+        }
+
+        .btn-back {
+            background-color: #475569;
+            color: white;
+            padding: 0.5rem 0.9rem;
+            border-radius: 6px;
+            font-size: 0.85rem;
+            text-decoration: none;
+            transition: background-color 0.2s;
+        }
+        .btn-back:hover { background-color: #334155; }
+
+        .form-group {
+            margin-bottom: 1.2rem;
+        }
+
+        .form-group label {
+            display: block;
+            font-size: 0.85rem;
+            color: #94a3b8;
+            margin-bottom: 0.4rem;
+        }
+
+        .form-control {
+            width: 100%;
+            padding: 0.75rem 1rem;
+            background-color: #0f172a;
+            border: 1px solid #475569;
+            color: #fff;
+            border-radius: 8px;
+            font-size: 0.95rem;
+        }
+
+        .form-control:focus {
+            outline: none;
+            border-color: #38bdf8;
+        }
+
+        input[type="file"] {
+            padding: 0.5rem;
+            color: #94a3b8;
+            cursor: pointer;
+        }
+
+        .btn-submit {
+            background-color: #10b981;
+            color: white;
+            border: none;
+            padding: 0.85rem 1rem;
+            border-radius: 8px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            width: 100%;
+            transition: background-color 0.2s;
+            margin-top: 1rem;
+            box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
+        }
+
+        .btn-submit:hover { background-color: #059669; }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <div class="form-card">
+            <div class="form-header">
+                <h2>➕ เพิ่มอัลบั้มงานใหม่</h2>
+                <a href="index.html" class="btn-back">← กลับหน้าหลัก</a>
+            </div>
+
+            <form id="albumForm">
+                <div class="form-group">
+                    <label>วันที่ปฏิบัติงาน</label>
+                    <input type="text" id="albumDate" class="form-control" placeholder="เช่น 27/12/2569" required>
+                </div>
+                <div class="form-group">
+                    <label>ชื่องาน / หัวข้ออัลบั้ม</label>
+                    <input type="text" id="albumTitle" class="form-control" placeholder="เช่น SOD-260123 TR.1234 S/N6311234" required>
+                </div>
+                <div class="form-group">
+                    <label>รายละเอียดงาน</label>
+                    <textarea id="albumDesc" class="form-control" rows="4" placeholder="ระบุรายละเอียดงาน..." required></textarea>
+                </div>
+                <div class="form-group">
+                    <label>เลือกรูปภาพหน้างาน (จากมือถือ / กล้อง)</label>
+                    <input type="file" id="albumImageFile" class="form-control" accept="image/*" required>
+                </div>
+                <button type="submit" class="btn-submit">💾 บันทึกอัลบั้ม</button>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        const albumForm = document.getElementById('albumForm');
+
+        albumForm.addEventListener('submit', function(e) {
+            e.preventDefault();
+            const fileInput = document.getElementById('albumImageFile');
+            const file = fileInput.files[0];
+
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(event) {
+                    let albums = JSON.parse(localStorage.getItem('qtc_smart_albums_v2')) || [];
+                    
+                    const newAlbum = {
+                        date: document.getElementById('albumDate').value,
+                        title: document.getElementById('albumTitle').value,
+                        desc: document.getElementById('albumDesc').value,
+                        image: event.target.result
+                    };
+
+                    albums.unshift(newAlbum);
+                    localStorage.setItem('qtc_smart_albums_v2', JSON.stringify(albums));
+                    
+                    alert('บันทึกอัลบั้มสำเร็จ!');
+                    window.location.href = 'index.html'; // พอกดบันทึกเสร็จ พาเด้งกลับหน้าหลักทันที
+                };
+                reader.readAsDataURL(file);
+            }
+        });
+    </script>
+</body>
+</html>
