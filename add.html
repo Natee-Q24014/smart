@@ -30,7 +30,7 @@
             flex-direction: column;
             justify-content: center;
             align-items: center;
-            gap: 1.2rem;
+            gap: 1rem;
         }
 
         .spinner {
@@ -54,6 +54,13 @@
             font-weight: 600;
             text-shadow: 0 0 10px rgba(56, 189, 248, 0.5);
             letter-spacing: 1px;
+        }
+
+        /* สไตล์สำหรับแสดงตัวนับจำนวนไฟล์ (เช่น 1/20) */
+        .loading-counter {
+            color: #94a3b8;
+            font-size: 0.9rem;
+            font-weight: 500;
         }
 
         /* สไตล์สำหรับกรอบข้อความแจ้งเตือนสำเร็จ */
@@ -117,10 +124,11 @@
     <div class="container">
         <div class="form-card">
             
-            <!-- หน้าจอโหลด Animation (วงกลมหมุน + Smart Monitoring เรืองแสง) -->
+            <!-- หน้าจอโหลด Animation (วงกลมหมุน + คำว่า Smart Monitoring เรืองแสง + ตัวนับไฟล์) -->
             <div id="loadingOverlay">
                 <div class="spinner"></div>
-                <div class="loading-text">กำลังอัปโหลด...</div>
+                <div class="loading-text">Smart Monitoring กำลังอัปโหลด...</div>
+                <div id="uploadCounter" class="loading-counter">กำลังเตรียมไฟล์...</div>
             </div>
 
             <!-- กรอบข้อความแจ้งเตือนเมื่ออัปโหลดสำเร็จ -->
@@ -161,12 +169,12 @@
     </div>
 
     <script>
-        // 👉 นำ URL ของ Google Apps Script มาวางตรงนี้
         const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwTyUl6JQvq3RZme1BFJag4WcPguAz3NRcyF4rBsMfxJuDswv_qQOGMUY3UMDzl-SNVwQ/exec";
 
         const albumForm = document.getElementById('albumForm');
         const loadingOverlay = document.getElementById('loadingOverlay');
         const successModal = document.getElementById('successModal');
+        const uploadCounter = document.getElementById('uploadCounter');
 
         function readFileAsBase64(file) {
             return new Promise((resolve) => {
@@ -185,13 +193,19 @@
 
             // แสดงหน้าจอโหลด Animation หมุนๆ
             loadingOverlay.style.display = 'flex';
+            uploadCounter.innerText = `กำลังเตรียมไฟล์ (0/${files.length})`;
 
             try {
                 let base64Images = [];
                 for (let i = 0; i < files.length; i++) {
+                    // อัปเดตตัวเลขแสดงสถานะแบบเรียลไทม์ เช่น (1/20), (2/20)
+                    uploadCounter.innerText = `กำลังประมวลผลรูปที่ ${i + 1} จาก ${files.length}`;
+                    
                     let base64 = await readFileAsBase64(files[i]);
                     base64Images.push(base64);
                 }
+
+                uploadCounter.innerText = `กำลังส่งข้อมูลเข้า Google Drive...`;
 
                 const payload = {
                     date: document.getElementById('albumDate').value,
