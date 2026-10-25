@@ -84,7 +84,7 @@
         .album-grid {
             display: grid;
             grid-template-columns: 1fr;
-            gap: 1.2rem;
+            gap: 1.5rem;
         }
 
         .album-card {
@@ -100,7 +100,7 @@
         .album-header-bar {
             background-color: #0f172a;
             padding: 0.75rem 1rem;
-            font-size: 0.8rem;
+            font-size: 0.85rem;
             color: #38bdf8;
             font-weight: 600;
             display: flex;
@@ -109,11 +109,39 @@
             border-bottom: 1px solid #334155;
         }
 
+        .badge-smart { background-color: #0284c7; color: white; padding: 0.2rem 0.6rem; border-radius: 4px; font-size: 0.75rem; }
+        .badge-free { background-color: #d97706; color: white; padding: 0.2rem 0.6rem; border-radius: 4px; font-size: 0.75rem; }
+
+        .album-images-container {
+            padding: 0.8rem;
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(90px, 1fr));
+            gap: 0.5rem;
+            background-color: #0f172a;
+            max-height: 250px;
+            overflow-y: auto;
+        }
+
+        .thumb-img {
+            width: 100%;
+            height: 90px;
+            object-fit: cover;
+            border-radius: 6px;
+            border: 1px solid #475569;
+            cursor: pointer;
+            transition: transform 0.2s, border-color 0.2s;
+        }
+
+        .thumb-img:hover {
+            transform: scale(1.03);
+            border-color: #38bdf8;
+        }
+
         .album-body {
-            padding: 1.2rem;
+            padding: 1rem;
             display: flex;
-            flex-direction: column;
-            gap: 0.8rem;
+            justify-content: space-between;
+            align-items: center;
         }
 
         .album-title {
@@ -122,37 +150,39 @@
             color: #f8fafc;
         }
 
-        .album-desc {
-            font-size: 0.85rem;
-            color: #94a3b8;
-            line-height: 1.4;
-            white-space: pre-line;
+        /* Modal สำหรับกดดูรูปขนาดใหญ่ */
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 999;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background-color: rgba(0,0,0,0.85);
+            justify-content: center;
+            align-items: center;
+            padding: 1rem;
         }
 
-        .btn-link {
-            display: block;
-            background-color: #0284c7;
-            color: white;
-            text-align: center;
-            padding: 0.7rem;
+        .modal-content {
+            max-width: 90%;
+            max-height: 90vh;
             border-radius: 8px;
-            text-decoration: none;
-            font-weight: 600;
-            font-size: 0.9rem;
-            transition: background-color 0.2s;
+            border: 2px solid #38bdf8;
+            object-fit: contain;
         }
 
-        .btn-link:hover { background-color: #0369a1; }
-
-        .btn-delete {
-            background: none;
-            border: none;
-            color: #ef4444;
+        .modal-close {
+            position: absolute;
+            top: 20px; right: 30px;
+            color: #fff; font-size: 2rem; font-weight: bold;
             cursor: pointer;
-            font-size: 0.75rem;
-            align-self: flex-end;
         }
-        .btn-delete:hover { text-decoration: underline; }
+
+        .loading-view {
+            text-align: center;
+            color: #38bdf8;
+            padding: 3rem;
+            font-size: 1rem;
+        }
 
         .footer {
             text-align: center;
@@ -175,10 +205,11 @@
         </div>
 
         <div class="nav-bar">
-            <div class="section-title">📂 รายการอัลบั้มงานทั้งหมด</div>
+            <div class="section-title">📂 รายการอัลบั้มงานทั้งหมดจาก Google Drive</div>
             <a href="add.html" class="btn-add">➕ เพิ่มอัลบั้มใหม่</a>
         </div>
         
+        <div id="loadingView" class="loading-view">⏳ กำลังโหลดอัลบั้มจาก Google Drive...</div>
         <div class="album-grid" id="albumContainer"></div>
 
         <div class="footer">
@@ -186,46 +217,78 @@
         </div>
     </div>
 
+    <!-- Modal สำหรับขยายรูปดู -->
+    <div id="imageModal" class="modal" onclick="closeModal()">
+        <span class="modal-close">&times;</span>
+        <img class="modal-content" id="modalImg">
+    </div>
+
     <script>
-        let albums = JSON.parse(localStorage.getItem('qtc_smart_albums_v4')) || [];
+        // 👉 นำ URL ของ Google Apps Script มาวางตรงนี้
+        const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyASRCNjL0XhJBWJyNkSRsqiF17vCEXWSX00i59xIaKpY5tWBY448bl0t1P7Fyq0d1Xgg/exec";
+
         const albumContainer = document.getElementById('albumContainer');
+        const loadingView = document.getElementById('loadingView');
 
-        function renderAlbums() {
-            albumContainer.innerHTML = '';
-            if(albums.length === 0) {
-                albumContainer.innerHTML = '<p style="color: #64748b; text-align: center; padding: 2rem;">ยังไม่มีอัลบั้มบันทึกงาน กดปุ่ม "➕ เพิ่มอัลบั้มใหม่" ด้านบนได้เลยครับ</p>';
-                return;
-            }
-            albums.forEach((item, index) => {
-                const card = document.createElement('div');
-                card.className = 'album-card';
-                card.innerHTML = `
-                    <div class="album-header-bar">
-                        <span>📅 ${item.date}</span>
-                        <span style="color: #34d399;">● เสร็จสิ้น</span>
-                    </div>
-                    <div class="album-body">
-                        <div>
-                            <div class="album-title">${item.title}</div>
-                            <div class="album-desc">${item.desc}</div>
+        async function fetchAlbums() {
+            try {
+                const response = await fetch(SCRIPT_URL);
+                const albums = await response.json();
+                
+                loadingView.style.display = 'none';
+                albumContainer.innerHTML = '';
+
+                if (!albums || albums.length === 0) {
+                    albumContainer.innerHTML = '<p style="color: #64748b; text-align: center; padding: 2rem;">ยังไม่มีอัลบั้มงานใน Google Drive</p>';
+                    return;
+                }
+
+                albums.forEach(item => {
+                    const card = document.createElement('div');
+                    card.className = 'album-card';
+                    
+                    const badgeClass = (item.category === "Smartแถม") ? "badge-free" : "badge-smart";
+                    
+                    let imagesHtml = '';
+                    if (item.images && item.images.length > 0) {
+                        imagesHtml = `<div class="album-images-container">`;
+                        item.images.forEach(imgSrc => {
+                            imagesHtml += `<img src="${imgSrc}" class="thumb-img" onclick="openModal('${imgSrc}')" alt="Work Photo">`;
+                        });
+                        imagesHtml += `</div>`;
+                    }
+
+                    card.innerHTML = `
+                        <div class="album-header-bar">
+                            <span>📁 ${item.folderName}</span>
+                            <span class="${badgeClass}">${item.category}</span>
                         </div>
-                        <a href="${item.link}" target="_blank" class="btn-link">🖼️ คลิกเปิดดูอัลบั้มรูปภาพทั้งหมด (Google Drive)</a>
-                        <button class="btn-delete" onclick="deleteAlbum(${index})">🗑️ ลบอัลบั้มนี้</button>
-                    </div>
-                `;
-                albumContainer.appendChild(card);
-            });
-        }
+                        ${imagesHtml}
+                        <div class="album-body">
+                            <div class="album-title">รูปภาพทั้งหมดในอัลบั้ม</div>
+                            <span style="color: #34d399; font-size: 0.85rem;">● ${item.images.length} รูป</span>
+                        </div>
+                    `;
+                    albumContainer.appendChild(card);
+                });
 
-        function deleteAlbum(index) {
-            if(confirm('ต้องการลบอัลบั้มนี้ใช่หรือไม่?')) {
-                albums.splice(index, 1);
-                localStorage.setItem('qtc_smart_albums_v4', JSON.stringify(albums));
-                renderAlbums();
+            } catch (error) {
+                loadingView.innerText = 'เกิดข้อผิดพลาดในการโหลดข้อมูลจาก Google Drive';
             }
         }
 
-        renderAlbums();
+        function openModal(imgSrc) {
+            const modal = document.getElementById('imageModal');
+            const modalImg = document.getElementById('modalImg');
+            modal.style.display = 'flex';
+            modalImg.src = imgSrc;
+        }
+
+        function closeModal() {
+            document.getElementById('imageModal').style.display = 'none';
+        }
+
+        fetchAlbums();
     </script>
 </body>
 </html>
