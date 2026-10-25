@@ -7,93 +7,25 @@
     <style>
         * { box-sizing: border-box; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; margin: 0; padding: 0; }
         body { background-color: #0f172a; color: #f8fafc; min-height: 100vh; padding: 1.5rem 1rem; }
-        
         .container { max-width: 600px; margin: 0 auto; }
-
-        .form-card {
-            background-color: #1e293b;
-            border: 1px solid #334155;
-            padding: 2rem;
-            border-radius: 16px;
-            box-shadow: 0 10px 25px rgba(0,0,0,0.4);
-        }
-
-        .form-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 1.5rem;
-            border-bottom: 1px solid #334155;
-            padding-bottom: 1rem;
-        }
-
+        .form-card { background-color: #1e293b; border: 1px solid #334155; padding: 2rem; border-radius: 16px; box-shadow: 0 10px 25px rgba(0,0,0,0.4); }
+        .form-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem; border-bottom: 1px solid #334155; padding-bottom: 1rem; }
         .form-header h2 { font-size: 1.2rem; color: #38bdf8; }
-
-        .btn-back {
-            background-color: #475569;
-            color: white;
-            padding: 0.5rem 0.9rem;
-            border-radius: 6px;
-            font-size: 0.85rem;
-            text-decoration: none;
-            transition: background-color 0.2s;
-        }
-        .btn-back:hover { background-color: #334155; }
-
+        .btn-back { background-color: #475569; color: white; padding: 0.5rem 0.9rem; border-radius: 6px; font-size: 0.85rem; text-decoration: none; }
         .form-group { margin-bottom: 1.2rem; }
-
-        .form-group label {
-            display: block;
-            font-size: 0.85rem;
-            color: #94a3b8;
-            margin-bottom: 0.4rem;
-        }
-
-        .form-control {
-            width: 100%;
-            padding: 0.75rem 1rem;
-            background-color: #0f172a;
-            border: 1px solid #475569;
-            color: #fff;
-            border-radius: 8px;
-            font-size: 0.95rem;
-        }
-
-        .form-control:focus { outline: none; border-color: #38bdf8; }
-
-        .btn-submit {
-            background-color: #10b981;
-            color: white;
-            border: none;
-            padding: 0.85rem 1rem;
-            border-radius: 8px;
-            font-size: 1rem;
-            font-weight: 600;
-            cursor: pointer;
-            width: 100%;
-            transition: background-color 0.2s;
-            margin-top: 1rem;
-            box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
-        }
-
-        .btn-submit:hover { background-color: #059669; }
-
-        .note {
-            font-size: 0.75rem;
-            color: #38bdf8;
-            margin-top: 0.3rem;
-        }
+        .form-group label { display: block; font-size: 0.85rem; color: #94a3b8; margin-bottom: 0.4rem; }
+        .form-control { width: 100%; padding: 0.75rem 1rem; background-color: #0f172a; border: 1px solid #475569; color: #fff; border-radius: 8px; font-size: 0.95rem; }
+        .btn-submit { background-color: #10b981; color: white; border: none; padding: 0.85rem 1rem; border-radius: 8px; font-size: 1rem; font-weight: 600; cursor: pointer; width: 100%; margin-top: 1rem; }
+        #loadingText { display: none; text-align: center; color: #38bdf8; margin-top: 0.8rem; font-size: 0.9rem; }
     </style>
 </head>
 <body>
-
     <div class="container">
         <div class="form-card">
             <div class="form-header">
-                <h2>➕ เพิ่มอัลบั้มงาน (ไม่จำกัดจำนวนรูป)</h2>
+                <h2>➕ เพิ่มอัลบั้มลง Google Drive</h2>
                 <a href="index.html" class="btn-back">← กลับหน้าหลัก</a>
             </div>
-
             <form id="albumForm">
                 <div class="form-group">
                     <label>วันที่ปฏิบัติงาน</label>
@@ -108,35 +40,72 @@
                     <textarea id="albumDesc" class="form-control" rows="3" placeholder="ระบุรายละเอียดงาน..." required></textarea>
                 </div>
                 <div class="form-group">
-                    <label>ลิงก์อัลบั้มรูปภาพ (Google Drive / Google Photos)</label>
-                    <input type="url" id="albumLink" class="form-control" placeholder="https://photos.app.goo.gl/..." required>
-                    <div class="note">💡 อัปโหลดรูปเป็นร้อยๆ รูปใส่ Google Drive แล้วเอาลิงก์มาวางตรงนี้ได้เลย</div>
+                    <label>เลือกรูปภาพหน้างาน (เลือกได้หลายรูป)</label>
+                    <input type="file" id="albumImageFiles" class="form-control" accept="image/*" multiple required>
                 </div>
-                <button type="submit" class="btn-submit">💾 บันทึกอัลบั้ม</button>
+                <button type="submit" id="submitBtn" class="btn-submit">💾 บันทึกส่งเข้า Google Drive</button>
+                <div id="loadingText">⏳ กำลังอัปโหลดรูปภาพเข้า Google Drive กรุณารอสักครู่...</div>
             </form>
         </div>
     </div>
 
     <script>
+        // 👉 นำ URL ที่ได้จาก Google Apps Script มาวางแทนที่ข้อความด้านล่างนี้
+        const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwTyUl6JQvq3RZme1BFJag4WcPguAz3NRcyF4rBsMfxJuDswv_qQOGMUY3UMDzl-SNVwQ/exec";
+
         const albumForm = document.getElementById('albumForm');
+        const submitBtn = document.getElementById('submitBtn');
+        const loadingText = document.getElementById('loadingText');
 
-        albumForm.addEventListener('submit', function(e) {
+        function readFileAsBase64(file) {
+            return new Promise((resolve) => {
+                const reader = new FileReader();
+                reader.onload = (e) => resolve(e.target.result);
+                reader.readAsDataURL(file);
+            });
+        }
+
+        albumForm.addEventListener('submit', async function(e) {
             e.preventDefault();
-            
-            let albums = JSON.parse(localStorage.getItem('qtc_smart_albums_v4')) || [];
-            
-            const newAlbum = {
-                date: document.getElementById('albumDate').value,
-                title: document.getElementById('albumTitle').value,
-                desc: document.getElementById('albumDesc').value,
-                link: document.getElementById('albumLink').value
-            };
+            const fileInput = document.getElementById('albumImageFiles');
+            const files = fileInput.files;
 
-            albums.unshift(newAlbum);
-            localStorage.setItem('qtc_smart_albums_v4', JSON.stringify(albums));
-            
-            alert('บันทึกอัลบั้มสำเร็จ!');
-            window.location.href = 'index.html';
+            if (files.length === 0) return;
+
+            submitBtn.disabled = true;
+            submitBtn.style.opacity = '0.5';
+            loadingText.style.display = 'block';
+
+            try {
+                let base64Images = [];
+                for (let i = 0; i < files.length; i++) {
+                    let base64 = await readFileAsBase64(files[i]);
+                    base64Images.push(base64);
+                }
+
+                const payload = {
+                    date: document.getElementById('albumDate').value,
+                    title: document.getElementById('albumTitle').value,
+                    desc: document.getElementById('albumDesc').value,
+                    images: base64Images
+                };
+
+                await fetch(SCRIPT_URL, {
+                    method: "POST",
+                    mode: "no-cors",
+                    headers: { "Content-Type": "text/plain;charset=utf-8" },
+                    body: JSON.stringify(payload)
+                });
+
+                alert('บันทึกข้อมูลและอัปโหลดรูปเข้า Google Drive สำเร็จ!');
+                window.location.href = 'index.html';
+
+            } catch (error) {
+                alert('เกิดข้อผิดพลาด กรุณาลองใหม่อีกครั้ง');
+                submitBtn.disabled = false;
+                submitBtn.style.opacity = '1';
+                loadingText.style.display = 'none';
+            }
         });
     </script>
 </body>
