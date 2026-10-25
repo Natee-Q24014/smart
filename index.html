@@ -163,22 +163,45 @@
         }
         .thumb-img:hover { transform: scale(1.03); border-color: #38bdf8; }
 
-        .album-footer {
-            padding: 0.55rem 0.8rem;
-            font-size: 0.75rem;
-            color: #94a3b8;
-            text-align: right;
+        .album-action-bar {
+            padding: 0.6rem 0.9rem;
+            background-color: #1e293b;
             border-top: 1px solid #334155;
-            margin-top: auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
         }
 
-        /* Modal สำหรับดูรูปภาพ */
+        .album-footer-info {
+            font-size: 0.75rem;
+            color: #94a3b8;
+        }
+
+        .action-btns {
+            display: flex;
+            gap: 0.4rem;
+        }
+
+        .btn-action {
+            padding: 0.3rem 0.6rem;
+            border-radius: 6px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            cursor: pointer;
+            border: none;
+            transition: opacity 0.2s;
+        }
+        .btn-action:hover { opacity: 0.85; }
+        .btn-add-img { background-color: #3b82f6; color: white; }
+        .btn-del-album { background-color: #ef4444; color: white; }
+
+        /* Modal ทั่วไป */
         .modal {
             display: none;
             position: fixed;
             z-index: 999;
             top: 0; left: 0; width: 100%; height: 100%;
-            background-color: rgba(0,0,0,0.95);
+            background-color: rgba(0,0,0,0.92);
             justify-content: center;
             align-items: center;
             flex-direction: column;
@@ -211,7 +234,6 @@
             background: none;
             border: none;
             line-height: 1;
-            transition: color 0.2s;
         }
         .modal-close:hover { color: #38bdf8; }
 
@@ -225,26 +247,51 @@
             font-size: 3rem;
             cursor: pointer;
             padding: 1rem;
-            transition: color 0.2s;
             z-index: 1000;
-            user-select: none;
         }
         .modal-nav-btn:hover { color: #38bdf8; }
         .nav-prev { left: 10px; }
         .nav-next { right: 10px; }
 
-        @media(min-width: 768px) {
-            .nav-prev { left: 30px; }
-            .nav-next { right: 30px; }
-        }
-
         .modal-counter {
             color: #94a3b8;
             margin-top: 1rem;
             font-size: 0.9rem;
-            font-weight: 500;
-            letter-spacing: 1px;
         }
+
+        /* Dialog กล่องใส่รหัสผ่าน / โหลดดิ้ง */
+        .dialog-box {
+            background-color: #1e293b;
+            border: 1px solid #334155;
+            padding: 1.5rem;
+            border-radius: 12px;
+            width: 90%;
+            max-width: 350px;
+            text-align: center;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.5);
+        }
+        .dialog-box h3 { color: #38bdf8; margin-bottom: 0.8rem; font-size: 1.1rem; }
+        .dialog-box input {
+            width: 100%;
+            padding: 0.6rem;
+            border-radius: 6px;
+            border: 1px solid #475569;
+            background: #0f172a;
+            color: #fff;
+            margin-bottom: 1rem;
+            text-align: center;
+            font-size: 1rem;
+        }
+        .dialog-btns { display: flex; gap: 0.5rem; justify-content: center; }
+        .dialog-btns button {
+            padding: 0.5rem 1rem;
+            border-radius: 6px;
+            font-weight: 600;
+            cursor: pointer;
+            border: none;
+        }
+        .btn-confirm { background-color: #38bdf8; color: #0f172a; }
+        .btn-cancel { background-color: #475569; color: #fff; }
 
         .loading-view {
             text-align: center;
@@ -264,7 +311,6 @@
 <body>
 
     <div class="container">
-        <!-- การ์ดหัวข้อและชื่อผู้จัดทำด้านบน -->
         <div class="header-card">
             <img src="big.jpeg" alt="Smart Monitoring Box Mascot" class="character-img">
             <div class="header-info">
@@ -287,7 +333,6 @@
         </div>
         
         <div id="loadingView" class="loading-view">⏳ กำลังโหลดอัลบั้มจาก Google Drive...</div>
-
         <div class="album-grid" id="albumContainer"></div>
 
         <div class="footer">
@@ -295,17 +340,49 @@
         </div>
     </div>
 
-    <!-- Modal สำหรับดูรูปภาพ -->
-    <div id="imageModal" class="modal">
+    <!-- Modal ดูรูปภาพ -->
+    <div id="imageModal" class="modal" style="z-index: 999;">
         <button class="modal-close" onclick="closeModal()">&times;</button>
         <button class="modal-nav-btn nav-prev" onclick="prevImage()">&#10094;</button>
-        
         <div class="modal-content-wrapper" id="modalWrapper">
             <img class="modal-content" id="modalImg">
         </div>
-
         <button class="modal-nav-btn nav-next" onclick="nextImage()">&#10095;</button>
         <div id="modalCounter" class="modal-counter">1 / 1</div>
+    </div>
+
+    <!-- Modal ใส่รหัสผ่าน (Password Dialog) -->
+    <div id="passwordModal" class="modal" style="z-index: 1005;">
+        <div class="dialog-box">
+            <h3 id="dialogTitle">🔒 ยืนยันตัวตนผู้ดูแลระบบ</h3>
+            <p style="font-size: 0.8rem; color: #94a3b8; margin-bottom: 0.8rem;">กรุณากรอกรหัสผ่านเพื่อดำเนินการ</p>
+            <input type="password" id="adminPasswordInput" placeholder="ใส่รหัสผ่าน...">
+            <div class="dialog-btns">
+                <button class="btn-cancel" onclick="closePasswordModal()">ยกเลิก</button>
+                <button class="btn-confirm" onclick="executeAction()">ยืนยัน</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal อัปโหลดรูปเพิ่ม -->
+    <div id="addImagesModal" class="modal" style="z-index: 1005;">
+        <div class="dialog-box">
+            <h3>📷 เพิ่มรูปภาพในอัลบั้ม</h3>
+            <p id="targetAlbumLabel" style="font-size: 0.8rem; color: #38bdf8; margin-bottom: 0.8rem;"></p>
+            <input type="file" id="additionalImagesInput" multiple accept="image/*" style="margin-bottom: 1rem; color: #fff; font-size: 0.8rem;">
+            <div class="dialog-btns">
+                <button class="btn-cancel" onclick="document.getElementById('addImagesModal').style.display='none'">ยกเลิก</button>
+                <button class="btn-confirm" onclick="uploadAdditionalImages()">อัปโหลด</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal โหลดดิ้งกำลังดำเนินการ -->
+    <div id="loadingModal" class="modal" style="z-index: 1010;">
+        <div class="dialog-box">
+            <h3 style="color: #38bdf8;">⏳ กำลังประมวลผล...</h3>
+            <p style="font-size: 0.85rem; color: #94a3b8;">กรุณารอสักครู่ ระบบกำลังบันทึกข้อมูลลง Google Drive</p>
+        </div>
     </div>
 
     <script>
@@ -316,9 +393,14 @@
 
         let allAlbumsData = [];
         let currentFilter = 'all';
-
         let currentAlbumImages = [];
         let currentIndex = 0;
+
+        // ตัวแปรสำหรับเก็บงานที่กำลังจะแก้ไข/ลบ
+        let pendingAction = null; // 'delete' หรือ 'add'
+        let selectedCategory = '';
+        let selectedFolderName = '';
+        let selectedFiles = null;
 
         async function fetchAlbums() {
             try {
@@ -365,8 +447,10 @@
                 let imagesHtml = '';
                 if (item.images && item.images.length > 0) {
                     imagesHtml = `<div class="album-images-container">`;
-                    item.images.forEach((imgSrc, imgIndex) => {
-                        imagesHtml += `<img src="${imgSrc}" class="thumb-img" onclick='openModal(${JSON.stringify(item.images)}, ${imgIndex})' alt="Work Photo">`;
+                    // ดึงเฉพาะ URL มาแสดงผล
+                    const rawUrls = item.images.map(img => img.url);
+                    rawUrls.forEach((imgSrc, imgIndex) => {
+                        imagesHtml += `<img src="${imgSrc}" class="thumb-img" onclick='openModal(${JSON.stringify(rawUrls)}, ${imgIndex})' alt="Work Photo">`;
                     });
                     imagesHtml += `</div>`;
                 }
@@ -377,8 +461,14 @@
                         <span class="badge-tag ${badgeClass}">${badgeText}</span>
                     </div>
                     ${imagesHtml}
-                    <div class="album-footer">
-                        รูปภาพทั้งหมด: <span style="color: #34d399; font-weight: 600;">${item.images.length} รูป</span>
+                    <div class="album-action-bar">
+                        <div class="album-footer-info">
+                            รูปภาพ: <span style="color: #34d399; font-weight: 600;">${item.images.length} รูป</span>
+                        </div>
+                        <div class="action-btns">
+                            <button class="btn-action btn-add-img" onclick="promptAddImages('${item.category}', '${item.folderName}')">➕ เพิ่มรูป</button>
+                            <button class="btn-action btn-del-album" onclick="promptDeleteAlbum('${item.category}', '${item.folderName}')">🗑️ ลบอัลบั้ม</button>
+                        </div>
                     </div>
                 `;
                 albumContainer.appendChild(card);
@@ -393,6 +483,123 @@
             renderAlbums();
         }
 
+        // --- ระบบจัดการรหัสผ่านและคำสั่ง ---
+        function promptDeleteAlbum(category, folderName) {
+            pendingAction = 'delete';
+            selectedCategory = category;
+            selectedFolderName = folderName;
+            document.getElementById('dialogTitle').innerText = "🗑️ ยืนยันการลบอัลบั้ม";
+            document.getElementById('adminPasswordInput').value = '';
+            document.getElementById('passwordModal').style.display = 'flex';
+        }
+
+        function promptAddImages(category, folderName) {
+            pendingAction = 'add';
+            selectedCategory = category;
+            selectedFolderName = folderName;
+            document.getElementById('dialogTitle').innerText = "📷 ยืนยันรหัสผ่านเพื่อเพิ่มรูป";
+            document.getElementById('adminPasswordInput').value = '';
+            document.getElementById('passwordModal').style.display = 'flex';
+        }
+
+        function closePasswordModal() {
+            document.getElementById('passwordModal').style.display = 'none';
+        }
+
+        function executeAction() {
+            const password = document.getElementById('adminPasswordInput').value;
+            if (!password) {
+                alert("กรุณากรอกรหัสผ่าน");
+                return;
+            }
+            closePasswordModal();
+
+            if (pendingAction === 'delete') {
+                sendDriveRequest({ action: 'delete', optionType: selectedCategory, folderName: selectedFolderName, password: password });
+            } else if (pendingAction === 'add') {
+                // หลังจากใส่รหัสผ่านผ่าน ให้เปิดหน้าต่างเลือกรูปต่อ
+                document.getElementById('targetAlbumLabel').innerText = `อัลบั้ม: ${selectedFolderName}`;
+                window.verifiedPasswordForAdd = password; // เก็บไว้ใช้ชั่วคราว
+                document.getElementById('addImagesModal').style.display = 'flex';
+            }
+        }
+
+        async function uploadAdditionalImages() {
+            const fileInput = document.getElementById('additionalImagesInput');
+            if (fileInput.files.length === 0) {
+                alert("กรุณาเลือกรูปภาพอย่างน้อย 1 รูป");
+                return;
+            }
+            document.getElementById('addImagesModal').style.display = 'none';
+            
+            let base64Images = [];
+            for (let file of fileInput.files) {
+                let base64 = await resizeAndCompressImage(file);
+                base64Images.push(base64);
+            }
+
+            sendDriveRequest({
+                action: 'add_images',
+                optionType: selectedCategory,
+                folderName: selectedFolderName,
+                password: window.verifiedPasswordForAdd,
+                images: base64Images
+            });
+        }
+
+        // ฟังก์ชันบีบอัดรูปภาพก่อนส่ง
+        function resizeAndCompressImage(file) {
+            return new Promise((resolve) => {
+                const reader = new FileReader();
+                reader.readAsDataURL(file);
+                reader.onload = event => {
+                    const img = new Image();
+                    img.src = event.target.result;
+                    img.onload = () => {
+                        const canvas = document.createElement('canvas');
+                        let width = img.width;
+                        let height = img.height;
+                        const maxDim = 1200;
+                        if (width > height && width > maxDim) {
+                            height *= maxDim / width;
+                            width = maxDim;
+                        } else if (height > maxDim) {
+                            width *= maxDim / height;
+                            height = maxDim;
+                        }
+                        canvas.width = width;
+                        canvas.height = height;
+                        const ctx = canvas.getContext('2d');
+                        ctx.drawImage(img, 0, 0, width, height);
+                        resolve(canvas.toDataURL('image/jpeg', 0.8));
+                    }
+                }
+            });
+        }
+
+        async function sendDriveRequest(payload) {
+            document.getElementById('loadingModal').style.display = 'flex';
+            try {
+                const response = await fetch(SCRIPT_URL, {
+                    method: 'POST',
+                    body: JSON.stringify(payload)
+                });
+                const result = await response.json();
+                document.getElementById('loadingModal').style.display = 'none';
+
+                if (result.status === "success") {
+                    alert("ดำเนินการสำเร็จ!");
+                    location.reload(); // รีเฟรชหน้าเว็บเพื่อดึงข้อมูลใหม่
+                } else {
+                    alert("เกิดข้อผิดพลาด: " + (result.message || "รหัสผ่านไม่ถูกต้อง"));
+                }
+            } catch (err) {
+                document.getElementById('loadingModal').style.display = 'none';
+                alert("เกิดข้อผิดพลาดในการเชื่อมต่อกับเซิร์ฟเวอร์");
+            }
+        }
+
+        // --- ระบบดูรูปภาพ Modal ---
         function openModal(imagesArray, index) {
             currentAlbumImages = imagesArray;
             currentIndex = index;
@@ -403,7 +610,6 @@
         function updateModalImage() {
             const modalImg = document.getElementById('modalImg');
             const modalCounter = document.getElementById('modalCounter');
-            
             modalImg.src = currentAlbumImages[currentIndex];
             modalCounter.innerText = `${currentIndex + 1} / ${currentAlbumImages.length}`;
         }
@@ -425,15 +631,8 @@
         let touchStartX = 0;
         let touchEndX = 0;
         const modalWrapper = document.getElementById('modalWrapper');
-
-        modalWrapper.addEventListener('touchstart', e => {
-            touchStartX = e.changedTouches[0].screenX;
-        }, {passive: true});
-
-        modalWrapper.addEventListener('touchend', e => {
-            touchEndX = e.changedTouches[0].screenX;
-            handleSwipe();
-        }, {passive: true});
+        modalWrapper.addEventListener('touchstart', e => { touchStartX = e.changedTouches[0].screenX; }, {passive: true});
+        modalWrapper.addEventListener('touchend', e => { touchEndX = e.changedTouches[0].screenX; handleSwipe(); }, {passive: true});
 
         function handleSwipe() {
             const threshold = 50;
