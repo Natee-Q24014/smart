@@ -246,14 +246,14 @@
 
         .modal-counter { color: #94a3b8; margin-top: 1rem; font-size: 0.9rem; }
 
-        /* Dialog สไตล์เรียบง่าย สบายตา */
+        /* Dialog สไตล์เรียบง่าย เข้าธีมดาร์กโมเดิร์น */
         .dialog-box {
             background-color: #1e293b;
             border: 1px solid #334155;
             padding: 1.5rem;
             border-radius: 12px;
             width: 90%;
-            max-width: 320px;
+            max-width: 300px;
             text-align: center;
             box-shadow: 0 10px 25px rgba(0,0,0,0.5);
             animation: popIn 0.2s ease-out;
@@ -276,8 +276,8 @@
             color: #fff;
             margin-bottom: 1rem;
             text-align: center;
-            font-size: 1.1rem;
-            letter-spacing: 3px;
+            font-size: 1.2rem;
+            letter-spacing: 5px;
         }
 
         .dialog-btns { display: flex; gap: 0.6rem; justify-content: center; }
@@ -358,11 +358,11 @@
         <div id="modalCounter" class="modal-counter">1 / 1</div>
     </div>
 
-    <!-- Modal ใส่รหัสผ่านแบบ Auto-Submit เมื่อครบ 4 หลัก -->
+    <!-- Modal ใส่รหัสผ่านแบบ Auto-Submit (ครบ 4 หลัก) -->
     <div id="passwordModal" class="modal" style="z-index: 1005;">
         <div class="dialog-box">
-            <h3 id="dialogTitle">6004</h3>
-            <p style="font-size: 0.75rem; color: #94a3b8; margin-bottom: 0.8rem;">ระบบจะตรวจสอบอัตโนมัติเมื่อครบ 4 ตัว</p>
+            <h3 id="dialogTitle">🔒 ใส่รหัสผ่าน 4 หลัก</h3>
+            <p style="font-size: 0.75rem; color: #94a3b8; margin-bottom: 0.8rem;">กรอกรหัสผ่านเพื่อดำเนินการต่อ</p>
             <input type="password" id="adminPasswordInput" maxlength="4" placeholder="••••" oninput="checkPasswordLength(this)">
             <div class="dialog-btns">
                 <button class="btn-cancel" onclick="closePasswordModal()">ยกเลิก</button>
@@ -392,11 +392,11 @@
         </div>
     </div>
 
-    <!-- 🌟 Custom Alert Popup แบบเรียบง่ายสบายตา -->
+    <!-- 🌟 Custom Alert Popup (ธีมดาร์กโมเดิร์นกลมกลืน) -->
     <div id="customAlertModal" class="modal" style="z-index: 1020;">
         <div class="dialog-box">
-            <h3 id="alertTitle" style="margin-bottom: 0.4rem;">แจ้งเตือน</h3>
-            <p id="alertDesc" style="font-size: 0.82rem; color: #94a3b8; margin-bottom: 1rem; line-height: 1.4;"></p>
+            <h3 id="alertTitle" style="color: #ef4444; margin-bottom: 0.4rem;">รหัสผ่านผิด</h3>
+            <p id="alertDesc" style="font-size: 0.82rem; color: #94a3b8; margin-bottom: 1rem; line-height: 1.4;">กรุณากรอกรหัสผ่านให้ถูกต้องใหม่อีกครั้ง</p>
             <button class="btn-confirm" style="width: 100%; padding: 0.5rem;" onclick="closeCustomAlert()">ตกลง</button>
         </div>
     </div>
@@ -416,8 +416,9 @@
         let selectedCategory = '';
         let selectedFolderName = '';
 
-        function showAlert(title, desc, isSuccess = true) {
+        function showAlert(title, desc, isError = false) {
             document.getElementById('alertTitle').innerText = title;
+            document.getElementById('alertTitle').style.color = isError ? "#ef4444" : "#38bdf8";
             document.getElementById('alertDesc').innerText = desc;
             document.getElementById('customAlertModal').style.display = 'flex';
         }
@@ -533,26 +534,27 @@
             document.getElementById('passwordModal').style.display = 'none';
         }
 
-        // 🌟 ฟังก์ชันเช็คความยาวรหัสผ่านครบ 4 ตัวอัตโนมัติ
+        // 🌟 ตรวจสอบรหัสผ่าน 4 หลักอัตโนมัติทันทีที่พิมพ์ครบ
         function checkPasswordLength(input) {
             if (input.value.length === 4) {
                 const password = input.value;
-                closePasswordManager();
+                closePasswordModal();
+
+                if (password !== "6004") {
+                    window.shouldReloadAfterAlert = false;
+                    showAlert("รหัสผ่านผิด", "รหัสผ่านไม่ถูกต้อง กรุณาลองใหม่อีกครั้ง", true);
+                    return;
+                }
 
                 if (pendingAction === 'delete') {
                     showLoading("กำลังลบอัลบั้ม...", "ระบบกำลังดำเนินการลบออกจาก Google Drive");
                     sendDriveRequest({ action: 'delete', optionType: selectedCategory, folderName: selectedFolderName, password: password });
                 } else if (pendingAction === 'add') {
-                    // สมมติตรวจสอบรหัสผ่านเบื้องต้นหรือส่งไปเช็คพร้อมอัปโหลด
                     window.verifiedPasswordForAdd = password;
                     document.getElementById('targetAlbumLabel').innerText = `อัลบั้ม: ${selectedFolderName}`;
                     document.getElementById('addImagesModal').style.display = 'flex';
                 }
             }
-        }
-
-        function closePasswordManager() {
-            document.getElementById('passwordModal').style.display = 'none';
         }
 
         async function uploadAdditionalImages() {
@@ -625,15 +627,15 @@
 
                 if (result.status === "success") {
                     window.shouldReloadAfterAlert = true;
-                    showAlert("สำเร็จ", "ดำเนินการเรียบร้อยแล้ว", true);
+                    showAlert("สำเร็จ", "ดำเนินการเรียบร้อยแล้ว", false);
                 } else {
                     window.shouldReloadAfterAlert = false;
-                    showAlert("ไม่สำเร็จ", result.message || "รหัสผ่านไม่ถูกต้อง", false);
+                    showAlert("รหัสผ่านผิด", result.message || "รหัสผ่านไม่ถูกต้อง", true);
                 }
             } catch (err) {
                 document.getElementById('loadingModal').style.display = 'none';
                 window.shouldReloadAfterAlert = false;
-                showAlert("เกิดข้อผิดพลาด", "ไม่สามารถเชื่อมต่อกับเซิร์ฟเวอร์ได้", false);
+                showAlert("เกิดข้อผิดพลาด", "ไม่สามารถเชื่อมต่อกับเซิร์ฟเวอร์ได้", true);
             }
         }
 
