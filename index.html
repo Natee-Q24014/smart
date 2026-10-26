@@ -642,7 +642,6 @@
         .btn-cancel { background-color: #3e495e; color: #cbd5e1; }
         .btn-cancel:hover { background-color: #4d5b73; color: #fff; }
 
-        /* สไตล์สำหรับกล่องเลือกลบรูปภาพรายรูป */
         .select-delete-grid {
             display: grid;
             grid-template-columns: repeat(3, 1fr);
@@ -854,7 +853,7 @@
     <div id="customAlertModal" class="modal" style="z-index: 1020;">
         <div class="dialog-box">
             <h3 id="alertTitle" style="color: #fca5a5; margin-bottom: 0.3rem;">รหัสผ่านผิด</h3>
-            <p id="alertDesc" style="font-size: 0.8rem; color: #94a3b8; margin-bottom: 1rem; line-height: 1.4;">กรุณากรอกรหัสผ่านให้ถูกต้องใหม่อีกครั้ง</p>
+            <p id="alertDesc" style="font-size: 0.8rem; color: #94a3b8; margin-bottom: 1rem; line-height: 1.4;">กรุณากรอกรหัสผ่าน 4 หลักให้ถูกต้องใหม่อีกครั้ง</p>
             <button class="btn-confirm" style="width: 100%; padding: 0.5rem;" onclick="closeCustomAlert()">ตกลง</button>
         </div>
     </div>
@@ -1391,7 +1390,6 @@
                 closePasswordModal();
                 if (pwd === "6004") {
                     if (pendingAction && pendingAction.type === 'deleteAlbum') {
-                        // ค้นหาข้อมูลอัลบั้มนั้นๆ เพื่อดึงรูปมาให้เลือกติ๊กลบ
                         let targetAlbum = allAlbumsData.find(a => a.folderName === pendingAction.folderName && a.optionType === pendingAction.optionType);
                         if (targetAlbum) {
                             targetAlbumDataForDelete = targetAlbum;
@@ -1404,7 +1402,7 @@
                     }
                 } else {
                     document.getElementById('alertTitle').innerText = "รหัสผ่านไม่ถูกต้อง";
-                    document.getElementById('alertDesc').innerText = "กรุณากรอกรหัสผ่าน 4 หลักใหม่อีกครั้ง";
+                    document.getElementById('alertDesc').innerText = "กรุณากรอกรหัสผ่าน 4 หลักให้ถูกต้องใหม่อีกครั้ง";
                     document.getElementById('customAlertModal').style.display = 'flex';
                 }
             }
@@ -1441,7 +1439,6 @@
             if (checkboxes.length === 0) return alert("กรุณาเลือกรูปภาพที่ต้องการลบอย่างน้อย 1 รูป");
             
             if (checkboxes.length === targetAlbumDataForDelete.images.length) {
-                // ถ้าเลือกรูปทั้งหมด ให้ลบทั้งอัลบั้มไปเลย
                 document.getElementById('deleteOptionsModal').style.display = 'none';
                 executeDeleteEntireAlbum();
                 return;
@@ -1454,11 +1451,9 @@
             document.getElementById('loadingDesc').innerText = `กำลังลบรูปที่เลือก ${indexesToRemove.length} รูป...`;
             loadingModal.style.display = 'flex';
 
-            // กรองรูปที่เหลือเก็บไว้
             let remainingImages = targetAlbumDataForDelete.images.filter((_, idx) => !indexesToRemove.includes(idx));
 
             try {
-                // ส่งคำสั่งอัปเดตรูปใหม่ในอัลบั้มเดิม
                 let response = await fetch(SCRIPT_URL, {
                     method: 'POST',
                     body: JSON.stringify({
