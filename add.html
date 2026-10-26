@@ -73,7 +73,11 @@
     </div>
 
     <script>
-        const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyxgUW-_u80WSW3nYIFEYUXr-uUjyfd_WSC7qlm7N8lgwyA0D5PNUbUDCdSX9JZNPFGjQ/exec";
+        const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyASRCNjL0XhJBWJyNkSRsqiF17vCEXWSX00i59xIaKpY5tWBY448bl0t1P7Fyq0d1Xgg/exec";
+        
+        // 🔑 ใส่ Gemini API Key ของคุณที่นี่ (เพื่อสแกนตรงจากหน้าเว็บแบบรวดเร็ว)
+        const GEMINI_API_KEY = "AQ.Ab8RN6LqfiLZxaaSuTRqsHQYGy6vE-_XuPw29pD8dwilFU66lg"; 
+
         let selectedCategory = "Smart";
         let selectedFiles = [];
 
@@ -111,26 +115,40 @@
                 document.getElementById('dateInput').value = selectedFiles[0].dateOnly;
             }
 
-            // ส่ง 2 รูปแรกย่อขนาดเล็กพิเศษไปให้ AI สแกนแบบไวและชัวร์
+            // ส่ง 2 รูปแรกยิงตรงหา Gemini API เพื่อดึงชื่อขึ้นมาโชว์ทันที
             if (selectedFiles.length >= 2) {
                 try {
                     let b64_1 = await fileToBase64(selectedFiles[0], 700);
                     let b64_2 = await fileToBase64(selectedFiles[1], 700);
 
-                    const response = await fetch(SCRIPT_URL, {
+                    const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${GEMINI_API_KEY}`;
+                    const promptText = "ดูรูปภาพ 2 รูปนี้ รูปแรกคือซิมการ์ด รูปที่สองคือเนมเพลท\n" +
+                        "- รูปแรก: หารหัส SOD หรือ SOF ตามด้วยขีดและเลข 6 หลัก และหา TR ตามด้วยตัวเลข\n" +
+                        "- รูปที่สอง: หา Serial No. แล้วแปลงเป็น S/N ตามด้วยเลข 8 หลัก\n" +
+                        "- ตอบกลับมารูปแบบเดียวเท่านั้น (ห้ามมีคำอธิบายเพิ่ม): [รหัสซิม] [TR.xxx] [S/Nxxxxxxxx]";
+
+                    const payload = {
+                        contents: [{
+                            parts: [
+                                { text: promptText },
+                                { inline_data: { mime_type: "image/jpeg", data: b64_1 } },
+                                { inline_data: { mime_type: "image/jpeg", data: b64_2 } }
+                            ]
+                        }]
+                    };
+
+                    const response = await fetch(url, {
                         method: 'POST',
-                        body: JSON.stringify({ action: 'ai_scan', images: [b64_1, b64_2] })
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(payload)
                     });
                     const res = await response.json();
                     
-                    if (res.status === "success" && res.folderName && res.folderName.trim() !== "") {
-                        document.getElementById('folderNameInput').value = res.folderName.trim();
-                    } else {
-                        document.getElementById('folderNameInput').value = "";
-                        alert("AI อ่านภาพไม่ชัดเจน กรุณาตรวจสอบหรือพิมพ์แก้ไขชื่ออัลบั้มครับ");
+                    if (res.candidates && res.candidates[0].content.parts[0].text) {
+                        document.getElementById('folderNameInput').value = res.candidates[0].content.parts[0].text.trim();
                     }
                 } catch (err) {
-                    console.error("AI Scan failed:", err);
+                    console.error("Direct Gemini API Error:", err);
                 }
             }
 
