@@ -136,7 +136,7 @@
         }
         .btn-add:hover { background-color: #115e59; transform: translateY(-1px); }
 
-        /* หน้าแรก: ตัวเลือกหลัก (ปี) (80%) และ ค้นหา (20%) */
+        /* หน้าแรก: แสดงตัวเลือกปีเดี่ยวๆ */
         .controls-wrapper {
             display: flex;
             gap: 0.8rem;
@@ -162,29 +162,21 @@
             flex: 0 0 20%;
         }
 
-        /* แถบย่อย (แสดงเมื่อเลือกปีแล้ว): วัน/เดือน (ซ้าย) และ หมวด (ขวา) อยู่ในบรรทัดเดียวกัน */
-        .sub-controls-wrapper {
+        /* หน้าอัลบั้ม: รวม วัน/เดือน, หมวดหมู่ และ ค้นหา ให้อยู่ในบรรทัดเดียวกัน */
+        .combined-controls-wrapper {
             display: flex;
             gap: 0.8rem;
             align-items: center;
             background-color: #323b4d;
             border: 1px solid #434e63;
-            padding: 0.6rem 1rem;
-            border-radius: 14px;
-            margin-top: 0.6rem;
+            padding: 0.8rem 1rem;
+            border-radius: 16px;
             box-shadow: 0 4px 15px rgba(0,0,0,0.2);
         }
 
-        .sub-left {
+        .control-item {
             display: flex;
-            gap: 0.6rem;
-            align-items: center;
-            flex: 1;
-        }
-
-        .sub-right {
-            display: flex;
-            gap: 0.6rem;
+            gap: 0.5rem;
             align-items: center;
             flex: 1;
         }
@@ -212,9 +204,9 @@
         .filter-select:focus, .search-input:focus { border-color: #38bdf8; }
         .search-input::placeholder { color: #64748b; font-weight: 400; }
 
-        @media(max-width: 768px) {
-            .controls-wrapper, .sub-controls-wrapper { flex-direction: column; }
-            .select-container, .search-container, .sub-left, .sub-right { flex: 1 1 100%; width: 100%; }
+        @media(max-width: 900px) {
+            .controls-wrapper, .combined-controls-wrapper { flex-direction: column; }
+            .select-container, .search-container, .control-item { flex: 1 1 100%; width: 100%; }
         }
 
         .folder-grid {
@@ -517,10 +509,10 @@
                 </div>
             </div>
 
-            <!-- หน้าแรก: ตัวเลือกหลัก (ปี) และ ค้นหา (20%) -->
+            <!-- หน้าแรก: ตัวเลือกปี (80%) และ ค้นหา (20%) -->
             <div class="controls-wrapper" id="mainControls">
                 <div class="select-container">
-                    <span id="selectLabel" class="filter-label">ปี:</span>
+                    <span class="filter-label">ปี:</span>
                     <select id="primarySelect" class="filter-select" onchange="handlePrimaryChange(this.value)">
                         <option value="all">ทั้งหมด (ทุกปี)</option>
                     </select>
@@ -531,21 +523,24 @@
                 </div>
             </div>
 
-            <!-- แถบย่อย (แสดงเมื่อเลือกปีแล้ว): วัน/เดือน (ดึงจากอัลบั้มจริง) และ หมวดหมู่ อยู่ในแถวเดียวกัน -->
-            <div id="subControlsWrapper" class="sub-controls-wrapper" style="display: none;">
-                <div class="sub-left">
+            <!-- หน้าอัลบั้ม: รวม วัน/เดือน, หมวดหมู่ และ ช่องค้นหา ให้อยู่ในบรรทัดเดียวกัน -->
+            <div id="combinedControlsWrapper" class="combined-controls-wrapper" style="display: none;">
+                <div class="control-item">
                     <span class="filter-label">วัน/เดือน:</span>
                     <select id="albumDateSelect" class="filter-select" onchange="applyFilters()">
                         <option value="all">ทุกวัน/เดือน</option>
                     </select>
                 </div>
-                <div class="sub-right">
+                <div class="control-item">
                     <span class="filter-label">หมวด:</span>
                     <select id="categorySelect" class="filter-select" onchange="applyFilters()">
                         <option value="all">ทั้งหมด</option>
                         <option value="Smart">Smart</option>
                         <option value="Smartแถม">Smart (แถม)</option>
                     </select>
+                </div>
+                <div class="control-item">
+                    <input type="text" id="searchCombinedInput" class="search-input" placeholder="ค้นหา..." oninput="applyFilters()">
                 </div>
             </div>
         </div>
@@ -623,10 +618,13 @@
         const sectionTitle = document.getElementById('sectionTitle');
         const backBtn = document.getElementById('backBtn');
         const scrollTopBtn = document.getElementById('scrollTopBtn');
-        const subControlsWrapper = document.getElementById('subControlsWrapper');
+        const mainControls = document.getElementById('mainControls');
+        const combinedControlsWrapper = document.getElementById('combinedControlsWrapper');
         const primarySelect = document.getElementById('primarySelect');
-        const selectLabel = document.getElementById('selectLabel');
         const albumDateSelect = document.getElementById('albumDateSelect');
+        const searchInput = document.getElementById('searchInput');
+        const searchCombinedInput = document.getElementById('searchCombinedInput');
+        const categorySelect = document.getElementById('categorySelect');
 
         let allAlbumsData = [];
         let currentSelectedYear = 'all';
@@ -676,9 +674,9 @@
                     if (history.state.year) {
                         currentSelectedYear = history.state.year;
                         if (currentSelectedYear !== 'all') {
-                            primarySelect.value = currentSelectedYear;
+                            mainControls.style.display = 'none';
+                            combinedControlsWrapper.style.display = 'flex';
                             updateAlbumDateDropdown(currentSelectedYear);
-                            subControlsWrapper.style.display = 'flex';
                         }
                     }
                     if (history.state.albumDate) {
@@ -705,12 +703,12 @@
                 if (currentSelectedYear === 'all') {
                     populateYearDropdown();
                     primarySelect.value = 'all';
-                    subControlsWrapper.style.display = 'none';
+                    mainControls.style.display = 'flex';
+                    combinedControlsWrapper.style.display = 'none';
                 } else {
-                    selectLabel.innerText = "ปี:";
-                    primarySelect.value = currentSelectedYear;
+                    mainControls.style.display = 'none';
+                    combinedControlsWrapper.style.display = 'flex';
                     updateAlbumDateDropdown(currentSelectedYear);
-                    subControlsWrapper.style.display = 'flex';
                     if (event.state.albumDate) {
                         albumDateSelect.value = event.state.albumDate;
                     }
@@ -722,7 +720,6 @@
         };
 
         function populateYearDropdown() {
-            selectLabel.innerText = "ปี:";
             const years = new Set();
             allAlbumsData.forEach(item => {
                 if (item.month) {
@@ -738,19 +735,16 @@
             });
         }
 
-        // ตัดปีออก ให้เหลือแค่วันและเดือน (เช่น จาก 2026-10-26 เหลือ 10-26 หรือรูปแบบที่คุณต้องการ)
         function updateAlbumDateDropdown(year) {
             const datesSet = new Set();
             allAlbumsData.forEach(item => {
                 if (item.month && item.month.startsWith(year) && item.folderName) {
-                    // สมมติ folderName มีรูปแบบ YYYY-MM-DD ให้ตัดส่วนปีออก หรือแสดงเฉพาะเดือน/วัน
                     let parts = item.folderName.split('-');
                     let shortDate = parts.length >= 3 ? `${parts[1]}-${parts[2]}` : item.folderName;
                     datesSet.add({ full: item.folderName, display: shortDate });
                 }
             });
 
-            // แปลงเป็น Array แล้วเรียงลำดับ
             const sortedDates = Array.from(datesSet).sort((a, b) => b.full.localeCompare(a.full));
             
             albumDateSelect.innerHTML = '<option value="all">ทุกวัน/เดือน</option>';
@@ -762,14 +756,17 @@
         function handlePrimaryChange(val) {
             if (val === 'all') {
                 currentSelectedYear = 'all';
-                subControlsWrapper.style.display = 'none';
+                mainControls.style.display = 'flex';
+                combinedControlsWrapper.style.display = 'none';
                 history.pushState({ year: 'all', albumDate: 'all' }, "", window.location.pathname);
-                document.getElementById('searchInput').value = '';
-                document.getElementById('categorySelect').value = 'all';
+                searchInput.value = '';
+                searchCombinedInput.value = '';
+                categorySelect.value = 'all';
                 populateYearDropdown();
             } else {
                 currentSelectedYear = val;
-                subControlsWrapper.style.display = 'flex';
+                mainControls.style.display = 'none';
+                combinedControlsWrapper.style.display = 'flex';
                 updateAlbumDateDropdown(val);
                 albumDateSelect.value = 'all';
                 history.pushState({ year: val, albumDate: 'all' }, "", `#year-${val}`);
@@ -784,8 +781,8 @@
         function renderView(pushHistory = true) {
             mainContainer.innerHTML = '';
 
-            const searchKeyword = document.getElementById('searchInput').value.trim().toLowerCase();
-            const selectedCategory = document.getElementById('categorySelect').value;
+            const searchKeyword = (searchInput.value || searchCombinedInput.value).trim().toLowerCase();
+            const selectedCategory = categorySelect.value;
             const selectedAlbumDate = albumDateSelect.value;
 
             let filteredAlbums = allAlbumsData;
@@ -812,7 +809,8 @@
             }
 
             if (currentSelectedYear === 'all') {
-                subControlsWrapper.style.display = 'none';
+                mainControls.style.display = 'flex';
+                combinedControlsWrapper.style.display = 'none';
                 backBtn.style.display = 'none';
                 sectionTitle.innerHTML = `<span>📁 เลือกปีประจำระบบ</span>`;
 
@@ -852,7 +850,8 @@
                 mainContainer.appendChild(folderGrid);
 
             } else {
-                subControlsWrapper.style.display = 'flex';
+                mainControls.style.display = 'none';
+                combinedControlsWrapper.style.display = 'flex';
                 backBtn.style.display = 'inline-flex';
                 sectionTitle.innerHTML = `<span>📁 อัลบั้มปี ${currentSelectedYear}</span>`;
 
@@ -863,7 +862,8 @@
         function selectYearFolder(year) {
             currentSelectedYear = year;
             primarySelect.value = year;
-            subControlsWrapper.style.display = 'flex';
+            mainControls.style.display = 'none';
+            combinedControlsWrapper.style.display = 'flex';
             updateAlbumDateDropdown(year);
             albumDateSelect.value = 'all';
             history.pushState({ year: year, albumDate: 'all' }, "", `#year-${year}`);
@@ -874,10 +874,12 @@
             currentSelectedYear = 'all';
             populateYearDropdown();
             primarySelect.value = 'all';
-            subControlsWrapper.style.display = 'none';
+            mainControls.style.display = 'flex';
+            combinedControlsWrapper.style.display = 'none';
             history.pushState({ year: 'all', albumDate: 'all' }, "", window.location.pathname);
-            document.getElementById('searchInput').value = '';
-            document.getElementById('categorySelect').value = 'all';
+            searchInput.value = '';
+            searchCombinedInput.value = '';
+            categorySelect.value = 'all';
             renderView(false);
         }
 
