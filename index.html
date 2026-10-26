@@ -655,7 +655,7 @@
                         <th>📁 อัลบั้มทั้งหมด</th>
                         <th>📸 รูปภาพทั้งหมด</th>
                         <th>⚡ หมวด Smart</th>
-                        <th>🎁 หมวด (แถม)</th>
+                        <th>🎁 หมวด Smart(แถม)</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -672,7 +672,7 @@
         <div class="sticky-nav-area">
             <div class="top-action-bar">
                 <div class="section-title" id="sectionTitle">
-                    <span>📁 เลือกปีประจำระบบ</span>
+                    <span>📁 เลือกปี</span>
                 </div>
                 <div style="display: flex; gap: 0.5rem; align-items: center;">
                     <div id="navButtonsGroup" class="nav-buttons-group" style="display: none;">
@@ -948,7 +948,7 @@
             if (navigationLevel === 'years') {
                 stackControlsWrapper.style.display = 'none';
                 navButtonsGroup.style.display = 'none';
-                sectionTitle.innerHTML = `<span>📁 เลือกปีประจำระบบ</span>`;
+                sectionTitle.innerHTML = `<span>📁 เลือกปี</span>`;
 
                 const yearsSet = new Set();
                 allAlbumsData.forEach(item => {
@@ -1144,8 +1144,8 @@
                 return;
             }
 
-            document.getElementById('loadingTitle').innerText = "กรุณารอสักครู่";
-            document.getElementById('loadingDesc').innerText = `กำลังรวบรวมรูปภาพ (${images.length} รูป) ลงเครื่อง`;
+            document.getElementById('loadingTitle').innerText = "กรุณารอสักครู่...";
+            document.getElementById('loadingDesc').innerText = `กำลังรวบรวมรูปภาพ (${images.length} รูป) `;
             loadingModal.style.display = 'flex';
 
             const zip = new JSZip();
