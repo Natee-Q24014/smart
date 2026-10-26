@@ -332,7 +332,7 @@
         let selectedCategory = "Smart";
         let selectedFiles = [];
 
-        // ตั้งค่าวันที่ปัจจุบันเป็นค่าเริ่มต้น
+        // ตั้งค่าวันที่ปัจจุบันเป็นค่าเริ่มต้นชั่วคราวก่อนเลือกรูป
         const today = new Date();
         const dd = String(today.getDate()).padStart(2, '0');
         const mm = String(today.getMonth() + 1).padStart(2, '0');
@@ -352,7 +352,6 @@
 
         function parseExifDate(exifDateStr) {
             if (!exifDateStr) return null;
-            // รูปแบบ Exif มักจะเป็น "YYYY:MM:DD HH:MM:SS"
             const parts = exifDateStr.split(/[:\s]/);
             if (parts.length >= 6) {
                 return new Date(parts[0], parts[1] - 1, parts[2], parts[3], parts[4], parts[5]);
@@ -361,13 +360,16 @@
         }
 
         function formatDateTime(dateObj) {
-            if (!dateObj || isNaN(dateObj.getTime())) return "ไม่ทราบเวลาถ่าย";
+            if (!dateObj || isNaN(dateObj.getTime())) return null;
             const d = String(dateObj.getDate()).padStart(2, '0');
             const m = String(dateObj.getMonth() + 1).padStart(2, '0');
             const y = dateObj.getFullYear();
             const hh = String(dateObj.getHours()).padStart(2, '0');
             const min = String(dateObj.getMinutes()).padStart(2, '0');
-            return `${d}/${m}/${y} ${hh}:${min}`;
+            return {
+                full: `${d}/${m}/${y} ${hh}:${min}`,
+                dateOnly: `${d}/${m}/${y}`
+            };
         }
 
         function handleFileSelect(input) {
@@ -376,21 +378,27 @@
             const filesArray = Array.from(input.files);
             let processedCount = 0;
 
-            filesArray.forEach(file => {
+            filesArray.forEach((file, index) => {
                 EXIF.getData(file, function() {
                     const exifDateTime = EXIF.getTag(this, "DateTimeOriginal") || EXIF.getTag(this, "DateTime");
                     let shootDate = parseExifDate(exifDateTime);
 
-                    // ถ้าไม่มีข้อมูล EXIF ให้ใช้เวลา Last Modified ของไฟล์แทน
                     if (!shootDate || isNaN(shootDate.getTime())) {
                         shootDate = file.lastModified ? new Date(file.lastModified) : new Date();
                     }
 
-                    file.formattedDate = formatDateTime(shootDate);
+                    const formatted = formatDateTime(shootDate);
+                    file.formattedDate = formatted ? formatted.full : "ไม่ทราบเวลาถ่าย";
+                    file.dateOnly = formatted ? formatted.dateOnly : null;
+
                     selectedFiles.push(file);
                     processedCount++;
 
                     if (processedCount === filesArray.length) {
+                        // อัปเดตช่องวันที่หลักตามรูปแรกที่เลือก
+                        if (selectedFiles.length > 0 && selectedFiles[0].dateOnly) {
+                            document.getElementById('dateInput').value = selectedFiles[0].dateOnly;
+                        }
                         renderPreview();
                     }
                 });
@@ -411,7 +419,7 @@
             }
 
             grid.style.display = 'grid';
-            label.innerText = `เลือกแล้ว ${selectedFiles.length} รูป (แตะรูปเพื่อดูตัวอย่าง/เวลาถ่ายจริง)`;
+            label.innerText = `เลือกแล้ว ${selectedFiles.length} รูป (รูปแรกกำหนดวันที่อัตโนมัติ)`;
 
             selectedFiles.forEach((file, index) => {
                 const reader = new FileReader();
@@ -431,6 +439,10 @@
 
         function removeFile(index) {
             selectedFiles.splice(index, 1);
+            // หากลบรูปแรกออก ให้ขยับเอาวันที่ของรูปถัดไปมาตั้งเป็นวันที่หลักแทน
+            if (index === 0 && selectedFiles.length > 0 && selectedFiles[0].dateOnly) {
+                document.getElementById('dateInput').value = selectedFiles[0].dateOnly;
+            }
             renderPreview();
         }
 
