@@ -73,10 +73,10 @@
     </div>
 
     <script>
-        const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyASRCNjL0XhJBWJyNkSRsqiF17vCEXWSX00i59xIaKpY5tWBY448bl0t1P7Fyq0d1Xgg/exec";
+        const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyxgUW-_u80WSW3nYIFEYUXr-uUjyfd_WSC7qlm7N8lgwyA0D5PNUbUDCdSX9JZNPFGjQ/exec";
         
-        // 🔑 ใส่ Gemini API Key ของคุณที่นี่ (เพื่อสแกนตรงจากหน้าเว็บแบบรวดเร็ว)
-        const GEMINI_API_KEY = "AQ.Ab8RN6LqfiLZxaaSuTRqsHQYGy6vE-_XuPw29pD8dwilFU66lg"; 
+        // 🔑 ใส่ Gemini API Key ของคุณที่นี่ (ขึ้นต้นด้วย AQ...)
+        const GEMINI_API_KEY = "ใส่_GEMINI_API_KEY_ของคุณที่นี่"; 
 
         let selectedCategory = "Smart";
         let selectedFiles = [];
@@ -95,7 +95,7 @@
             const filesArray = Array.from(input.files);
             
             document.getElementById('loadingTitle').innerText = "AI กำลังวิเคราะห์รูปภาพ";
-            document.getElementById('loadingDesc').innerText = "กำลังสแกนรหัสซิมและเนมเพลทอัตโนมัติ...";
+            document.getElementById('loadingDesc').innerText = "กำลังสแกนรหัส SOD/SOF และเนมเพลทอัตโนมัติ...";
             document.getElementById('loadingModal').style.display = 'flex';
 
             for (let file of filesArray) {
@@ -115,13 +115,13 @@
                 document.getElementById('dateInput').value = selectedFiles[0].dateOnly;
             }
 
-            // ส่ง 2 รูปแรกยิงตรงหา Gemini API เพื่อดึงชื่อขึ้นมาโชว์ทันที
+            // ส่ง 2 รูปแรกยิงตรงหา Gemini API คืนค่ารูปแบบ SOD/SOF และ TR แบบเดิม
             if (selectedFiles.length >= 2) {
                 try {
                     let b64_1 = await fileToBase64(selectedFiles[0], 700);
                     let b64_2 = await fileToBase64(selectedFiles[1], 700);
 
-                    const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${GEMINI_API_KEY}`;
+                    const url = `https://generativelanguage.googleapis.com/v1/models/gemini-1.5-flash:generateContent?key=${GEMINI_API_KEY}`;
                     const promptText = "ดูรูปภาพ 2 รูปนี้ รูปแรกคือซิมการ์ด รูปที่สองคือเนมเพลท\n" +
                         "- รูปแรก: หารหัส SOD หรือ SOF ตามด้วยขีดและเลข 6 หลัก และหา TR ตามด้วยตัวเลข\n" +
                         "- รูปที่สอง: หา Serial No. แล้วแปลงเป็น S/N ตามด้วยเลข 8 หลัก\n" +
