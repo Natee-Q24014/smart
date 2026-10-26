@@ -33,9 +33,14 @@
         .btn-submit, .btn-back { flex: 1; padding: 0.75rem; border-radius: 10px; font-size: 0.95rem; font-weight: 700; cursor: pointer; border: none; text-decoration: none; display: flex; align-items: center; justify-content: center; }
         .btn-submit { background-color: #047857; color: #fff; }
         .btn-back { background-color: #3e495e; color: #cbd5e1; }
+        
         .loading-modal { display: none; position: fixed; z-index: 1000; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(18, 22, 30, 0.85); justify-content: center; align-items: center; flex-direction: column; }
         .loading-spinner { width: 45px; height: 45px; border: 4px solid #434e63; border-top: 4px solid #38bdf8; border-radius: 50%; animation: spin 1s linear infinite; margin-bottom: 1rem; }
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+
+        /* Custom Notification Toast ที่เข้ากับธีม */
+        .custom-toast { display: none; position: fixed; z-index: 3000; top: 20px; left: 50%; transform: translateX(-50%); background-color: #323b4d; border: 1px solid #38bdf8; color: #f8fafc; padding: 0.9rem 1.5rem; border-radius: 12px; box-shadow: 0 10px 25px rgba(0,0,0,0.5); font-weight: 600; font-size: 0.95rem; align-items: center; gap: 0.6rem; animation: slideDown 0.3s ease-out; }
+        @keyframes slideDown { 0% { transform: translate(-50%, -20px); opacity: 0; } 100% { transform: translate(-50%, 0); opacity: 1; } }
     </style>
 </head>
 <body>
@@ -77,6 +82,12 @@
     <div id="imageModal" class="image-modal" onclick="closeImageModal()">
         <span class="image-modal-close">&times;</span>
         <img id="modalImageSrc" src="">
+    </div>
+
+    <!-- กล่องแจ้งเตือนสำเร็จสไตล์ธีมมืด -->
+    <div id="customToast" class="custom-toast">
+        <span style="color: #34d399; font-size: 1.2rem;">✅</span>
+        <span id="toastMessage">บันทึกสำเร็จ! กำลังกลับหน้าหลัก...</span>
     </div>
 
     <div id="loadingModal" class="loading-modal">
@@ -205,7 +216,7 @@
         }
 
         function removeFile(event, index) {
-            event.stopPropagation(); // ป้องกันไม่ให้เปิด Modal ตอนกดลบ
+            event.stopPropagation();
             selectedFiles.splice(index, 1);
             if (index === 0 && selectedFiles.length > 0 && selectedFiles[0].dateOnly) {
                 document.getElementById('dateInput').value = selectedFiles[0].dateOnly;
@@ -221,6 +232,13 @@
 
         function closeImageModal() {
             document.getElementById('imageModal').style.display = 'none';
+        }
+
+        function showToast(message, isError = false) {
+            const toast = document.getElementById('customToast');
+            document.getElementById('toastMessage').innerText = message;
+            toast.style.borderColor = isError ? '#f87171' : '#38bdf8';
+            toast.style.display = 'flex';
         }
 
         async function handleFormSubmit(e) {
@@ -251,14 +269,16 @@
                 document.getElementById('loadingModal').style.display = 'none';
 
                 if (result.status === "success") {
-                    alert("บันทึกสำเร็จ!");
-                    window.location.href = "index.html";
+                    showToast("บันทึกสำเร็จ! กำลังกลับหน้าหลัก...");
+                    setTimeout(() => {
+                        window.location.href = "index.html";
+                    }, 2000); // รอ 2 วินาทีแล้วเด้งกลับหน้าหลักทันที
                 } else {
-                    alert("ผิดพลาด: " + result.message);
+                    showToast("ผิดพลาด: " + result.message, true);
                 }
             } catch (err) {
                 document.getElementById('loadingModal').style.display = 'none';
-                alert("เชื่อมต่อเซิร์ฟเวอร์ไม่สำเร็จ");
+                showToast("เชื่อมต่อเซิร์ฟเวอร์ไม่สำเร็จ", true);
             }
         }
     </script>
