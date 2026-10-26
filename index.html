@@ -110,7 +110,13 @@
             gap: 0.4rem;
         }
 
-        .btn-back-folder {
+        .nav-buttons-group {
+            display: flex;
+            gap: 0.4rem;
+            align-items: center;
+        }
+
+        .btn-nav-action {
             background-color: #3e495e;
             color: #e2e8f0;
             padding: 0.4rem 0.8rem;
@@ -124,7 +130,7 @@
             gap: 0.3rem;
             transition: all 0.2s;
         }
-        .btn-back-folder:hover { background-color: #4d5b73; color: #fff; }
+        .btn-nav-action:hover { background-color: #4d5b73; color: #fff; }
 
         .btn-add {
             background-color: #0f766e;
@@ -500,8 +506,11 @@
                 <div class="section-title" id="sectionTitle">
                     <span>📁 เลือกปีประจำระบบ</span>
                 </div>
-                <div>
-                    <button id="backBtn" class="btn-back-folder" style="display: none;" onclick="goBackToFolderLevel()">⬅️ ย้อนกลับ</button>
+                <div style="display: flex; gap: 0.5rem; align-items: center;">
+                    <div id="navButtonsGroup" class="nav-buttons-group" style="display: none;">
+                        <button class="btn-nav-action" onclick="goToHome()">🏠 หน้าแรก</button>
+                        <button class="btn-nav-action" onclick="goBackToFolderLevel()">⬅️ ย้อนกลับ</button>
+                    </div>
                     <a href="add.html" class="btn-add">➕ เพิ่มอัลบั้มใหม่</a>
                 </div>
             </div>
@@ -594,7 +603,7 @@
         const loadingView = document.getElementById('loadingView');
         const mainContainer = document.getElementById('mainContainer');
         const sectionTitle = document.getElementById('sectionTitle');
-        const backBtn = document.getElementById('backBtn');
+        const navButtonsGroup = document.getElementById('navButtonsGroup');
         const scrollTopBtn = document.getElementById('scrollTopBtn');
         const stackControlsWrapper = document.getElementById('stackControlsWrapper');
         const searchCombinedInput = document.getElementById('searchCombinedInput');
@@ -698,7 +707,7 @@
 
             if (searchKeyword !== '') {
                 stackControlsWrapper.style.display = 'flex';
-                backBtn.style.display = 'inline-flex';
+                navButtonsGroup.style.display = 'inline-flex';
                 sectionTitle.innerHTML = `<span>🔍 ผลการค้นหา: "${searchKeyword}"</span>`;
 
                 let filtered = allAlbumsData.filter(item => item.folderName.toLowerCase().includes(searchKeyword));
@@ -711,7 +720,7 @@
 
             if (navigationLevel === 'years') {
                 stackControlsWrapper.style.display = 'none';
-                backBtn.style.display = 'none';
+                navButtonsGroup.style.display = 'none';
                 sectionTitle.innerHTML = `<span>📁 เลือกปีประจำระบบ</span>`;
 
                 const yearsSet = new Set();
@@ -752,7 +761,7 @@
 
             } else if (navigationLevel === 'months') {
                 stackControlsWrapper.style.display = 'none';
-                backBtn.style.display = 'inline-flex';
+                navButtonsGroup.style.display = 'inline-flex';
                 sectionTitle.innerHTML = `<span>📁 ปี ${currentSelectedYear} - เลือกเดือน</span>`;
 
                 const monthsSet = new Set();
@@ -797,7 +806,7 @@
 
             } else if (navigationLevel === 'albums') {
                 stackControlsWrapper.style.display = 'flex';
-                backBtn.style.display = 'inline-flex';
+                navButtonsGroup.style.display = 'inline-flex';
                 sectionTitle.innerHTML = `<span>📁 อัลบั้มประจำเดือน ${currentSelectedMonth}</span>`;
 
                 let filteredAlbums = allAlbumsData.filter(item => item.month === currentSelectedMonth);
@@ -824,6 +833,15 @@
         function selectMonthFolder(monthStr) {
             currentSelectedMonth = monthStr;
             navigationLevel = 'albums';
+            renderView();
+        }
+
+        function goToHome() {
+            searchCombinedInput.value = '';
+            categorySelect.value = 'all';
+            navigationLevel = 'years';
+            currentSelectedYear = null;
+            currentSelectedMonth = null;
             renderView();
         }
 
@@ -893,7 +911,6 @@
             mainContainer.appendChild(grid);
         }
 
-        // ฟังก์ชันดาวน์โหลดอัลบั้มเป็นไฟล์ ZIP ลงเครื่อง
         async function downloadAlbumZip(images, folderName) {
             if (!images || images.length === 0) {
                 showAlert("แจ้งเตือน", "ไม่มีรูปภาพในอัลบั้มนี้", false);
@@ -930,7 +947,6 @@
             }
         }
 
-        // ฟังก์ชันดาวน์โหลดรูปภาพเดี่ยวลงเครื่องโดยตรง
         async function downloadCurrentModalImage() {
             const currentImgUrl = currentAlbumImages[currentIndex];
             
@@ -951,7 +967,6 @@
                 document.getElementById('loadingModal').style.display = 'none';
             } catch (error) {
                 document.getElementById('loadingModal').style.display = 'none';
-                // Fallback กรณีติดปัญหากลุ่ม Cross-origin ให้เปิดลิงก์ตรง
                 const fallbackLink = document.createElement('a');
                 fallbackLink.href = currentImgUrl;
                 fallbackLink.target = '_blank';
