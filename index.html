@@ -613,25 +613,37 @@
             }
         }
 
-        async function fetchAlbums() {
+        async function fetchAlbums(isBackground = false) {
             try {
                 const response = await fetch(SCRIPT_URL);
-                allAlbumsData = await response.json();
+                const newData = await response.json();
                 
-                loadingView.style.display = 'none';
+                const isDataChanged = JSON.stringify(allAlbumsData) !== JSON.stringify(newData);
+                allAlbumsData = newData;
                 
-                if (history.state) {
-                    navigationLevel = history.state.level || 'years';
-                    currentSelectedYear = history.state.year || null;
-                    currentSelectedMonth = history.state.month || null;
+                if (!isBackground) {
+                    loadingView.style.display = 'none';
+                    if (history.state) {
+                        navigationLevel = history.state.level || 'years';
+                        currentSelectedYear = history.state.year || null;
+                        currentSelectedMonth = history.state.month || null;
+                    }
+                    renderView();
+                } else if (isDataChanged) {
+                    renderView(false);
                 }
-                
-                renderView();
 
             } catch (error) {
-                loadingView.innerText = 'เกิดข้อผิดพลาดในการโหลดข้อมูล';
+                if (!isBackground) {
+                    loadingView.innerText = 'เกิดข้อผิดพลาดในการโหลดข้อมูล';
+                }
             }
         }
+
+        // ระบบ Auto-Refresh ทุกๆ 5 วินาที เพื่อดึงข้อมูลใหม่จากเครื่องอื่นอัตโนมัติ
+        setInterval(() => {
+            fetchAlbums(true);
+        }, 5000);
 
         window.onpopstate = function(event) {
             const modal = document.getElementById('imageModal');
@@ -657,12 +669,9 @@
         }
 
         function renderView(pushHistory = true) {
-            mainContainer.innerHTML = '';
-
             const searchKeyword = searchCombinedInput.value.trim().toLowerCase();
             const selectedCategory = categorySelect.value;
 
-            // หากมีการพิมพ์ค้นหา ให้แสดงผลลัพธ์แบบข้ามระดับขั้นไปที่รายการอัลบั้มทันที
             if (searchKeyword !== '') {
                 stackControlsWrapper.style.display = 'flex';
                 backBtn.style.display = 'inline-flex';
@@ -714,6 +723,7 @@
                     folderGrid.appendChild(folderCard);
                 });
 
+                mainContainer.innerHTML = '';
                 mainContainer.appendChild(folderGrid);
 
             } else if (navigationLevel === 'months') {
@@ -724,7 +734,7 @@
                 const monthsSet = new Set();
                 allAlbumsData.forEach(item => {
                     if (item.month && item.month.startsWith(currentSelectedYear)) {
-                        monthsSet.add(item.month); // ตัวอย่างเช่น "2026-10"
+                        monthsSet.add(item.month);
                     }
                 });
 
@@ -758,6 +768,7 @@
                     folderGrid.appendChild(folderCard);
                 });
 
+                mainContainer.innerHTML = '';
                 mainContainer.appendChild(folderGrid);
 
             } else if (navigationLevel === 'albums') {
@@ -771,6 +782,7 @@
                     filteredAlbums = filteredAlbums.filter(item => item.category === selectedCategory);
                 }
 
+                mainContainer.innerHTML = '';
                 renderAlbumsList(filteredAlbums);
             }
 
@@ -1020,11 +1032,11 @@
         modalWrapper.addEventListener('touchstart', e => { touchStartX = e.changedTouches[0].screenX; }, {passive: true});
         modalWrapper.addEventListener('touchend', e => { touchEndX = e.changedTouches[0].screenX; handleSwipe(); }, {passive: true});
 
-        function handleSwipe() {
+        const handleSwipe = () => {
             const threshold = 50;
             if (touchEndX < touchStartX - threshold) nextImage();
             if (touchEndX > touchStartX + threshold) prevImage();
-        }
+        };
 
         document.addEventListener('keydown', function(e) {
             const modal = document.getElementById('imageModal');
