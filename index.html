@@ -600,7 +600,7 @@
             padding: 1.5rem;
             border-radius: 14px;
             width: 90%;
-            max-width: 300px;
+            max-width: 320px;
             text-align: center;
             box-shadow: 0 12px 30px rgba(0,0,0,0.4);
             animation: popIn 0.2s ease-out;
@@ -641,6 +641,42 @@
         .btn-confirm:hover { background-color: #0284c7; }
         .btn-cancel { background-color: #3e495e; color: #cbd5e1; }
         .btn-cancel:hover { background-color: #4d5b73; color: #fff; }
+
+        /* สไตล์สำหรับกล่องเลือกลบรูปภาพรายรูป */
+        .select-delete-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 0.5rem;
+            max-height: 250px;
+            overflow-y: auto;
+            margin: 0.8rem 0;
+            padding: 0.2rem;
+        }
+        .select-del-item {
+            position: relative;
+            height: 75px;
+            border-radius: 6px;
+            overflow: hidden;
+            border: 2px solid #4d5b73;
+            cursor: pointer;
+        }
+        .select-del-item img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+        .select-del-item input[type="checkbox"] {
+            position: absolute;
+            top: 4px;
+            right: 4px;
+            width: 18px;
+            height: 18px;
+            cursor: pointer;
+        }
+        .select-del-item.selected {
+            border-color: #ef4444;
+            opacity: 0.7;
+        }
 
         .loading-spinner {
             width: 38px;
@@ -775,6 +811,23 @@
         </div>
     </div>
 
+    <!-- Modal เลือกลบรูปภาพรายรูป หรือลบทั้งอัลบั้ม -->
+    <div id="deleteOptionsModal" class="modal" style="z-index: 1005;">
+        <div class="dialog-box" style="max-width: 400px;">
+            <h3 style="color: #fca5a5;">🗑️ จัดการลบอัลบั้ม / รูปภาพ</h3>
+            <p id="delAlbumNameLabel" style="font-size: 0.78rem; color: #94a3b8; margin-bottom: 0.4rem; word-break: break-all;"></p>
+            <p style="font-size: 0.75rem; color: #38bdf8; margin-bottom: 0.4rem;">ติ๊กเลือกรูปที่ต้องการลบ (หรือกดลบทั้งหมด)</p>
+            
+            <div id="selectDeleteGrid" class="select-delete-grid"></div>
+
+            <div class="dialog-btns" style="margin-top: 0.8rem;">
+                <button class="btn-cancel" onclick="document.getElementById('deleteOptionsModal').style.display='none'">ยกเลิก</button>
+                <button class="btn-confirm" style="background-color: #dc2626;" onclick="executeDeleteSelectedImages()">ลบรูปที่เลือก</button>
+                <button class="btn-confirm" style="background-color: #991b1b;" onclick="executeDeleteEntireAlbum()">ลบทั้งอัลบั้ม</button>
+            </div>
+        </div>
+    </div>
+
     <!-- Modal เลือกรูปเพิ่ม -->
     <div id="addImagesModal" class="modal" style="z-index: 1005;">
         <div class="dialog-box">
@@ -831,7 +884,7 @@
         let pendingAction = null;
         let selectedCategory = '';
         let selectedFolderName = '';
-        let selectedTargetMonth = '';
+        let targetAlbumDataForDelete = null;
 
         let deferredPrompt;
 
@@ -1128,11 +1181,12 @@
             }
         }
 
-        // Modal รูปภาพ (รองรับทั้งเมาส์และหน้าจอสัมผัสมือถือ)
+        // Modal รูปภาพ (รองรับทั้ง Zoom และ Swipe ซ้าย/ขวาบนมือถือ)
         let activeModalImages = [];
         let activeModalIndex = 0;
         let scale = 1, panning = false, pointX = 0, pointY = 0, startX = 0, startY = 0;
         let initialPinchDistance = null;
+        let touchStartX = 0;
 
         function openModal(imagesJson, index) {
             activeModalImages = JSON.parse(decodeURIComponent(imagesJson));
@@ -1174,7 +1228,6 @@
 
         const modalWrapper = document.getElementById('modalWrapper');
         
-        // --- รองรับ Desktop (Mouse Wheel & Drag) ---
         modalWrapper.addEventListener('wheel', (e) => {
             e.preventDefault();
             if (e.deltaY < 0) { scale *= 1.2; } else { scale /= 1.2; }
@@ -1196,9 +1249,9 @@
             updateTransform();
         });
 
-        // --- รองรับ Mobile (Touch Pinch Zoom & Touch Pan) ---
         modalWrapper.addEventListener('touchstart', (e) => {
             if (e.touches.length === 1) {
+                touchStartX = e.touches[0].clientX;
                 panning = true;
                 startX = e.touches[0].clientX - pointX;
                 startY = e.touches[0].clientY - pointY;
@@ -1213,6 +1266,7 @@
 
         modalWrapper.addEventListener('touchmove', (e) => {
             if (e.touches.length === 1 && panning) {
+                if (scale === 1) return;
                 e.preventDefault();
                 pointX = e.touches[0].clientX - startX;
                 pointY = e.touches[0].clientY - startY;
@@ -1234,12 +1288,18 @@
             if (e.touches.length < 2) {
                 initialPinchDistance = null;
             }
+            if (e.touches.length === 0 && scale === 1) {
+                let touchEndX = e.changedTouches[0].clientX;
+                let diffX = touchEndX - touchStartX;
+                if (Math.abs(diffX) > 50) {
+                    if (diffX > 0) { prevImage(); } else { nextImage(); }
+                }
+            }
             if (e.touches.length === 0) {
                 panning = false;
             }
         });
 
-        // ดาวน์โหลดรูปภาพเดี่ยวจาก Modal ทันทีแบบ Blob
         async function downloadCurrentModalImage() {
             let imgUrl = activeModalImages[activeModalIndex];
             try {
@@ -1264,7 +1324,6 @@
             }
         }
 
-        // ระบบดาวน์โหลด ZIP
         async function downloadAlbumZip(folderNameEncoded, imagesJson) {
             let folderName = decodeURIComponent(folderNameEncoded);
             let imgs = JSON.parse(decodeURIComponent(imagesJson));
@@ -1297,10 +1356,10 @@
             }
         }
 
-        // ระบบรหัสผ่านและการจัดการแอดมิน (ลบอัลบั้ม / ลบทั้งเดือน / เพิ่มรูป)
+        // ระบบรหัสผ่านและการจัดการลบอัลบั้ม / ลบรูปภาพรายรูป
         function promptDeleteAlbum(folderName, optionType) {
             pendingAction = { type: 'deleteAlbum', folderName: folderName, optionType: optionType };
-            document.getElementById('dialogTitle').innerText = "🔒 ใส่รหัสผ่านเพื่อลบอัลบั้ม";
+            document.getElementById('dialogTitle').innerText = "🔒 ใส่รหัสผ่านเพื่อลบ";
             document.getElementById('adminPasswordInput').value = '';
             document.getElementById('passwordModal').style.display = 'flex';
             document.getElementById('adminPasswordInput').focus();
@@ -1326,18 +1385,112 @@
             pendingAction = null;
         }
 
-        // ตรวจสอบรหัสผ่านทันทีเมื่อพิมพ์ครบ 4 หลัก
         function checkPasswordLength(input) {
             if (input.value.length === 4) {
                 let pwd = input.value;
                 closePasswordModal();
                 if (pwd === "6004") {
-                    executePendingAction();
+                    if (pendingAction && pendingAction.type === 'deleteAlbum') {
+                        // ค้นหาข้อมูลอัลบั้มนั้นๆ เพื่อดึงรูปมาให้เลือกติ๊กลบ
+                        let targetAlbum = allAlbumsData.find(a => a.folderName === pendingAction.folderName && a.optionType === pendingAction.optionType);
+                        if (targetAlbum) {
+                            targetAlbumDataForDelete = targetAlbum;
+                            openDeleteOptionsModal(targetAlbum);
+                        } else {
+                            executePendingAction();
+                        }
+                    } else {
+                        executePendingAction();
+                    }
                 } else {
                     document.getElementById('alertTitle').innerText = "รหัสผ่านไม่ถูกต้อง";
                     document.getElementById('alertDesc').innerText = "กรุณากรอกรหัสผ่าน 4 หลักใหม่อีกครั้ง";
                     document.getElementById('customAlertModal').style.display = 'flex';
                 }
+            }
+        }
+
+        function openDeleteOptionsModal(album) {
+            document.getElementById('delAlbumNameLabel').innerText = album.folderName;
+            let grid = document.getElementById('selectDeleteGrid');
+            grid.innerHTML = '';
+            
+            let imgs = album.images || [];
+            imgs.forEach((imgUrl, idx) => {
+                let item = document.createElement('div');
+                item.className = 'select-del-item';
+                item.innerHTML = `
+                    <img src="${imgUrl}">
+                    <input type="checkbox" value="${idx}" id="delCheck_${idx}">
+                `;
+                item.onclick = (e) => {
+                    if (e.target.tagName !== 'INPUT') {
+                        let cb = document.getElementById(`delCheck_${idx}`);
+                        cb.checked = !cb.checked;
+                    }
+                    item.className = document.getElementById(`delCheck_${idx}`).checked ? 'select-del-item selected' : 'select-del-item';
+                };
+                grid.appendChild(item);
+            });
+
+            document.getElementById('deleteOptionsModal').style.display = 'flex';
+        }
+
+        async function executeDeleteSelectedImages() {
+            let checkboxes = document.querySelectorAll('#selectDeleteGrid input[type="checkbox"]:checked');
+            if (checkboxes.length === 0) return alert("กรุณาเลือกรูปภาพที่ต้องการลบอย่างน้อย 1 รูป");
+            
+            if (checkboxes.length === targetAlbumDataForDelete.images.length) {
+                // ถ้าเลือกรูปทั้งหมด ให้ลบทั้งอัลบั้มไปเลย
+                document.getElementById('deleteOptionsModal').style.display = 'none';
+                executeDeleteEntireAlbum();
+                return;
+            }
+
+            let indexesToRemove = Array.from(checkboxes).map(cb => parseInt(cb.value));
+            document.getElementById('deleteOptionsModal').style.display = 'none';
+
+            document.getElementById('loadingTitle').innerText = "กำลังลบรูปภาพ";
+            document.getElementById('loadingDesc').innerText = `กำลังลบรูปที่เลือก ${indexesToRemove.length} รูป...`;
+            loadingModal.style.display = 'flex';
+
+            // กรองรูปที่เหลือเก็บไว้
+            let remainingImages = targetAlbumDataForDelete.images.filter((_, idx) => !indexesToRemove.includes(idx));
+
+            try {
+                // ส่งคำสั่งอัปเดตรูปใหม่ในอัลบั้มเดิม
+                let response = await fetch(SCRIPT_URL, {
+                    method: 'POST',
+                    body: JSON.stringify({
+                        action: 'update_images',
+                        folderName: targetAlbumDataForDelete.folderName,
+                        optionType: targetAlbumDataForDelete.optionType,
+                        month: targetAlbumDataForDelete.month,
+                        images: remainingImages,
+                        password: "6004"
+                    })
+                });
+                let result = await response.json();
+                loadingModal.style.display = 'none';
+                if (result.status === "success") {
+                    alert("ลบรูปภาพที่เลือกสำเร็จ!");
+                    fetchAllAlbums();
+                } else {
+                    alert("ผิดพลาด: " + result.message);
+                }
+            } catch (err) {
+                loadingModal.style.display = 'none';
+                alert("เชื่อมต่อเซิร์ฟเวอร์ไม่สำเร็จ");
+            }
+        }
+
+        async function executeDeleteEntireAlbum() {
+            document.getElementById('deleteOptionsModal').style.display = 'none';
+            if (pendingAction) {
+                executePendingAction();
+            } else if (targetAlbumDataForDelete) {
+                pendingAction = { type: 'deleteAlbum', folderName: targetAlbumDataForDelete.folderName, optionType: targetAlbumDataForDelete.optionType };
+                executePendingAction();
             }
         }
 
@@ -1405,6 +1558,7 @@
                 }
             }
             pendingAction = null;
+            targetAlbumDataForDelete = null;
         }
 
         async function uploadAdditionalImages() {
