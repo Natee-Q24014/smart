@@ -649,7 +649,8 @@
         <!-- ส่วนหัว (Header) พร้อมป้ายสถานะซ้ายและเวลาขวา -->
         <div class="header-card">
             <div class="header-left" style="width: 100%;">
-                <img src="big.jpeg" alt="Smart Monitoring Box Mascot" class="character-img">
+                <!-- ใช้ภาพต้นฉบับ big.jpeg สำหรับแสดงบนหน้าเว็บคอมพิวเตอร์ให้เต็มและชัด -->
+                <img src="big.jpeg" alt="Smart Monitoring Box Mascot" class="character-img" style="object-fit: cover; object-position: center;">
                 <div class="header-info" style="flex: 1;">
                     <div class="company-tag">QTC Energy PCL. • Rayong</div>
                     <h1>Smart Monitoring Box</h1>
@@ -815,7 +816,6 @@
         let selectedCategory = '';
         let selectedFolderName = '';
 
-        // ตัวแปรสำหรับรองรับ PWA
         let deferredPrompt;
 
         window.addEventListener('beforeinstallprompt', (e) => {
