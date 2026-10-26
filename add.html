@@ -97,14 +97,19 @@
         }
         input:focus { border-color: #38bdf8; }
 
+        /* ปรับกรอบอัปโหลดให้เล็กลง กระชับ ไม่กินพื้นที่ */
         .file-upload-box {
             border: 2px dashed #4d5b73;
-            padding: 1rem;
+            padding: 0.6rem;
             border-radius: 10px;
             text-align: center;
             background-color: #262c38;
             cursor: pointer;
             transition: border-color 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.6rem;
         }
         .file-upload-box:hover { border-color: #38bdf8; }
         
@@ -113,13 +118,22 @@
         .file-label-text {
             color: #38bdf8;
             font-weight: 600;
-            font-size: 0.88rem;
+            font-size: 0.82rem;
             cursor: pointer;
-            display: inline-block;
-            padding: 0.4rem 0.8rem;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.3rem;
+            padding: 0.35rem 0.7rem;
             background-color: rgba(56, 189, 248, 0.1);
             border-radius: 6px;
             border: 1px solid rgba(56, 189, 248, 0.2);
+            white-space: nowrap;
+        }
+
+        .file-count-text {
+            font-size: 0.78rem;
+            color: #94a3b8;
+            white-space: nowrap;
         }
 
         /* พรีวิวรูปพร้อมปุ่มกากบาทลบรูป */
@@ -259,8 +273,8 @@
                 <div class="form-group">
                     <label>เลือกรูปภาพ:</label>
                     <div class="file-upload-box" onclick="document.getElementById('imageFiles').click()">
-                        <span class="file-label-text">📁 คลิกเลือกรูปภาพ (เลือกได้หลายรูป)</span>
-                        <p id="fileCountText" style="font-size: 0.78rem; color: #94a3b8; margin-top: 0.4rem;">ยังไม่ได้เลือกรูปภาพ</p>
+                        <span class="file-label-text">📁 เลือกรูปภาพ</span>
+                        <span id="fileCountText" class="file-count-text">ยังไม่ได้เลือกรูปภาพ</span>
                     </div>
                     <input type="file" id="imageFiles" multiple accept="image/*" onchange="previewImages(event)">
                     
@@ -290,9 +304,8 @@
         const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyASRCNjL0XhJBWJyNkSRsqiF17vCEXWSX00i59xIaKpY5tWBY448bl0t1P7Fyq0d1Xgg/exec";
         
         let selectedCategory = 'Smart';
-        let selectedFilesArray = []; // เก็บไฟล์ภาพทั้งหมดที่เลือกไว้
+        let selectedFilesArray = [];
 
-        // ตั้งค่าวันที่ปัจจุบันเป็นค่าเริ่มต้น
         document.getElementById('workDate').valueAsDate = new Date();
 
         function setCategory(cat) {
@@ -308,12 +321,10 @@
 
         function previewImages(event) {
             const files = Array.from(event.target.files);
-            // นำไฟล์ใหม่มารวมกับไฟล์เดิมที่เลือกไว้แล้ว
             selectedFilesArray = selectedFilesArray.concat(files);
             updatePreviewUI();
         }
 
-        // ฟังก์ชันลบรูปที่เลือกผิดออกทีละรูป
         function removeSelectedFile(index) {
             selectedFilesArray.splice(index, 1);
             updatePreviewUI();
@@ -329,7 +340,7 @@
                 return;
             }
 
-            fileCountText.innerText = `เลือกแล้ว ${selectedFilesArray.length} รูปภาพ`;
+            fileCountText.innerText = `เลือกแล้ว ${selectedFilesArray.length} รูป`;
 
             selectedFilesArray.forEach((file, index) => {
                 const reader = new FileReader();
@@ -354,7 +365,7 @@
                 return;
             }
 
-            const rawDate = document.getElementById('workDate').value; // YYYY-MM-DD
+            const rawDate = document.getElementById('workDate').value;
             const folderName = document.getElementById('folderName').value.trim();
 
             if (!rawDate || !folderName) {
@@ -362,7 +373,6 @@
                 return;
             }
 
-            // แปลงรูปแบบวันที่ให้ตรงกับระบบ (เช่น 2026-10-26)
             document.getElementById('modalTitle').innerText = "กำลังอัปโหลดข้อมูล...";
             document.getElementById('modalDesc').innerText = `กำลังประมวลผลและบีบอัดรูปภาพ (${selectedFilesArray.length} รูป)`;
             document.getElementById('spinnerBox').style.display = 'block';
