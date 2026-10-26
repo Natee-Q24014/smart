@@ -643,7 +643,8 @@
         function closeCustomAlert() {
             document.getElementById('customAlertModal').style.display = 'none';
             if(window.shouldReloadAfterAlert) {
-                location.reload();
+                fetchAlbums(false);
+                window.shouldReloadAfterAlert = false;
             }
         }
 
@@ -662,7 +663,7 @@
                         currentSelectedYear = history.state.year || null;
                         currentSelectedMonth = history.state.month || null;
                     }
-                    renderView();
+                    renderView(false);
                 } else if (isDataChanged) {
                     renderView(false);
                 }
@@ -1092,6 +1093,7 @@
                 if (result.status === "success") {
                     window.shouldReloadAfterAlert = true;
                     showAlert("สำเร็จ", "ดำเนินการเรียบร้อยแล้ว", false);
+                    fetchAlbums(false);
                 } else {
                     window.shouldReloadAfterAlert = false;
                     showAlert("รหัสผ่านผิด", result.message || "รหัสผ่านไม่ถูกต้อง", true);
