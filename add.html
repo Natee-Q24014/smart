@@ -4,6 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>เพิ่มอัลบั้มภาพถ่ายใหม่ - Smart Monitoring Box</title>
+    <!-- โหลดไลบรารี Exif-js สำหรับอ่านวันที่ถ่ายจริงจากรูปภาพ -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/exif-js/2.3.0/exif.js"></script>
     <style>
         * { box-sizing: border-box; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; margin: 0; padding: 0; }
         
@@ -143,7 +145,7 @@
             bottom: 0;
             left: 0;
             right: 0;
-            background: rgba(15, 23, 42, 0.85);
+            background: rgba(15, 23, 42, 0.88);
             color: #38bdf8;
             font-size: 0.65rem;
             font-weight: 700;
@@ -348,8 +350,18 @@
             }
         }
 
-        function formatDate(dateObj) {
-            if (!dateObj || isNaN(dateObj.getTime())) return "ไม่ทราบวันที่";
+        function parseExifDate(exifDateStr) {
+            if (!exifDateStr) return null;
+            // รูปแบบ Exif มักจะเป็น "YYYY:MM:DD HH:MM:SS"
+            const parts = exifDateStr.split(/[:\s]/);
+            if (parts.length >= 6) {
+                return new Date(parts[0], parts[1] - 1, parts[2], parts[3], parts[4], parts[5]);
+            }
+            return null;
+        }
+
+        function formatDateTime(dateObj) {
+            if (!dateObj || isNaN(dateObj.getTime())) return "ไม่ทราบเวลาถ่าย";
             const d = String(dateObj.getDate()).padStart(2, '0');
             const m = String(dateObj.getMonth() + 1).padStart(2, '0');
             const y = dateObj.getFullYear();
@@ -361,13 +373,29 @@
         function handleFileSelect(input) {
             if (!input.files || input.files.length === 0) return;
             
-            for (let file of input.files) {
-                // อ่านเวลาแก้ไขล่าสุดของรูปถ่าย
-                const photoDate = file.lastModified ? new Date(file.lastModified) : new Date();
-                file.formattedDate = formatDate(photoDate);
-                selectedFiles.push(file);
-            }
-            renderPreview();
+            const filesArray = Array.from(input.files);
+            let processedCount = 0;
+
+            filesArray.forEach(file => {
+                EXIF.getData(file, function() {
+                    const exifDateTime = EXIF.getTag(this, "DateTimeOriginal") || EXIF.getTag(this, "DateTime");
+                    let shootDate = parseExifDate(exifDateTime);
+
+                    // ถ้าไม่มีข้อมูล EXIF ให้ใช้เวลา Last Modified ของไฟล์แทน
+                    if (!shootDate || isNaN(shootDate.getTime())) {
+                        shootDate = file.lastModified ? new Date(file.lastModified) : new Date();
+                    }
+
+                    file.formattedDate = formatDateTime(shootDate);
+                    selectedFiles.push(file);
+                    processedCount++;
+
+                    if (processedCount === filesArray.length) {
+                        renderPreview();
+                    }
+                });
+            });
+
             input.value = '';
         }
 
@@ -383,7 +411,7 @@
             }
 
             grid.style.display = 'grid';
-            label.innerText = `เลือกแล้ว ${selectedFiles.length} รูป (แตะรูปเพื่อดูตัวอย่าง/วันที่)`;
+            label.innerText = `เลือกแล้ว ${selectedFiles.length} รูป (แตะรูปเพื่อดูตัวอย่าง/เวลาถ่ายจริง)`;
 
             selectedFiles.forEach((file, index) => {
                 const reader = new FileReader();
@@ -408,7 +436,7 @@
 
         function openModal(imgSrc, dateText) {
             document.getElementById('modalImg').src = imgSrc;
-            document.getElementById('modalDateInfo').innerText = `📅 วันที่ถ่ายรูป: ${dateText}`;
+            document.getElementById('modalDateInfo').innerText = `📅 เวลาที่ถ่ายจริง: ${dateText}`;
             document.getElementById('imageModal').style.display = 'flex';
         }
 
