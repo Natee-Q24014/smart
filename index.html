@@ -531,7 +531,7 @@
 
     <button id="scrollTopBtn" class="scroll-top-btn" onclick="scrollToTop()" title="เลื่อนขึ้นด้านบน">&#8593;</button>
 
-    <!-- Modal ดูรูปภาพ พร้อมปุ่มดาวน์โหลดรูปเดี่ยว -->
+    <!-- Modal ดูรูปภาพ พร้อมปุ่มดาวน์โหลดลงเครื่อง -->
     <div id="imageModal" class="modal" style="z-index: 999;">
         <div class="modal-top-bar">
             <button class="btn-modal-download" onclick="downloadCurrentModalImage()">⬇️ ดาวน์โหลดรูปนี้</button>
@@ -570,7 +570,7 @@
         </div>
     </div>
 
-    <!-- Modal แสดงสถานะกำลังบันทึก / ดาวน์โหลด ZIP -->
+    <!-- Modal แสดงสถานะกำลังดำเนินการ -->
     <div id="loadingModal" class="modal" style="z-index: 1010;">
         <div class="dialog-box">
             <div class="loading-spinner"></div>
@@ -893,15 +893,15 @@
             mainContainer.appendChild(grid);
         }
 
-        // ฟังก์ชันดาวน์โหลดรูปภาพทั้งหมดในอัลบั้มเป็นไฟล์ ZIP
+        // ฟังก์ชันดาวน์โหลดอัลบั้มเป็นไฟล์ ZIP ลงเครื่อง
         async function downloadAlbumZip(images, folderName) {
             if (!images || images.length === 0) {
                 showAlert("แจ้งเตือน", "ไม่มีรูปภาพในอัลบั้มนี้", false);
                 return;
             }
 
-            document.getElementById('loadingTitle').innerText = "กำลังเตรียมไฟล์ ZIP...";
-            document.getElementById('loadingDesc').innerText = `กำลังดาวน์โหลด ${images.length} รูปภาพ กรุณารอสักครู่`;
+            document.getElementById('loadingTitle').innerText = "กำลังดาวน์โหลดไฟล์ ZIP...";
+            document.getElementById('loadingDesc').innerText = `กำลังรวบรวมรูปภาพ (${images.length} รูป) ลงเครื่อง`;
             document.getElementById('loadingModal').style.display = 'flex';
 
             const zip = new JSZip();
@@ -910,7 +910,6 @@
             try {
                 for (let i = 0; i < images.length; i++) {
                     const imgUrl = images[i].url;
-                    // ดึงไฟล์ผ่าน Fetch (รองรับ CORS URL จาก Google Drive)
                     const response = await fetch(imgUrl);
                     const blob = await response.blob();
                     folder.file(`photo_${i + 1}.jpg`, blob);
@@ -920,26 +919,45 @@
                 const link = document.createElement('a');
                 link.href = URL.createObjectURL(content);
                 link.download = `SmartMonitoring_${folderName}.zip`;
+                document.body.appendChild(link);
                 link.click();
+                document.body.removeChild(link);
 
                 document.getElementById('loadingModal').style.display = 'none';
             } catch (error) {
                 document.getElementById('loadingModal').style.display = 'none';
-                showAlert("เกิดข้อผิดพลาด", "ไม่สามารถดาวน์โหลดไฟล์ ZIP ได้เนื่องจากข้อจำกัดความปลอดภัยของเบราว์เซอร์หรือเครือข่าย", true);
+                showAlert("เกิดข้อผิดพลาด", "ไม่สามารถดาวน์โหลดไฟล์ได้ กรุณาลองใหม่อีกครั้ง", true);
             }
         }
 
-        // ฟังก์ชันดาวน์โหลดรูปเดี่ยวขณะกดดูใน Modal
-        function downloadCurrentModalImage() {
+        // ฟังก์ชันดาวน์โหลดรูปภาพเดี่ยวลงเครื่องโดยตรง
+        async function downloadCurrentModalImage() {
             const currentImgUrl = currentAlbumImages[currentIndex];
-            const link = document.createElement('a');
-            link.href = currentImgUrl;
-            link.target = "_blank";
-            link.download = `Image_${currentIndex + 1}.jpg`;
-            // สำหรับบางเบราว์เซอร์มือถือ บังคับเปิดลิงก์ดาวน์โหลดตรงๆ
-            document.body.appendChild(link);
-            link.click();
-            document.body.removeChild(link);
+            
+            document.getElementById('loadingTitle').innerText = "กำลังดาวน์โหลดรูปภาพ...";
+            document.getElementById('loadingDesc').innerText = "กำลังบันทึกลงเครื่องของคุณ";
+            document.getElementById('loadingModal').style.display = 'flex';
+
+            try {
+                const response = await fetch(currentImgUrl);
+                const blob = await response.blob();
+                const link = document.createElement('a');
+                link.href = URL.createObjectURL(blob);
+                link.download = `SmartMonitoring_Image_${currentIndex + 1}.jpg`;
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+
+                document.getElementById('loadingModal').style.display = 'none';
+            } catch (error) {
+                document.getElementById('loadingModal').style.display = 'none';
+                // Fallback กรณีติดปัญหากลุ่ม Cross-origin ให้เปิดลิงก์ตรง
+                const fallbackLink = document.createElement('a');
+                fallbackLink.href = currentImgUrl;
+                fallbackLink.target = '_blank';
+                fallbackLink.download = `Image_${currentIndex + 1}.jpg`;
+                fallbackLink.click();
+            }
         }
 
         function promptDeleteAlbum(category, folderName) {
