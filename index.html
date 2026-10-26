@@ -77,7 +77,7 @@
         .header-info .creator-text { font-size: 0.82rem; color: #94a3b8; font-weight: 600; margin-bottom: 0.2rem; }
         .header-info p { font-size: 0.78rem; color: #9ca3af; }
 
-        /* ล็อคแถบควบคุมให้อยู่ติดด้านบนเมื่อเลื่อนหน้าจอ (กระชับขึ้นสำหรับมือถือ) */
+        /* ล็อคแถบควบคุมให้อยู่ติดด้านบนเมื่อเลื่อนหน้าจอ */
         .sticky-nav-area {
             position: sticky;
             top: 0;
@@ -141,7 +141,7 @@
         }
         .btn-add:hover { background-color: #115e59; transform: translateY(-1px); }
 
-        /* หน้าแรก: ตัวเลือกปี และ ค้นหา แบบกระชับ */
+        /* หน้าแรก: ตัวเลือกปี และ ค้นหา */
         .controls-wrapper {
             display: flex;
             gap: 0.6rem;
@@ -167,7 +167,7 @@
             flex: 0 0 25%;
         }
 
-        /* หน้าอัลบั้ม: จัดเรียงกระชับตามกรอบ (แถวแรก: วัน/เดือน ซ้าย, หมวด ขวา / แถวสอง: ค้นหา) */
+        /* หน้าอัลบั้ม: แสดงเฉพาะ หมวด และ ค้นหา */
         .stack-controls-wrapper {
             display: flex;
             flex-direction: column;
@@ -177,26 +177,6 @@
             padding: 0.6rem 0.8rem;
             border-radius: 12px;
             box-shadow: 0 4px 12px rgba(0,0,0,0.2);
-        }
-
-        .stack-row-top {
-            display: flex;
-            gap: 0.6rem;
-            align-items: center;
-        }
-
-        .stack-date-box {
-            display: flex;
-            gap: 0.5rem;
-            align-items: center;
-            flex: 1;
-        }
-
-        .stack-category-box {
-            display: flex;
-            gap: 0.5rem;
-            align-items: center;
-            flex: 1;
         }
 
         .stack-row-item {
@@ -230,8 +210,8 @@
         .search-input::placeholder { color: #64748b; font-weight: 400; }
 
         @media(max-width: 600px) {
-            .controls-wrapper, .stack-row-top { flex-direction: column; gap: 0.5rem; }
-            .select-container, .search-container, .stack-date-box, .stack-category-box { flex: 1 1 100%; width: 100%; }
+            .controls-wrapper { flex-direction: column; gap: 0.5rem; }
+            .select-container, .search-container { flex: 1 1 100%; width: 100%; }
         }
 
         .folder-grid {
@@ -547,23 +527,15 @@
                 </div>
             </div>
 
-            <!-- หน้าอัลบั้ม: จัดเรียงกระชับตามกรอบ (วัน/เดือน ซ้าย, หมวด ขวา / แถวสอง: ค้นหา) -->
+            <!-- หน้าอัลบั้ม: แสดงเฉพาะ หมวด และ ค้นหา -->
             <div id="stackControlsWrapper" class="stack-controls-wrapper" style="display: none;">
-                <div class="stack-row-top">
-                    <div class="stack-date-box">
-                        <span class="filter-label">วัน/เดือน:</span>
-                        <select id="albumDateSelect" class="filter-select" onchange="applyFilters()">
-                            <option value="all">ทุกวัน/เดือน</option>
-                        </select>
-                    </div>
-                    <div class="stack-category-box">
-                        <span class="filter-label">หมวด:</span>
-                        <select id="categorySelect" class="filter-select" onchange="applyFilters()">
-                            <option value="all">ทั้งหมด</option>
-                            <option value="Smart">Smart</option>
-                            <option value="Smartแถม">Smart (แถม)</option>
-                        </select>
-                    </div>
+                <div class="stack-row-item">
+                    <span class="filter-label">หมวด:</span>
+                    <select id="categorySelect" class="filter-select" onchange="applyFilters()">
+                        <option value="all">ทั้งหมด</option>
+                        <option value="Smart">Smart</option>
+                        <option value="Smartแถม">Smart (แถม)</option>
+                    </select>
                 </div>
                 <div class="stack-row-item">
                     <input type="text" id="searchCombinedInput" class="search-input" placeholder="ค้นหา..." oninput="applyFilters()">
@@ -647,7 +619,6 @@
         const mainControls = document.getElementById('mainControls');
         const stackControlsWrapper = document.getElementById('stackControlsWrapper');
         const primarySelect = document.getElementById('primarySelect');
-        const albumDateSelect = document.getElementById('albumDateSelect');
         const searchInput = document.getElementById('searchInput');
         const searchCombinedInput = document.getElementById('searchCombinedInput');
         const categorySelect = document.getElementById('categorySelect');
@@ -702,11 +673,7 @@
                         if (currentSelectedYear !== 'all') {
                             mainControls.style.display = 'none';
                             stackControlsWrapper.style.display = 'flex';
-                            updateAlbumDateDropdown(currentSelectedYear);
                         }
-                    }
-                    if (history.state.albumDate) {
-                        albumDateSelect.value = history.state.albumDate;
                     }
                 }
                 
@@ -734,10 +701,6 @@
                 } else {
                     mainControls.style.display = 'none';
                     stackControlsWrapper.style.display = 'flex';
-                    updateAlbumDateDropdown(currentSelectedYear);
-                    if (event.state.albumDate) {
-                        albumDateSelect.value = event.state.albumDate;
-                    }
                 }
             } else {
                 goBackToFolders(false);
@@ -761,30 +724,12 @@
             });
         }
 
-        function updateAlbumDateDropdown(year) {
-            const datesSet = new Set();
-            allAlbumsData.forEach(item => {
-                if (item.month && item.month.startsWith(year) && item.folderName) {
-                    let parts = item.folderName.split('-');
-                    let shortDate = parts.length >= 3 ? `${parts[1]}-${parts[2]}` : item.folderName;
-                    datesSet.add({ full: item.folderName, display: shortDate });
-                }
-            });
-
-            const sortedDates = Array.from(datesSet).sort((a, b) => b.full.localeCompare(a.full));
-            
-            albumDateSelect.innerHTML = '<option value="all">ทุกวัน/เดือน</option>';
-            sortedDates.forEach(d => {
-                albumDateSelect.innerHTML += `<option value="${d.full}">${d.display}</option>`;
-            });
-        }
-
         function handlePrimaryChange(val) {
             if (val === 'all') {
                 currentSelectedYear = 'all';
                 mainControls.style.display = 'flex';
                 stackControlsWrapper.style.display = 'none';
-                history.pushState({ year: 'all', albumDate: 'all' }, "", window.location.pathname);
+                history.pushState({ year: 'all' }, "", window.location.pathname);
                 searchInput.value = '';
                 searchCombinedInput.value = '';
                 categorySelect.value = 'all';
@@ -793,9 +738,7 @@
                 currentSelectedYear = val;
                 mainControls.style.display = 'none';
                 stackControlsWrapper.style.display = 'flex';
-                updateAlbumDateDropdown(val);
-                albumDateSelect.value = 'all';
-                history.pushState({ year: val, albumDate: 'all' }, "", `#year-${val}`);
+                history.pushState({ year: val }, "", `#year-${val}`);
             }
             renderView(false);
         }
@@ -809,16 +752,11 @@
 
             const searchKeyword = (searchInput.value || searchCombinedInput.value).trim().toLowerCase();
             const selectedCategory = categorySelect.value;
-            const selectedAlbumDate = albumDateSelect.value;
 
             let filteredAlbums = allAlbumsData;
             
             if (currentSelectedYear !== 'all') {
                 filteredAlbums = filteredAlbums.filter(item => item.month && item.month.startsWith(currentSelectedYear));
-            }
-
-            if (selectedAlbumDate !== 'all') {
-                filteredAlbums = filteredAlbums.filter(item => item.folderName === selectedAlbumDate);
             }
 
             if (selectedCategory !== 'all') {
@@ -890,9 +828,7 @@
             primarySelect.value = year;
             mainControls.style.display = 'none';
             stackControlsWrapper.style.display = 'flex';
-            updateAlbumDateDropdown(year);
-            albumDateSelect.value = 'all';
-            history.pushState({ year: year, albumDate: 'all' }, "", `#year-${year}`);
+            history.pushState({ year: year }, "", `#year-${year}`);
             renderView(false);
         }
 
@@ -902,7 +838,7 @@
             primarySelect.value = 'all';
             mainControls.style.display = 'flex';
             stackControlsWrapper.style.display = 'none';
-            history.pushState({ year: 'all', albumDate: 'all' }, "", window.location.pathname);
+            history.pushState({ year: 'all' }, "", window.location.pathname);
             searchInput.value = '';
             searchCombinedInput.value = '';
             categorySelect.value = 'all';
