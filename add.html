@@ -3,334 +3,169 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>เพิ่มอัลบั้มใหม่ - Smart Monitoring Box</title>
-    
-    <!-- โหลดไลบรารี JSZip สำหรับรองรับการบีบอัด -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+    <title>เพิ่มอัลบั้มภาพถ่ายใหม่ - Smart Monitoring Box</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/exif-js/2.3.0/exif.js"></script>
     <style>
         * { box-sizing: border-box; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; margin: 0; padding: 0; }
+        body { background-color: #262c38; color: #e2e8f0; min-height: 100vh; display: flex; justify-content: center; align-items: center; padding: 1rem; }
+        .form-card { background-color: #323b4d; border: 1px solid #434e63; padding: 1.5rem; border-radius: 16px; width: 100%; max-width: 550px; box-shadow: 0 12px 30px rgba(0,0,0,0.4); }
+        .form-title { font-size: 1.2rem; color: #38bdf8; font-weight: 700; margin-bottom: 1.2rem; border-left: 4px solid #38bdf8; padding-left: 0.6rem; }
+        .form-group { margin-bottom: 1rem; }
+        .form-label { display: block; font-size: 0.85rem; color: #94a3b8; font-weight: 600; margin-bottom: 0.4rem; }
+        .option-group { display: grid; grid-template-columns: 1fr 1fr; gap: 0.6rem; }
+        .option-btn { background-color: #262c38; color: #94a3b8; border: 1px solid #4d5b73; padding: 0.7rem; border-radius: 10px; font-size: 0.9rem; font-weight: 600; cursor: pointer; text-align: center; }
+        .option-btn.active { background-color: #0369a1; color: #fff; border-color: #38bdf8; }
+        .form-input { width: 100%; background-color: #262c38; color: #f8fafc; border: 1px solid #4d5b73; padding: 0.7rem 0.9rem; border-radius: 10px; font-size: 0.95rem; font-weight: 600; outline: none; }
+        .file-upload-box { border: 2px dashed #4d5b73; padding: 1rem; border-radius: 10px; text-align: center; background-color: #262c38; cursor: pointer; }
+        .preview-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(110px, 1fr)); gap: 0.6rem; margin-top: 0.8rem; max-height: 230px; overflow-y: auto; }
+        .preview-item { position: relative; height: 100px; border-radius: 8px; overflow: hidden; border: 1px solid #4d5b73; background: #1e232d; }
+        .preview-item img { width: 100%; height: 100%; object-fit: cover; cursor: pointer; transition: transform 0.2s; }
+        .preview-item img:hover { transform: scale(1.05); }
+        .img-date-tag { position: absolute; bottom: 0; left: 0; right: 0; background: rgba(15, 23, 42, 0.88); color: #38bdf8; font-size: 0.65rem; font-weight: 700; padding: 2px 4px; text-align: center; pointer-events: none; }
+        .btn-remove-img { position: absolute; top: 3px; right: 3px; background: rgba(239, 68, 68, 0.9); color: white; border: none; border-radius: 50%; width: 22px; height: 22px; font-size: 12px; cursor: pointer; display: flex; align-items: center; justify-content: center; z-index: 10; }
         
-        body { 
-            background-color: #262c38; 
-            background-image: 
-                radial-gradient(at 10% 20%, rgba(14, 165, 233, 0.1) 0px, transparent 40%),
-                radial-gradient(at 90% 80%, rgba(56, 189, 248, 0.07) 0px, transparent 40%),
-                linear-gradient(to right, rgba(255, 255, 255, 0.035) 1px, transparent 1px),
-                linear-gradient(to bottom, rgba(255, 255, 255, 0.035) 1px, transparent 1px);
-            background-size: 100% 100%, 100% 100%, 40px 40px, 40px 40px;
-            color: #e2e8f0; 
-            min-height: 100vh; 
-            padding: 1rem; 
-        }
+        /* Modal สำหรับกดดูรูปขนาดใหญ่ */
+        .image-modal { display: none; position: fixed; z-index: 2000; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(0, 0, 0, 0.85); justify-content: center; align-items: center; padding: 1rem; }
+        .image-modal img { max-width: 90%; max-height: 90%; border-radius: 8px; border: 2px solid #434e63; object-fit: contain; }
+        .image-modal-close { position: absolute; top: 20px; right: 30px; color: #fff; font-size: 2rem; font-weight: bold; cursor: pointer; }
+
+        .form-actions { display: flex; gap: 0.8rem; margin-top: 1.5rem; }
+        .btn-submit, .btn-back { flex: 1; padding: 0.75rem; border-radius: 10px; font-size: 0.95rem; font-weight: 700; cursor: pointer; border: none; text-decoration: none; display: flex; align-items: center; justify-content: center; }
+        .btn-submit { background-color: #047857; color: #fff; }
+        .btn-back { background-color: #3e495e; color: #cbd5e1; }
         
-        .container { max-width: 800px; margin: 0 auto; }
+        .loading-modal { display: none; position: fixed; z-index: 1000; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(18, 22, 30, 0.85); justify-content: center; align-items: center; flex-direction: column; }
+        .loading-spinner { width: 45px; height: 45px; border: 4px solid #434e63; border-top: 4px solid #38bdf8; border-radius: 50%; animation: spin 1s linear infinite; margin-bottom: 1rem; }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
 
-        .card {
-            background-color: #323b4d;
-            border: 1px solid #434e63;
-            padding: 1.5rem;
-            border-radius: 16px;
-            box-shadow: 0 10px 25px rgba(0,0,0,0.3);
-            margin-bottom: 1.5rem;
-        }
-
-        .header-title {
-            font-size: 1.3rem;
-            color: #38bdf8;
-            font-weight: 700;
-            margin-bottom: 0.3rem;
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
-        }
-
-        .header-desc {
-            font-size: 0.82rem;
-            color: #94a3b8;
-            margin-bottom: 1.5rem;
-        }
-
-        .form-group {
-            margin-bottom: 1.2rem;
-        }
-
-        .form-label {
-            display: block;
-            font-size: 0.88rem;
-            color: #cbd5e1;
-            font-weight: 600;
-            margin-bottom: 0.4rem;
-        }
-
-        .form-input, .form-select {
-            width: 100%;
-            background-color: #262c38;
-            color: #f8fafc;
-            border: 1px solid #4d5b73;
-            padding: 0.7rem 1rem;
-            border-radius: 10px;
-            font-size: 0.95rem;
-            outline: none;
-            transition: border-color 0.2s;
-        }
-        .form-input:focus, .form-select:focus { border-color: #38bdf8; }
-
-        .preview-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(90px, 1fr));
-            gap: 0.6rem;
-            margin-top: 0.8rem;
-            max-height: 280px;
-            overflow-y: auto;
-            padding: 0.2rem;
-        }
-
-        .preview-item {
-            position: relative;
-            height: 90px;
-            border-radius: 8px;
-            overflow: hidden;
-            border: 1px solid #4d5b73;
-            background: #262c38;
-        }
-
-        .preview-item img {
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-        }
-
-        .btn-group {
-            display: flex;
-            gap: 0.8rem;
-            margin-top: 1.5rem;
-        }
-
-        .btn {
-            flex: 1;
-            padding: 0.8rem;
-            border-radius: 10px;
-            font-size: 0.95rem;
-            font-weight: 600;
-            cursor: pointer;
-            border: none;
-            text-align: center;
-            text-decoration: none;
-            transition: all 0.2s;
-        }
-
-        .btn-primary { background-color: #0284c7; color: #fff; box-shadow: 0 4px 12px rgba(2, 132, 199, 0.3); }
-        .btn-primary:hover { background-color: #0369a1; }
-        .btn-secondary { background-color: #3e495e; color: #cbd5e1; border: 1px solid #4d5b73; }
-        .btn-secondary:hover { background-color: #4d5b73; color: #fff; }
-
-        /* Modal แจ้งเตือนแบบอัตโนมัติ (หายเองใน 2 วินาที) */
-        .modal {
-            display: none;
-            position: fixed;
-            z-index: 1020;
-            top: 0; left: 0; width: 100%; height: 100%;
-            background-color: rgba(18, 22, 30, 0.95);
-            justify-content: center;
-            align-items: center;
-            flex-direction: column;
-        }
-
-        .dialog-box {
-            background-color: #323b4d;
-            border: 1px solid #434e63;
-            padding: 1.5rem;
-            border-radius: 14px;
-            width: 90%;
-            max-width: 300px;
-            text-align: center;
-            box-shadow: 0 12px 30px rgba(0,0,0,0.4);
-        }
-
-        .loading-spinner {
-            width: 38px;
-            height: 38px;
-            border: 3px solid #434e63;
-            border-top: 3px solid #38bdf8;
-            border-radius: 50%;
-            animation: spin 1s linear infinite;
-            margin: 0 auto 0.8rem auto;
-        }
-
-        @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
-        }
-
-        .footer { text-align: center; margin-top: 2rem; font-size: 0.75rem; color: #6b7280; font-weight: 500; }
+        /* Custom Notification Toast ที่เข้ากับธีม */
+        .custom-toast { display: none; position: fixed; z-index: 3000; top: 20px; left: 50%; transform: translateX(-50%); background-color: #323b4d; border: 1px solid #38bdf8; color: #f8fafc; padding: 0.9rem 1.5rem; border-radius: 12px; box-shadow: 0 10px 25px rgba(0,0,0,0.5); font-weight: 600; font-size: 0.95rem; align-items: center; gap: 0.6rem; animation: slideDown 0.3s ease-out; }
+        @keyframes slideDown { 0% { transform: translate(-50%, -20px); opacity: 0; } 100% { transform: translate(-50%, 0); opacity: 1; } }
     </style>
 </head>
 <body>
-
-    <div class="container">
-        <div class="card">
-            <div class="header-title">➕ เพิ่มอัลบั้มภาพใหม่</div>
-            <div class="header-desc">อัปโหลดรูปภาพ ระบบจะดึงวันที่จากรูปภาพมาตั้งเป็นหัวข้อให้อัตโนมัติ (สามารถพิมพ์แก้หรือพิมพ์เพิ่มเติมได้)</div>
-
-            <form id="uploadForm" onsubmit="handleUpload(event)">
-                <div class="form-group">
-                    <label class="form-label">📁 หัวข้ออัลบั้มงาน (แก้ไขหรือพิมพ์เพิ่มได้)</label>
-                    <input type="text" id="folderNameInput" class="form-input" placeholder="เลือกรูปภาพก่อน..." required style="color: #38bdf8; font-weight: 700;">
+    <div class="form-card">
+        <div class="form-title"><span>➕ เพิ่มอัลบั้มภาพถ่ายใหม่</span></div>
+        <form id="uploadForm" onsubmit="handleFormSubmit(event)">
+            <div class="form-group">
+                <label class="form-label">หมวดหมู่ผลงาน:</label>
+                <div class="option-group">
+                    <div id="btnSmart" class="option-btn active" onclick="setCategory('Smart')">Smart</div>
+                    <div id="btnFree" class="option-btn" onclick="setCategory('Smartแถม')">Smart (แถม)</div>
                 </div>
-
-                <div class="form-group">
-                    <label class="form-label">⚡ เลือกหมวดหมู่ระบบ</label>
-                    <select id="optionTypeSelect" class="form-select">
-                        <option value="Smart">Smart</option>
-                        <option value="Smartแถม">Smart (แถม)</option>
-                    </select>
+            </div>
+            <div class="form-group">
+                <label class="form-label">วันที่ปฏิบัติงาน:</label>
+                <input type="text" id="dateInput" class="form-input" required>
+            </div>
+            <div class="form-group">
+                <label class="form-label">ชื่อหัวข้ออัลบั้ม:</label>
+                <input type="text" id="folderNameInput" class="form-input" placeholder="ระบุชื่อหัวข้ออัลบั้ม (เช่น [รหัสซิม] [TR] [S/N])..." required>
+            </div>
+            <div class="form-group">
+                <label class="form-label">เลือกรูปภาพ:</label>
+                <div class="file-upload-box" onclick="document.getElementById('fileInput').click()">
+                    <span style="font-size: 1.2rem;">📁</span>
+                    <span id="fileCountLabel" style="font-size: 0.85rem; color: #38bdf8; font-weight: 600; display: block; margin-top: 0.2rem;">คลิกเลือกรูปภาพประกอบอัลบั้ม</span>
                 </div>
-
-                <div class="form-group">
-                    <label class="form-label">📷 เลือกรูปภาพปฏิบัติงาน (หลายรูปได้)</label>
-                    <input type="file" id="imagesInput" multiple accept="image/*" class="form-input" style="padding: 0.5rem;" onchange="previewAndExtractDate(event)" required>
-                    <div id="previewGrid" class="preview-grid"></div>
-                </div>
-
-                <div class="btn-group">
-                    <a href="index.html" class="btn btn-secondary">⬅️ กลับหน้าหลัก</a>
-                    <button type="submit" class="btn btn-primary">🚀 บันทึกและอัปโหลด</button>
-                </div>
-            </form>
-        </div>
-
-        <div class="footer">
-            ระบบบันทึกข้อมูลอัตโนมัติ • QTC Energy PCL.
-        </div>
+                <input type="file" id="fileInput" multiple accept="image/*" style="display: none;" onchange="handleFileSelect(this)">
+                <div id="previewGrid" class="preview-grid" style="display: none;"></div>
+            </div>
+            <div class="form-actions">
+                <a href="index.html" class="btn-back">⬅️ กลับ</a>
+                <button type="submit" class="btn-submit">💾 บันทึก</button>
+            </div>
+        </form>
     </div>
 
-    <!-- Modal สถานะการทำงาน -->
-    <div id="loadingModal" class="modal">
-        <div class="dialog-box">
-            <div class="loading-spinner"></div>
-            <h3 id="loadingTitle" style="color: #38bdf8; margin-bottom: 0.2rem; font-size: 1rem;">กำลังอัปโหลด</h3>
-            <p id="loadingDesc" style="font-size: 0.78rem; color: #94a3b8;">โปรดรอสักครู่...</p>
-        </div>
+    <!-- Modal สำหรับแสดงรูปขนาดใหญ่เมื่อคลิกพรีวิว -->
+    <div id="imageModal" class="image-modal" onclick="closeImageModal()">
+        <span class="image-modal-close">&times;</span>
+        <img id="modalImageSrc" src="">
     </div>
 
-    <!-- Toast แจ้งเตือนแบบอัตโนมัติ (หายเองใน 2 วินาที) -->
-    <div id="customToastModal" class="modal" style="z-index: 1020;">
-        <div class="dialog-box" style="max-width: 280px; padding: 1.2rem;">
-            <h3 id="toastTitle" style="color: #38bdf8; margin-bottom: 0.2rem; font-size: 1rem;">แจ้งเตือน</h3>
-            <p id="toastDesc" style="font-size: 0.8rem; color: #94a3b8; line-height: 1.4; margin-bottom: 0;">ดำเนินการเรียบร้อย</p>
-        </div>
+    <!-- กล่องแจ้งเตือนสำเร็จสไตล์ธีมมืด -->
+    <div id="customToast" class="custom-toast">
+        <span style="color: #34d399; font-size: 1.2rem;">✅</span>
+        <span id="toastMessage">บันทึกสำเร็จ! กำลังกลับหน้าหลัก...</span>
+    </div>
+
+    <div id="loadingModal" class="loading-modal">
+        <div class="loading-spinner"></div>
+        <h3 id="loadingTitle" style="color: #38bdf8; margin-bottom: 0.3rem; font-size: 1.1rem;">กำลังประมวลผล</h3>
+        <p id="loadingDesc" style="font-size: 0.8rem; color: #94a3b8;">โปรดรอสักครู่...</p>
     </div>
 
     <script>
-        const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzM6LAjut8SRHhbgaXpHwrCIm0aeNo8fVV8v3K8JsC1af0xmA807cciiyoe_kn5wsYeyg/exec";
+        const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyASRCNjL0XhJBWJyNkSRsqiF17vCEXWSX00i59xIaKpY5tWBY448bl0t1P7Fyq0d1Xgg/exec";
+        
+        let selectedCategory = "Smart";
+        let selectedFiles = [];
+        let rawUserFolderName = ""; 
 
-        let extractedMonthStr = "";
+        const today = new Date();
+        document.getElementById('dateInput').value = `${String(today.getDate()).padStart(2, '0')}/${String(today.getMonth() + 1).padStart(2, '0')}/${today.getFullYear()}`;
 
-        function showToast(title, desc, isError = false) {
-            const toastModal = document.getElementById('customToastModal');
-            const titleEl = document.getElementById('toastTitle');
-            const descEl = document.getElementById('toastDesc');
-
-            titleEl.innerText = title;
-            titleEl.style.color = isError ? '#fca5a5' : '#38bdf8';
-            descEl.innerText = desc;
-
-            toastModal.style.display = 'flex';
-            setTimeout(() => {
-                toastModal.style.display = 'none';
-            }, 2000);
+        function setCategory(cat) {
+            selectedCategory = cat;
+            document.getElementById('btnSmart').className = cat === 'Smart' ? 'option-btn active' : 'option-btn';
+            document.getElementById('btnFree').className = cat === 'Smartแถม' ? 'option-btn active' : 'option-btn';
         }
 
-        function previewAndExtractDate(event) {
-            const files = event.target.files;
-            const previewGrid = document.getElementById('previewGrid');
-            const folderNameInput = document.getElementById('folderNameInput');
-            previewGrid.innerHTML = '';
+        async function handleFileSelect(input) {
+            if (!input.files || input.files.length === 0) return;
+            const filesArray = Array.from(input.files);
 
-            if (!files || files.length === 0) {
-                folderNameInput.value = '';
-                return;
-            }
-
-            // ดึงวันที่จากรูปแรกสุดที่เลือก (File Last Modified Date)
-            let fileDate = new Date(files[0].lastModified);
-            if (isNaN(fileDate.getTime())) {
-                fileDate = new Date(); // ถ้าดึงไม่ได้ใช้วันที่ปัจจุบัน
-            }
-
-            let day = String(fileDate.getDate()).padStart(2, '0');
-            let month = String(fileDate.getMonth() + 1).padStart(2, '0');
-            let year = fileDate.getFullYear();
-
-            // รูปแบบเดือนสำหรับบันทึกระบบ (DD/MM/YYYY)
-            extractedMonthStr = `${day}/${month}/${year}`;
-            
-            // ตั้งชื่อหัวข้ออัตโนมัติ และปล่อยให้ผู้ใช้พิมพ์ต่อได้
-            folderNameInput.value = `งานปฏิบัติการ วันที่ ${extractedMonthStr} `;
-
-            // แสดงตัวอย่างรูปภาพ
-            for (let file of files) {
-                let reader = new FileReader();
-                reader.onload = function(e) {
-                    let div = document.createElement('div');
-                    div.className = 'preview-item';
-                    div.innerHTML = `<img src="${e.target.result}">`;
-                    previewGrid.appendChild(div);
-                }
-                reader.readAsDataURL(file);
-            }
-        }
-
-        async function handleUpload(event) {
-            event.preventDefault();
-            const files = document.getElementById('imagesInput').files;
-            const folderName = document.getElementById('folderNameInput').value;
-            const optionType = document.getElementById('optionTypeSelect').value;
-
-            if (files.length === 0) {
-                showToast("แจ้งเตือน", "กรุณาเลือกรูปภาพอย่างน้อย 1 รูป", true);
-                return;
-            }
-
-            const loadingModal = document.getElementById('loadingModal');
-            document.getElementById('loadingTitle').innerText = "กำลังอัปโหลดรูปภาพ";
-            document.getElementById('loadingDesc').innerText = `กำลังประมวลผล ${files.length} รูป...`;
-            loadingModal.style.display = 'flex';
-
-            try {
-                let base64Images = [];
-                for (let file of files) {
-                    let b64 = await fileToBase64(file, 1200);
-                    base64Images.push(b64);
-                }
-
-                let response = await fetch(SCRIPT_URL, {
-                    method: 'POST',
-                    body: JSON.stringify({
-                        action: 'upload',
-                        folderName: folderName,
-                        optionType: optionType,
-                        month: extractedMonthStr,
-                        images: base64Images
-                    })
+            for (let file of filesArray) {
+                await new Promise((resolve) => {
+                    EXIF.getData(file, function() {
+                        const exifDateTime = EXIF.getTag(this, "DateTimeOriginal") || EXIF.getTag(this, "DateTime");
+                        let shootDate = exifDateTime ? parseExifDate(exifDateTime) : (file.lastModified ? new Date(file.lastModified) : new Date());
+                        file.formattedDate = formatDateTime(shootDate);
+                        file.dateOnly = formatOnlyDate(shootDate);
+                        resolve();
+                    });
                 });
+                selectedFiles.push(file);
+            }
 
-                let result = await response.json();
-                loadingModal.style.display = 'none';
+            if (selectedFiles.length > 0 && selectedFiles[0].dateOnly) {
+                document.getElementById('dateInput').value = selectedFiles[0].dateOnly;
+            }
 
-                if (result.status === "success") {
-                    showToast("สำเร็จ", "บันทึกอัลบั้มเรียบร้อยแล้ว!");
-                    setTimeout(() => {
-                        window.location.href = "index.html";
-                    }, 1500);
-                } else {
-                    showToast("ผิดพลาด", result.message, true);
-                }
-            } catch (err) {
-                loadingModal.style.display = 'none';
-                showToast("ผิดพลาด", "ไม่สามารถเชื่อมต่อเซิร์ฟเวอร์ได้", true);
+            updateFolderNameWithDate();
+            renderPreview();
+            input.value = '';
+        }
+
+        function updateFolderNameWithDate() {
+            const currentDate = document.getElementById('dateInput').value;
+            const inputField = document.getElementById('folderNameInput');
+            
+            let currentVal = inputField.value.trim();
+            if (currentVal.startsWith("[")) {
+                let parts = currentVal.split(" ");
+                parts.shift(); 
+                rawUserFolderName = parts.join(" ");
+            } else if (rawUserFolderName === "") {
+                rawUserFolderName = currentVal;
+            }
+
+            if (currentDate) {
+                inputField.value = `[${currentDate}] ${rawUserFolderName}`.trim();
             }
         }
+
+        document.getElementById('folderNameInput').addEventListener('input', function(e) {
+            let val = e.target.value;
+            if (!val.startsWith("[")) {
+                rawUserFolderName = val;
+            }
+        });
+
+        document.getElementById('dateInput').addEventListener('input', function() {
+            updateFolderNameWithDate();
+        });
 
         function fileToBase64(file, maxDim) {
             return new Promise((resolve) => {
@@ -350,6 +185,101 @@
                     };
                 };
             });
+        }
+
+        function parseExifDate(str) {
+            let p = str.split(/[:\s]/);
+            return p.length >= 6 ? new Date(p[0], p[1] - 1, p[2], p[3], p[4], p[5]) : null;
+        }
+        function formatDateTime(d) {
+            return isNaN(d?.getTime()) ? "ไม่ทราบเวลา" : `${String(d.getDate()).padStart(2, '0')}/${String(d.getMonth() + 1).padStart(2, '0')}/${d.getFullYear()} ${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}`;
+        }
+        function formatOnlyDate(d) {
+            return isNaN(d?.getTime()) ? null : `${String(d.getDate()).padStart(2, '0')}/${String(d.getMonth() + 1).padStart(2, '0')}/${d.getFullYear()}`;
+        }
+
+        function renderPreview() {
+            const grid = document.getElementById('previewGrid');
+            grid.innerHTML = '';
+            if (selectedFiles.length === 0) { grid.style.display = 'none'; return; }
+            grid.style.display = 'grid';
+            selectedFiles.forEach((file, index) => {
+                const reader = new FileReader();
+                reader.onload = e => {
+                    const item = document.createElement('div');
+                    item.className = 'preview-item';
+                    item.innerHTML = `<img src="${e.target.result}" onclick="openImageModal('${e.target.result}')"><div class="img-date-tag">📅 ${file.formattedDate}</div><button type="button" class="btn-remove-img" onclick="removeFile(event, ${index})">&times;</button>`;
+                    grid.appendChild(item);
+                };
+                reader.readAsDataURL(file);
+            });
+        }
+
+        function removeFile(event, index) {
+            event.stopPropagation();
+            selectedFiles.splice(index, 1);
+            if (index === 0 && selectedFiles.length > 0 && selectedFiles[0].dateOnly) {
+                document.getElementById('dateInput').value = selectedFiles[0].dateOnly;
+                updateFolderNameWithDate();
+            }
+            renderPreview();
+        }
+
+        function openImageModal(src) {
+            document.getElementById('modalImageSrc').src = src;
+            document.getElementById('imageModal').style.display = 'flex';
+        }
+
+        function closeImageModal() {
+            document.getElementById('imageModal').style.display = 'none';
+        }
+
+        function showToast(message, isError = false) {
+            const toast = document.getElementById('customToast');
+            document.getElementById('toastMessage').innerText = message;
+            toast.style.borderColor = isError ? '#f87171' : '#38bdf8';
+            toast.style.display = 'flex';
+        }
+
+        async function handleFormSubmit(e) {
+            e.preventDefault();
+            if (selectedFiles.length === 0) return alert("กรุณาเลือกรูปภาพ");
+            
+            document.getElementById('loadingTitle').innerText = "กำลังบันทึกข้อมูล";
+            document.getElementById('loadingDesc').innerText = "กำลังอัปโหลดรูปภาพเข้าอัลบั้ม...";
+            document.getElementById('loadingModal').style.display = 'flex';
+
+            try {
+                let base64Images = [];
+                for (let file of selectedFiles) {
+                    base64Images.push(await fileToBase64(file, 1200));
+                }
+
+                const response = await fetch(SCRIPT_URL, {
+                    method: 'POST',
+                    body: JSON.stringify({
+                        action: 'create',
+                        optionType: selectedCategory,
+                        month: document.getElementById('dateInput').value,
+                        folderName: document.getElementById('folderNameInput').value.trim(),
+                        images: base64Images
+                    })
+                });
+                const result = await response.json();
+                document.getElementById('loadingModal').style.display = 'none';
+
+                if (result.status === "success") {
+                    showToast("บันทึกสำเร็จ! กำลังกลับหน้าหลัก...");
+                    setTimeout(() => {
+                        window.location.href = "index.html";
+                    }, 2000); // รอ 2 วินาทีแล้วเด้งกลับหน้าหลักทันที
+                } else {
+                    showToast("ผิดพลาด: " + result.message, true);
+                }
+            } catch (err) {
+                document.getElementById('loadingModal').style.display = 'none';
+                showToast("เชื่อมต่อเซิร์ฟเวอร์ไม่สำเร็จ", true);
+            }
         }
     </script>
 </body>
