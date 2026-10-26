@@ -422,14 +422,12 @@
         .album-images-container {
             padding: 0.6rem;
             display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(75px, 1fr));
+            grid-template-columns: repeat(4, 1fr);
             gap: 0.5rem;
-            max-height: 220px;
-            overflow-y: auto;
             background-color: #323b4d;
         }
         @media(min-width: 768px) {
-            .album-images-container { padding: 0.8rem; grid-template-columns: repeat(auto-fill, minmax(80px, 1fr)); gap: 0.6rem; max-height: 240px; }
+            .album-images-container { padding: 0.8rem; gap: 0.6rem; }
         }
 
         .thumb-img {
@@ -443,6 +441,25 @@
         }
         @media(min-width: 768px) { .thumb-img { height: 80px; border-radius: 8px; } }
         .thumb-img:hover { transform: scale(1.03); border-color: #38bdf8; }
+
+        .more-images-box {
+            width: 100%;
+            height: 75px;
+            background-color: #262c38;
+            border: 2px dashed #4d5b73;
+            border-radius: 6px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            cursor: pointer;
+            transition: all 0.2s;
+            color: #38bdf8;
+            font-weight: 700;
+            font-size: 0.85rem;
+        }
+        @media(min-width: 768px) { .more-images-box { height: 80px; border-radius: 8px; } }
+        .more-images-box:hover { background-color: #384357; border-color: #38bdf8; }
 
         .album-action-bar {
             padding: 0.6rem 0.8rem;
@@ -649,7 +666,6 @@
         <!-- ส่วนหัว (Header) พร้อมป้ายสถานะซ้ายและเวลาขวา -->
         <div class="header-card">
             <div class="header-left" style="width: 100%;">
-                <!-- ใช้ภาพต้นฉบับ big.jpeg สำหรับแสดงบนหน้าเว็บคอมพิวเตอร์ให้เต็มและชัด -->
                 <img src="big.jpeg" alt="Smart Monitoring Box Mascot" class="character-img" style="object-fit: cover; object-position: center;">
                 <div class="header-info" style="flex: 1;">
                     <div class="company-tag">QTC Energy PCL. • Rayong</div>
@@ -1153,9 +1169,15 @@
                 if (item.images && item.images.length > 0) {
                     imagesHtml = `<div class="album-images-container">`;
                     const rawUrls = item.images.map(img => img.url);
-                    rawUrls.forEach((imgSrc, imgIndex) => {
-                        imagesHtml += `<img src="${imgSrc}" class="thumb-img" onclick='openModal(${JSON.stringify(rawUrls)}, ${imgIndex})' alt="Work Photo">`;
-                    });
+                    
+                    const displayCount = Math.min(rawUrls.length, 3);
+                    for (let i = 0; i < displayCount; i++) {
+                        imagesHtml += `<img src="${rawUrls[i]}" class="thumb-img" onclick='openModal(${JSON.stringify(rawUrls)}, ${i})' alt="Work Photo">`;
+                    }
+
+                    if (rawUrls.length > 3) {
+                        imagesHtml += `<div class="more-images-box" onclick='openModal(${JSON.stringify(rawUrls)}, 3)'><span>+${rawUrls.length - 3}</span><span style="font-size: 0.65rem; font-weight: 500; color: #94a3b8;">รูปทั้งหมด</span></div>`;
+                    }
                     imagesHtml += `</div>`;
                 }
 
