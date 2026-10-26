@@ -106,11 +106,36 @@
             display: inline-flex;
             align-items: center;
             gap: 0.3rem;
-            background: rgba(16, 185, 129, 0.1);
-            color: #34d399;
-            padding: 0.2rem 0.5rem;
+            padding: 0.2rem 0.6rem;
             border-radius: 6px;
-            border: 1px solid rgba(16, 185, 129, 0.2);
+            border: 1px solid transparent;
+            transition: all 0.3s ease;
+        }
+        
+        /* ใส่เอฟเฟกต์กระพริบเบาๆ ทุกสถานะ */
+        .status-green { 
+            background: rgba(16, 185, 129, 0.1); 
+            color: #34d399; 
+            border-color: rgba(16, 185, 129, 0.2); 
+            animation: pulseState 1.5s infinite ease-in-out;
+        }
+        .status-orange { 
+            background: rgba(245, 158, 11, 0.1); 
+            color: #fbbf24; 
+            border-color: rgba(245, 158, 11, 0.2); 
+            animation: pulseState 1.2s infinite ease-in-out;
+        }
+        .status-red { 
+            background: rgba(239, 68, 68, 0.1); 
+            color: #f87171; 
+            border-color: rgba(239, 68, 68, 0.2); 
+            animation: pulseState 1s infinite ease-in-out;
+        }
+
+        @keyframes pulseState {
+            0% { opacity: 1; transform: scale(1); }
+            50% { opacity: 0.5; transform: scale(0.97); }
+            100% { opacity: 1; transform: scale(1); }
         }
 
         /* แผงสถิติภาพรวม */
@@ -611,8 +636,8 @@
                     <p>คลังจัดเก็บอัลบั้มภาพถ่ายสำหรับตรวจสอบการปฏิบัติงาน</p>
                     
                     <div class="header-sub-bar">
-                        <div class="status-badge">
-                            <span>🟢</span> พร้อมใช้งาน
+                        <div id="systemStatusBadge" class="status-badge status-orange">
+                            <span>🟠</span> กำลังเชื่อมต่อ...
                         </div>
                         <div id="liveClockDisplay" style="color: #ffffff; font-weight: 700;">
                             --/--/---- --:--:--
@@ -760,6 +785,7 @@
         const searchCombinedInput = document.getElementById('searchCombinedInput');
         const categorySelect = document.getElementById('categorySelect');
         const loadingModal = document.getElementById('loadingModal');
+        const systemStatusBadge = document.getElementById('systemStatusBadge');
 
         let allAlbumsData = [];
         let navigationLevel = 'years'; 
@@ -772,6 +798,16 @@
         let pendingAction = null;
         let selectedCategory = '';
         let selectedFolderName = '';
+
+        // ฟังก์ชันเปลี่ยนป้ายสถานะระบบ (green, orange, red)
+        function setSystemStatus(status, text) {
+            if (!systemStatusBadge) return;
+            systemStatusBadge.className = `status-badge status-${status}`;
+            let icon = "🟢";
+            if (status === 'orange') icon = "🟠";
+            if (status === 'red') icon = "🔴";
+            systemStatusBadge.innerHTML = `<span>${icon}</span> ${text}`;
+        }
 
         // ฟังก์ชันอัปเดตนาฬิกาแบบเรียลไทม์
         function updateLiveClock() {
@@ -844,6 +880,9 @@
                     loadingModal.style.display = 'flex';
                 }
 
+                // ขณะกำลังดึงข้อมูล แสดงสถานะสีส้มกระพริบ
+                setSystemStatus('orange', 'กำลังซิงค์...');
+
                 const response = await fetch(SCRIPT_URL);
                 const newData = await response.json();
                 
@@ -851,6 +890,9 @@
                 allAlbumsData = newData;
                 
                 updateGlobalStats();
+                
+                // ดึงข้อมูลสำเร็จ เปลี่ยนเป็นสีเขียว
+                setSystemStatus('green', 'พร้อมใช้งาน');
 
                 if (!isBackground) {
                     loadingModal.style.display = 'none';
@@ -865,6 +907,9 @@
                 }
 
             } catch (error) {
+                // หากเชื่อมต่อไม่ได้ เปลี่ยนเป็นสีแดง
+                setSystemStatus('red', 'ขาดการเชื่อมต่อ');
+
                 if (!isBackground) {
                     loadingModal.style.display = 'none';
                     console.error('เกิดข้อผิดพลาดในการโหลดข้อมูล');
