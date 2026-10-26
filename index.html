@@ -136,7 +136,7 @@
         }
         .btn-add:hover { background-color: #115e59; transform: translateY(-1px); }
 
-        /* แถบควบคุมแนวนอน: ปี (80%) และ ค้นหา (20%) */
+        /* แถบควบคุมหลัก: ปี (80%) และ ค้นหา (20%) */
         .controls-wrapper {
             display: flex;
             gap: 0.8rem;
@@ -148,7 +148,7 @@
             box-shadow: 0 4px 15px rgba(0,0,0,0.2);
         }
 
-        .year-container {
+        .year-select-container {
             display: flex;
             gap: 0.6rem;
             align-items: center;
@@ -162,7 +162,7 @@
             flex: 0 0 20%;
         }
 
-        /* แถบตัวเลือกหมวดหมู่เพิ่มเติมเมื่อกดเข้าไปในโฟลเดอร์เดือนแล้ว */
+        /* แถบย่อย (แสดงเมื่อเลือกปีหรือเดือนแล้ว): แบ่งเป็น วัน/เดือน/ปี (ซ้าย) และ หมวด (ขวา) */
         .sub-controls-wrapper {
             display: flex;
             gap: 0.8rem;
@@ -173,6 +173,20 @@
             border-radius: 14px;
             margin-top: 0.6rem;
             box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+        }
+
+        .sub-left {
+            display: flex;
+            gap: 0.6rem;
+            align-items: center;
+            flex: 1;
+        }
+
+        .sub-right {
+            display: flex;
+            gap: 0.6rem;
+            align-items: center;
+            flex: 1;
         }
 
         .filter-label {
@@ -199,8 +213,8 @@
         .search-input::placeholder { color: #64748b; font-weight: 400; }
 
         @media(max-width: 768px) {
-            .controls-wrapper { flex-direction: column; }
-            .year-container, .search-container { flex: 1 1 100%; width: 100%; }
+            .controls-wrapper, .sub-controls-wrapper { flex-direction: column; }
+            .year-select-container, .search-container, .sub-left, .sub-right { flex: 1 1 100%; width: 100%; }
         }
 
         .folder-grid {
@@ -503,12 +517,12 @@
                 </div>
             </div>
 
-            <!-- บรรทัดหลัก: ปี (80%) และ ค้นหา (20%) -->
-            <div class="controls-wrapper">
-                <div class="year-container">
+            <!-- หน้าแรก: ตัวเลือกปี (80%) และ ค้นหา (20%) -->
+            <div class="controls-wrapper" id="mainControls">
+                <div class="year-select-container">
                     <span class="filter-label">ปี:</span>
-                    <select id="yearSelect" class="filter-select" onchange="applyFilters()">
-                        <option value="all">ทั้งหมด</option>
+                    <select id="yearSelect" class="filter-select" onchange="applyYearSelect(this.value)">
+                        <option value="all">ทั้งหมด (ทุกปี)</option>
                     </select>
                 </div>
 
@@ -517,14 +531,22 @@
                 </div>
             </div>
 
-            <!-- แถบย่อย (แสดงเฉพาะเมื่อกดเข้ามาเลือกดูในเดือนนั้นๆ แล้ว) -->
+            <!-- แถบย่อย (แสดงเมื่อกดเลือกปี หรือกดเข้าโฟลเดอร์เดือนแล้ว): วัน/เดือน/ปี และ หมวดหมู่ -->
             <div id="subControlsWrapper" class="sub-controls-wrapper" style="display: none;">
-                <span class="filter-label">หมวด:</span>
-                <select id="categorySelect" class="filter-select" onchange="applyFilters()">
-                    <option value="all">ทั้งหมด</option>
-                    <option value="Smart">Smart</option>
-                    <option value="Smartแถม">Smart (แถม)</option>
-                </select>
+                <div class="sub-left">
+                    <span class="filter-label">วัน/เดือน:</span>
+                    <select id="monthFolderSelect" class="filter-select" onchange="applyMonthFolderSelect(this.value)">
+                        <option value="all">ทุกวัน/เดือน ในปีนี้</option>
+                    </select>
+                </div>
+                <div class="sub-right">
+                    <span class="filter-label">หมวด:</span>
+                    <select id="categorySelect" class="filter-select" onchange="applyFilters()">
+                        <option value="all">ทั้งหมด</option>
+                        <option value="Smart">Smart</option>
+                        <option value="Smartแถม">Smart (แถม)</option>
+                    </select>
+                </div>
             </div>
         </div>
         
@@ -602,8 +624,11 @@
         const backBtn = document.getElementById('backBtn');
         const scrollTopBtn = document.getElementById('scrollTopBtn');
         const subControlsWrapper = document.getElementById('subControlsWrapper');
+        const yearSelect = document.getElementById('yearSelect');
+        const monthFolderSelect = document.getElementById('monthFolderSelect');
 
         let allAlbumsData = [];
+        let currentSelectedYear = 'all';
         let currentSelectedMonth = null; 
 
         let currentAlbumImages = [];
@@ -654,8 +679,14 @@
                 populateYearDropdown();
                 
                 if (history.state) {
+                    if (history.state.year) {
+                        currentSelectedYear = history.state.year;
+                        yearSelect.value = history.state.year;
+                    }
                     if (history.state.month) {
                         currentSelectedMonth = history.state.month;
+                        updateMonthDropdown(history.state.year);
+                        monthFolderSelect.value = history.state.month;
                     }
                 }
                 
@@ -673,18 +704,24 @@
                 return;
             }
 
-            if (event.state && event.state.month) {
-                currentSelectedMonth = event.state.month;
+            if (event.state) {
+                currentSelectedYear = event.state.year || 'all';
+                currentSelectedMonth = event.state.month || null;
+                yearSelect.value = currentSelectedYear;
+                if (currentSelectedYear !== 'all') {
+                    updateMonthDropdown(currentSelectedYear);
+                    monthFolderSelect.value = currentSelectedMonth || 'all';
+                }
             } else {
+                currentSelectedYear = 'all';
                 currentSelectedMonth = null;
+                yearSelect.value = 'all';
             }
             renderView(false);
         };
 
         function populateYearDropdown() {
-            const yearSelect = document.getElementById('yearSelect');
             const years = new Set();
-
             allAlbumsData.forEach(item => {
                 if (item.month) {
                     const year = item.month.split('-')[0];
@@ -693,10 +730,53 @@
             });
 
             const sortedYears = Array.from(years).sort().reverse();
-            yearSelect.innerHTML = '<option value="all">ทั้งหมด</option>';
+            yearSelect.innerHTML = '<option value="all">ทั้งหมด (ทุกปี)</option>';
             sortedYears.forEach(year => {
                 yearSelect.innerHTML += `<option value="${year}">${year}</option>`;
             });
+        }
+
+        function updateMonthDropdown(year) {
+            const months = new Set();
+            allAlbumsData.forEach(item => {
+                if (item.month && (year === 'all' || item.month.startsWith(year))) {
+                    months.add(item.month);
+                }
+            });
+
+            const sortedMonths = Array.from(months).sort().reverse();
+            monthFolderSelect.innerHTML = '<option value="all">ทุกวัน/เดือน ในปีนี้</option>';
+            sortedMonths.forEach(m => {
+                monthFolderSelect.innerHTML += `<option value="${m}">${formatMonthDisplay(m)}</option>`;
+            });
+        }
+
+        function applyYearSelect(year) {
+            currentSelectedYear = year;
+            currentSelectedMonth = null;
+            document.getElementById('searchInput').value = '';
+            document.getElementById('categorySelect').value = 'all';
+
+            if (year !== 'all') {
+                updateMonthDropdown(year);
+                subControlsWrapper.style.display = 'flex';
+                history.pushState({ year: year, month: null }, "", `#year-${year}`);
+            } else {
+                subControlsWrapper.style.display = 'none';
+                history.pushState({ year: 'all', month: null }, "", window.location.pathname);
+            }
+            renderView(false);
+        }
+
+        function applyMonthFolderSelect(month) {
+            if (month === 'all') {
+                currentSelectedMonth = null;
+                history.pushState({ year: currentSelectedYear, month: null }, "", `#year-${currentSelectedYear}`);
+            } else {
+                currentSelectedMonth = month;
+                history.pushState({ year: currentSelectedYear, month: month }, "", `#${month}`);
+            }
+            renderView(false);
         }
 
         function applyFilters() {
@@ -706,14 +786,17 @@
         function renderView(pushHistory = true) {
             mainContainer.innerHTML = '';
 
-            const selectedYear = document.getElementById('yearSelect').value;
             const searchKeyword = document.getElementById('searchInput').value.trim().toLowerCase();
             const selectedCategory = document.getElementById('categorySelect').value;
 
             let filteredAlbums = allAlbumsData;
             
-            if (selectedYear !== 'all') {
-                filteredAlbums = filteredAlbums.filter(item => item.month && item.month.startsWith(selectedYear));
+            if (currentSelectedYear !== 'all') {
+                filteredAlbums = filteredAlbums.filter(item => item.month && item.month.startsWith(currentSelectedYear));
+            }
+
+            if (currentSelectedMonth !== null) {
+                filteredAlbums = filteredAlbums.filter(item => item.month === currentSelectedMonth);
             }
 
             if (selectedCategory !== 'all') {
@@ -726,12 +809,12 @@
 
             // ถ้ามีการพิมพ์ค้นหา ให้แสดงผลลัพธ์อัลบั้มทันที
             if (searchKeyword !== '') {
-                subControlsWrapper.style.display = 'flex';
+                subControlsWrapper.style.display = currentSelectedYear !== 'all' ? 'flex' : 'none';
                 renderAlbumsList(filteredAlbums);
                 return;
             }
 
-            if (currentSelectedMonth === null) {
+            if (currentSelectedYear === 'all') {
                 subControlsWrapper.style.display = 'none';
                 backBtn.style.display = 'none';
                 sectionTitle.innerHTML = `<span>📁 โฟลเดอร์ประจำเดือน</span>`;
@@ -772,25 +855,33 @@
             } else {
                 subControlsWrapper.style.display = 'flex';
                 backBtn.style.display = 'inline-flex';
-                sectionTitle.innerHTML = `<span>📁 อัลบั้มเดือน: ${formatMonthDisplay(currentSelectedMonth)}</span>`;
+                sectionTitle.innerHTML = `<span>📁 อัลบั้มปี ${currentSelectedYear}${currentSelectedMonth ? ' (เดือน ' + formatMonthDisplay(currentSelectedMonth) + ')' : ''}</span>`;
 
-                const monthAlbums = filteredAlbums.filter(item => item.month === currentSelectedMonth);
-                renderAlbumsList(monthAlbums);
+                renderAlbumsList(filteredAlbums);
             }
         }
 
         function selectMonthFolder(month) {
+            const year = month.split('-')[0];
+            currentSelectedYear = year;
             currentSelectedMonth = month;
-            history.pushState({ month: month }, "", `#${month}`);
+            yearSelect.value = year;
+            updateMonthDropdown(year);
+            monthFolderSelect.value = month;
+            subControlsWrapper.style.display = 'flex';
+            history.pushState({ year: year, month: month }, "", `#${month}`);
             renderView(false);
         }
 
         function goBackToFolders() {
+            currentSelectedYear = 'all';
             currentSelectedMonth = null;
-            history.pushState({ month: null }, "", window.location.pathname);
+            yearSelect.value = 'all';
+            monthFolderSelect.value = 'all';
+            subControlsWrapper.style.display = 'none';
+            history.pushState({ year: 'all', month: null }, "", window.location.pathname);
             document.getElementById('searchInput').value = '';
             document.getElementById('categorySelect').value = 'all';
-            document.getElementById('yearSelect').value = 'all';
             renderView(false);
         }
 
