@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>เพิ่มอัลบั้มภาพถ่ายใหม่ - Smart Monitoring Box</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/exif-js/2.3.0/exif.js"></script>
     <style>
         * { box-sizing: border-box; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; margin: 0; padding: 0; }
         body { background-color: #262c38; color: #e2e8f0; min-height: 100vh; display: flex; justify-content: center; align-items: center; padding: 1rem; }
@@ -18,8 +19,16 @@
         .file-upload-box { border: 2px dashed #4d5b73; padding: 1rem; border-radius: 10px; text-align: center; background-color: #262c38; cursor: pointer; }
         .preview-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(110px, 1fr)); gap: 0.6rem; margin-top: 0.8rem; max-height: 230px; overflow-y: auto; }
         .preview-item { position: relative; height: 100px; border-radius: 8px; overflow: hidden; border: 1px solid #4d5b73; background: #1e232d; }
-        .preview-item img { width: 100%; height: 100%; object-fit: cover; }
-        .btn-remove-img { position: absolute; top: 3px; right: 3px; background: rgba(239, 68, 68, 0.9); color: white; border: none; border-radius: 50%; width: 22px; height: 22px; font-size: 12px; cursor: pointer; }
+        .preview-item img { width: 100%; height: 100%; object-fit: cover; cursor: pointer; transition: transform 0.2s; }
+        .preview-item img:hover { transform: scale(1.05); }
+        .img-date-tag { position: absolute; bottom: 0; left: 0; right: 0; background: rgba(15, 23, 42, 0.88); color: #38bdf8; font-size: 0.65rem; font-weight: 700; padding: 2px 4px; text-align: center; pointer-events: none; }
+        .btn-remove-img { position: absolute; top: 3px; right: 3px; background: rgba(239, 68, 68, 0.9); color: white; border: none; border-radius: 50%; width: 22px; height: 22px; font-size: 12px; cursor: pointer; display: flex; align-items: center; justify-content: center; z-index: 10; }
+        
+        /* Modal สำหรับกดดูรูปขนาดใหญ่ */
+        .image-modal { display: none; position: fixed; z-index: 2000; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(0, 0, 0, 0.85); justify-content: center; align-items: center; padding: 1rem; }
+        .image-modal img { max-width: 90%; max-height: 90%; border-radius: 8px; border: 2px solid #434e63; object-fit: contain; }
+        .image-modal-close { position: absolute; top: 20px; right: 30px; color: #fff; font-size: 2rem; font-weight: bold; cursor: pointer; }
+
         .form-actions { display: flex; gap: 0.8rem; margin-top: 1.5rem; }
         .btn-submit, .btn-back { flex: 1; padding: 0.75rem; border-radius: 10px; font-size: 0.95rem; font-weight: 700; cursor: pointer; border: none; text-decoration: none; display: flex; align-items: center; justify-content: center; }
         .btn-submit { background-color: #047857; color: #fff; }
@@ -46,7 +55,7 @@
             </div>
             <div class="form-group">
                 <label class="form-label">ชื่อหัวข้ออัลบั้ม:</label>
-                <input type="text" id="folderNameInput" class="form-input" placeholder="ระบุชื่อหัวข้ออัลบั้มที่นี่..." required>
+                <input type="text" id="folderNameInput" class="form-input" placeholder="ระบุชื่อหัวข้ออัลบั้ม (เช่น [รหัสซิม] [TR] [S/N])..." required>
             </div>
             <div class="form-group">
                 <label class="form-label">เลือกรูปภาพ:</label>
@@ -64,9 +73,15 @@
         </form>
     </div>
 
+    <!-- Modal สำหรับแสดงรูปขนาดใหญ่เมื่อคลิกพรีวิว -->
+    <div id="imageModal" class="image-modal" onclick="closeImageModal()">
+        <span class="image-modal-close">&times;</span>
+        <img id="modalImageSrc" src="">
+    </div>
+
     <div id="loadingModal" class="loading-modal">
         <div class="loading-spinner"></div>
-        <h3 id="loadingTitle" style="color: #38bdf8; margin-bottom: 0.3rem; font-size: 1.1rem;">กำลังบันทึกข้อมูล</h3>
+        <h3 id="loadingTitle" style="color: #38bdf8; margin-bottom: 0.3rem; font-size: 1.1rem;">กำลังประมวลผล</h3>
         <p id="loadingDesc" style="font-size: 0.8rem; color: #94a3b8;">โปรดรอสักครู่...</p>
     </div>
 
@@ -75,8 +90,8 @@
         
         let selectedCategory = "Smart";
         let selectedFiles = [];
+        let rawUserFolderName = ""; 
 
-        // กำหนดวันที่ปัจจุบันในช่องกรอกอัตโนมัติ
         const today = new Date();
         document.getElementById('dateInput').value = `${String(today.getDate()).padStart(2, '0')}/${String(today.getMonth() + 1).padStart(2, '0')}/${today.getFullYear()}`;
 
@@ -86,12 +101,60 @@
             document.getElementById('btnFree').className = cat === 'Smartแถม' ? 'option-btn active' : 'option-btn';
         }
 
-        function handleFileSelect(input) {
+        async function handleFileSelect(input) {
             if (!input.files || input.files.length === 0) return;
-            Array.from(input.files).forEach(file => selectedFiles.push(file));
+            const filesArray = Array.from(input.files);
+
+            for (let file of filesArray) {
+                await new Promise((resolve) => {
+                    EXIF.getData(file, function() {
+                        const exifDateTime = EXIF.getTag(this, "DateTimeOriginal") || EXIF.getTag(this, "DateTime");
+                        let shootDate = exifDateTime ? parseExifDate(exifDateTime) : (file.lastModified ? new Date(file.lastModified) : new Date());
+                        file.formattedDate = formatDateTime(shootDate);
+                        file.dateOnly = formatOnlyDate(shootDate);
+                        resolve();
+                    });
+                });
+                selectedFiles.push(file);
+            }
+
+            if (selectedFiles.length > 0 && selectedFiles[0].dateOnly) {
+                document.getElementById('dateInput').value = selectedFiles[0].dateOnly;
+            }
+
+            updateFolderNameWithDate();
             renderPreview();
             input.value = '';
         }
+
+        function updateFolderNameWithDate() {
+            const currentDate = document.getElementById('dateInput').value;
+            const inputField = document.getElementById('folderNameInput');
+            
+            let currentVal = inputField.value.trim();
+            if (currentVal.startsWith("[")) {
+                let parts = currentVal.split(" ");
+                parts.shift(); 
+                rawUserFolderName = parts.join(" ");
+            } else if (rawUserFolderName === "") {
+                rawUserFolderName = currentVal;
+            }
+
+            if (currentDate) {
+                inputField.value = `[${currentDate}] ${rawUserFolderName}`.trim();
+            }
+        }
+
+        document.getElementById('folderNameInput').addEventListener('input', function(e) {
+            let val = e.target.value;
+            if (!val.startsWith("[")) {
+                rawUserFolderName = val;
+            }
+        });
+
+        document.getElementById('dateInput').addEventListener('input', function() {
+            updateFolderNameWithDate();
+        });
 
         function fileToBase64(file, maxDim) {
             return new Promise((resolve) => {
@@ -113,6 +176,17 @@
             });
         }
 
+        function parseExifDate(str) {
+            let p = str.split(/[:\s]/);
+            return p.length >= 6 ? new Date(p[0], p[1] - 1, p[2], p[3], p[4], p[5]) : null;
+        }
+        function formatDateTime(d) {
+            return isNaN(d?.getTime()) ? "ไม่ทราบเวลา" : `${String(d.getDate()).padStart(2, '0')}/${String(d.getMonth() + 1).padStart(2, '0')}/${d.getFullYear()} ${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}`;
+        }
+        function formatOnlyDate(d) {
+            return isNaN(d?.getTime()) ? null : `${String(d.getDate()).padStart(2, '0')}/${String(d.getMonth() + 1).padStart(2, '0')}/${d.getFullYear()}`;
+        }
+
         function renderPreview() {
             const grid = document.getElementById('previewGrid');
             grid.innerHTML = '';
@@ -123,16 +197,30 @@
                 reader.onload = e => {
                     const item = document.createElement('div');
                     item.className = 'preview-item';
-                    item.innerHTML = `<img src="${e.target.result}"><button type="button" class="btn-remove-img" onclick="removeFile(${index})">&times;</button>`;
+                    item.innerHTML = `<img src="${e.target.result}" onclick="openImageModal('${e.target.result}')"><div class="img-date-tag">📅 ${file.formattedDate}</div><button type="button" class="btn-remove-img" onclick="removeFile(event, ${index})">&times;</button>`;
                     grid.appendChild(item);
                 };
                 reader.readAsDataURL(file);
             });
         }
 
-        function removeFile(index) {
+        function removeFile(event, index) {
+            event.stopPropagation(); // ป้องกันไม่ให้เปิด Modal ตอนกดลบ
             selectedFiles.splice(index, 1);
+            if (index === 0 && selectedFiles.length > 0 && selectedFiles[0].dateOnly) {
+                document.getElementById('dateInput').value = selectedFiles[0].dateOnly;
+                updateFolderNameWithDate();
+            }
             renderPreview();
+        }
+
+        function openImageModal(src) {
+            document.getElementById('modalImageSrc').src = src;
+            document.getElementById('imageModal').style.display = 'flex';
+        }
+
+        function closeImageModal() {
+            document.getElementById('imageModal').style.display = 'none';
         }
 
         async function handleFormSubmit(e) {
