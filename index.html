@@ -179,7 +179,6 @@
         .filter-select:focus, .search-input:focus { border-color: #38bdf8; }
         .search-input::placeholder { color: #64748b; font-weight: 400; }
 
-        /* สไตล์สำหรับกล่องโฟลเดอร์เดือน */
         .folder-grid {
             display: grid;
             grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
@@ -204,9 +203,7 @@
             background-color: #384357;
         }
 
-        .folder-icon {
-            font-size: 2.8rem;
-        }
+        .folder-icon { font-size: 2.8rem; }
 
         .folder-info h3 {
             color: #f8fafc;
@@ -553,7 +550,7 @@
         const controlsWrapper = document.getElementById('controlsWrapper');
 
         let allAlbumsData = [];
-        let currentSelectedMonth = null; // ถ้าเป็น null แสดงว่าอยู่หน้าเลือกโฟลเดอร์เดือน
+        let currentSelectedMonth = null; 
 
         let currentAlbumImages = [];
         let currentIndex = 0;
@@ -561,6 +558,13 @@
         let pendingAction = null;
         let selectedCategory = '';
         let selectedFolderName = '';
+
+        function formatMonthDisplay(monthStr) {
+            // แปลงจาก "YYYY-MM" (เช่น "2026-10") เป็น "MM-YYYY" (เช่น "10-2026")
+            if (!monthStr || !monthStr.includes('-')) return monthStr;
+            const parts = monthStr.split('-');
+            return `${parts[1]}-${parts[0]}`;
+        }
 
         function showAlert(title, desc, isError = false) {
             document.getElementById('alertTitle').innerText = title;
@@ -621,34 +625,28 @@
 
             let filteredAlbums = allAlbumsData;
             
-            // กรองตามปี
             if (selectedYear !== 'all') {
                 filteredAlbums = filteredAlbums.filter(item => item.month && item.month.startsWith(selectedYear));
             }
 
-            // กรองตามหมวดหมู่
             if (selectedCategory !== 'all') {
                 filteredAlbums = filteredAlbums.filter(item => item.category === selectedCategory);
             }
 
-            // กรองตามคำค้นหาชื่ออัลบั้ม
             if (searchKeyword !== '') {
                 filteredAlbums = filteredAlbums.filter(item => item.folderName.toLowerCase().includes(searchKeyword));
             }
 
-            // ถ้ากำลังพิมพ์ค้นหา ให้ข้ามหน้าเลือกโฟลเดอร์แล้วแสดงผลลัพธ์อัลบั้มทันที
             if (searchKeyword !== '' || selectedCategory !== 'all' || selectedYear !== 'all') {
                 if (currentSelectedMonth === null && searchKeyword === '' && selectedCategory === 'all' && selectedYear === 'all') {
                     // อยู่หน้าแรกปกติ
                 } else {
-                    // ถ้ามีการกรอง ให้แสดงรายการอัลบั้มตรงๆ เลย
                     renderAlbumsList(filteredAlbums);
                     return;
                 }
             }
 
             if (currentSelectedMonth === null) {
-                // แสดงหน้าเลือกโฟลเดอร์เดือน
                 backBtn.style.display = 'none';
                 sectionTitle.innerHTML = `<span>📁 โฟลเดอร์ประจำเดือน</span>`;
 
@@ -669,13 +667,14 @@
 
                 sortedMonths.forEach(month => {
                     const count = filteredAlbums.filter(item => item.month === month).length;
+                    const displayMonth = formatMonthDisplay(month); // สลับเป็น เดือน-ปี เช่น 10-2026
                     const folderCard = document.createElement('div');
                     folderCard.className = 'folder-card';
                     folderCard.onclick = () => selectMonthFolder(month);
                     folderCard.innerHTML = `
                         <div class="folder-icon">📂</div>
                         <div class="folder-info">
-                            <h3>ประจำเดือน ${month}</h3>
+                            <h3>ประจำเดือน ${displayMonth}</h3>
                             <p>${count} อัลบั้ม</p>
                         </div>
                     `;
@@ -685,9 +684,8 @@
                 mainContainer.appendChild(folderGrid);
 
             } else {
-                // แสดงรายการอัลบั้มภายในเดือนที่เลือก
                 backBtn.style.display = 'inline-flex';
-                sectionTitle.innerHTML = `<span>📁 อัลบั้มประจำเดือน: ${currentSelectedMonth}</span>`;
+                sectionTitle.innerHTML = `<span>📁 อัลบั้มประจำเดือน: ${formatMonthDisplay(currentSelectedMonth)}</span>`;
 
                 const monthAlbums = filteredAlbums.filter(item => item.month === currentSelectedMonth);
                 renderAlbumsList(monthAlbums);
