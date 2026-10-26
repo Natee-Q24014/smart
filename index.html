@@ -121,21 +121,9 @@
             transition: all 0.3s ease;
         }
         
-        .status-green { 
-            background: rgba(16, 185, 129, 0.1); 
-            color: #34d399; 
-            border-color: rgba(16, 185, 129, 0.2); 
-        }
-        .status-orange { 
-            background: rgba(245, 158, 11, 0.1); 
-            color: #fbbf24; 
-            border-color: rgba(245, 158, 11, 0.2); 
-        }
-        .status-red { 
-            background: rgba(239, 68, 68, 0.1); 
-            color: #f87171; 
-            border-color: rgba(239, 68, 68, 0.2); 
-        }
+        .status-green { background: rgba(16, 185, 129, 0.1); color: #34d399; border-color: rgba(16, 185, 129, 0.2); }
+        .status-orange { background: rgba(245, 158, 11, 0.1); color: #fbbf24; border-color: rgba(245, 158, 11, 0.2); }
+        .status-red { background: rgba(239, 68, 68, 0.1); color: #f87171; border-color: rgba(239, 68, 68, 0.2); }
 
         .block-title {
             font-size: 0.95rem;
@@ -324,29 +312,31 @@
 
         .folder-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
-            gap: 0.8rem;
+            grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+            gap: 1rem;
         }
-        @media(min-width: 768px) { .folder-grid { grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 1rem; } }
 
         .folder-card {
             background-color: #323b4d;
             border: 1px solid #434e63;
             border-radius: 12px;
-            padding: 1rem;
+            padding: 1rem 1.2rem;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+            transition: all 0.2s;
+        }
+        @media(min-width: 768px) { .folder-card { border-radius: 14px; padding: 1.2rem; } }
+        
+        .folder-card-main {
             display: flex;
             align-items: center;
             gap: 1rem;
             cursor: pointer;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
-            transition: all 0.2s;
+            flex: 1;
         }
-        @media(min-width: 768px) { .folder-card { border-radius: 14px; padding: 1.2rem; gap: 1.2rem; } }
-        .folder-card:hover {
-            border-color: #38bdf8;
-            transform: translateY(-2px);
-            background-color: #384357;
-        }
+        .folder-card-main:hover .folder-info h3 { color: #38bdf8; }
 
         .folder-icon { font-size: 2.2rem; }
         @media(min-width: 768px) { .folder-icon { font-size: 2.5rem; } }
@@ -356,6 +346,7 @@
             font-size: 1.05rem;
             margin-bottom: 0.2rem;
             font-weight: 700;
+            transition: color 0.2s;
         }
         @media(min-width: 768px) { .folder-info h3 { font-size: 1.15rem; } }
 
@@ -365,6 +356,20 @@
             font-weight: 500;
         }
         @media(min-width: 768px) { .folder-info p { font-size: 0.85rem; } }
+
+        .btn-del-month {
+            background-color: rgba(239, 68, 68, 0.1);
+            color: #fca5a5;
+            border: 1px solid rgba(239, 68, 68, 0.2);
+            padding: 0.4rem 0.6rem;
+            border-radius: 8px;
+            font-size: 0.78rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+            margin-left: 0.5rem;
+        }
+        .btn-del-month:hover { background-color: rgba(239, 68, 68, 0.25); color: #fff; }
 
         .album-grid {
             display: grid;
@@ -758,7 +763,7 @@
         <div id="modalCounter" class="modal-counter">1 / 1</div>
     </div>
 
-    <!-- Modal ใส่รหัสผ่าน -->
+    <!-- Modal ใส่รหัสผ่าน (ทำงานทันทีเมื่อครบ 4 หลัก) -->
     <div id="passwordModal" class="modal" style="z-index: 1005;">
         <div class="dialog-box">
             <h3 id="dialogTitle">🔒 ใส่รหัสผ่าน 4 หลัก</h3>
@@ -826,6 +831,7 @@
         let pendingAction = null;
         let selectedCategory = '';
         let selectedFolderName = '';
+        let selectedTargetMonth = '';
 
         let deferredPrompt;
 
@@ -976,11 +982,13 @@
             let html = '<div class="folder-grid">';
             sortedYears.forEach(year => {
                 html += `
-                    <div class="folder-card" onclick="selectYear('${year}')">
-                        <div class="folder-icon">📁</div>
-                        <div class="folder-info">
-                            <h3>ปี ${year}</h3>
-                            <p>${yearsMap[year].count} อัลบั้ม (${yearsMap[year].images} รูป)</p>
+                    <div class="folder-card">
+                        <div class="folder-card-main" onclick="selectYear('${year}')">
+                            <div class="folder-icon">📁</div>
+                            <div class="folder-info">
+                                <h3>ปี ${year}</h3>
+                                <p>${yearsMap[year].count} อัลบั้ม (${yearsMap[year].images} รูป)</p>
+                            </div>
                         </div>
                     </div>
                 `;
@@ -1019,12 +1027,15 @@
             sortedMonths.forEach(m => {
                 let mName = monthNames[m] || `เดือน ${m}`;
                 html += `
-                    <div class="folder-card" onclick="selectMonth('${m}')">
-                        <div class="folder-icon">📂</div>
-                        <div class="folder-info">
-                            <h3>${mName} (${m})</h3>
-                            <p>${monthsMap[m].count} อัลบั้ม (${monthsMap[m].images} รูป)</p>
+                    <div class="folder-card">
+                        <div class="folder-card-main" onclick="selectMonth('${m}')">
+                            <div class="folder-icon">📂</div>
+                            <div class="folder-info">
+                                <h3>${mName} (${m})</h3>
+                                <p>${monthsMap[m].count} อัลบั้ม (${monthsMap[m].images} รูป)</p>
+                            </div>
                         </div>
+                        <button class="btn-del-month" onclick="event.stopPropagation(); promptDeleteMonth('${m}', '${mName}')" title="ลบทั้งเดือน">🗑️ ลบเดือน</button>
                     </div>
                 `;
             });
@@ -1227,10 +1238,18 @@
             }
         }
 
-        // ระบบรหัสผ่านและการจัดการแอดมิน (ลบอัลบั้ม / เพิ่มรูป)
+        // ระบบรหัสผ่านและการจัดการแอดมิน (ลบอัลบั้ม / ลบทั้งเดือน / เพิ่มรูป)
         function promptDeleteAlbum(folderName, optionType) {
-            pendingAction = { type: 'delete', folderName: folderName, optionType: optionType };
+            pendingAction = { type: 'deleteAlbum', folderName: folderName, optionType: optionType };
             document.getElementById('dialogTitle').innerText = "🔒 ใส่รหัสผ่านเพื่อลบอัลบั้ม";
+            document.getElementById('adminPasswordInput').value = '';
+            document.getElementById('passwordModal').style.display = 'flex';
+            document.getElementById('adminPasswordInput').focus();
+        }
+
+        function promptDeleteMonth(monthNum, monthName) {
+            pendingAction = { type: 'deleteMonth', monthNum: monthNum, monthName: monthName, year: currentSelectedYear };
+            document.getElementById('dialogTitle').innerText = `🔒 ลบเดือน ${monthName} (${monthNum}/${currentSelectedYear})`;
             document.getElementById('adminPasswordInput').value = '';
             document.getElementById('passwordModal').style.display = 'flex';
             document.getElementById('adminPasswordInput').focus();
@@ -1248,11 +1267,12 @@
             pendingAction = null;
         }
 
+        // ตรวจสอบรหัสผ่านทันทีเมื่อพิมพ์ครบ 4 หลัก
         function checkPasswordLength(input) {
             if (input.value.length === 4) {
                 let pwd = input.value;
                 closePasswordModal();
-                if (pwd === "1234") { // เปลี่ยนรหัสผ่านตรงนี้ได้ตามต้องการ
+                if (pwd === "6004") {
                     executePendingAction();
                 } else {
                     document.getElementById('alertTitle').innerText = "รหัสผ่านไม่ถูกต้อง";
@@ -1268,7 +1288,8 @@
 
         async function executePendingAction() {
             if (!pendingAction) return;
-            if (pendingAction.type === 'delete') {
+
+            if (pendingAction.type === 'deleteAlbum') {
                 document.getElementById('loadingTitle').innerText = "กำลังลบอัลบั้ม";
                 document.getElementById('loadingDesc').innerText = "โปรดรอสักครู่...";
                 loadingModal.style.display = 'flex';
@@ -1286,6 +1307,33 @@
                     loadingModal.style.display = 'none';
                     if (result.status === "success") {
                         alert("ลบอัลบั้มสำเร็จ!");
+                        fetchAllAlbums();
+                    } else {
+                        alert("ผิดพลาด: " + result.message);
+                    }
+                } catch (err) {
+                    loadingModal.style.display = 'none';
+                    alert("เชื่อมต่อเซิร์ฟเวอร์ไม่สำเร็จ");
+                }
+            } 
+            else if (pendingAction.type === 'deleteMonth') {
+                document.getElementById('loadingTitle').innerText = "กำลังลบข้อมูลทั้งเดือน";
+                document.getElementById('loadingDesc').innerText = `กำลังลบอัลบั้มทั้งหมดในเดือน ${pendingAction.monthName} ${pendingAction.year}...`;
+                loadingModal.style.display = 'flex';
+
+                try {
+                    let response = await fetch(SCRIPT_URL, {
+                        method: 'POST',
+                        body: JSON.stringify({
+                            action: 'deleteMonth',
+                            year: pendingAction.year,
+                            month: pendingAction.monthNum
+                        })
+                    });
+                    let result = await response.json();
+                    loadingModal.style.display = 'none';
+                    if (result.status === "success") {
+                        alert("ลบข้อมูลทั้งเดือนสำเร็จ!");
                         fetchAllAlbums();
                     } else {
                         alert("ผิดพลาด: " + result.message);
