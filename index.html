@@ -125,25 +125,16 @@
             background: rgba(16, 185, 129, 0.1); 
             color: #34d399; 
             border-color: rgba(16, 185, 129, 0.2); 
-            animation: pulseState 1.5s infinite ease-in-out;
         }
         .status-orange { 
             background: rgba(245, 158, 11, 0.1); 
             color: #fbbf24; 
             border-color: rgba(245, 158, 11, 0.2); 
-            animation: pulseState 1s infinite ease-in-out;
         }
         .status-red { 
             background: rgba(239, 68, 68, 0.1); 
             color: #f87171; 
             border-color: rgba(239, 68, 68, 0.2); 
-            animation: pulseState 1s infinite ease-in-out;
-        }
-
-        @keyframes pulseState {
-            0% { opacity: 1; transform: scale(1); }
-            50% { opacity: 0.5; transform: scale(0.97); }
-            100% { opacity: 1; transform: scale(1); }
         }
 
         .block-title {
@@ -380,14 +371,8 @@
             grid-template-columns: 1fr;
             gap: 0.8rem;
         }
-
-        @media(min-width: 768px) {
-            .album-grid { grid-template-columns: repeat(2, 1fr); gap: 1rem; }
-        }
-
-        @media(min-width: 1150px) {
-            .album-grid { grid-template-columns: repeat(3, 1fr); }
-        }
+        @media(min-width: 768px) { .album-grid { grid-template-columns: repeat(2, 1fr); gap: 1rem; } }
+        @media(min-width: 1150px) { .album-grid { grid-template-columns: repeat(3, 1fr); } }
 
         .album-card {
             background-color: #323b4d;
@@ -426,9 +411,7 @@
             gap: 0.5rem;
             background-color: #323b4d;
         }
-        @media(min-width: 768px) {
-            .album-images-container { padding: 0.8rem; gap: 0.6rem; }
-        }
+        @media(min-width: 768px) { .album-images-container { padding: 0.8rem; gap: 0.6rem; } }
 
         .thumb-img {
             width: 100%;
@@ -571,9 +554,7 @@
             transition: transform 0.1s ease-out;
             cursor: grab;
         }
-        .modal-content:active {
-            cursor: grabbing;
-        }
+        .modal-content:active { cursor: grabbing; }
 
         .modal-close {
             color: #fff; font-size: 2.2rem; font-weight: 300;
@@ -879,36 +860,57 @@
             const dateStr = now.toLocaleDateString('th-TH', { day: '2-digit', month: '2-digit', year: 'numeric' });
             const timeStr = now.toLocaleTimeString('th-TH', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
             const clockEl = document.getElementById('liveClockDisplay');
-            if (clockEl) {
-                clockEl.innerText = `${dateStr} ${timeStr}`;
-            }
+            if (clockEl) clockEl.innerText = `${dateStr} ${timeStr}`;
         }
         setInterval(updateLiveClock, 1000);
         updateLiveClock();
 
-        window.onscroll = function() {
-            if (document.body.scrollTop > 200 || document.documentElement.scrollTop > 200) {
-                scrollTopBtn.style.display = "flex";
+        window.addEventListener('scroll', () => {
+            if (window.scrollY > 300) {
+                scrollTopBtn.style.display = 'flex';
             } else {
-                scrollTopBtn.style.display = "none";
+                scrollTopBtn.style.display = 'none';
             }
-        };
+        });
 
         function scrollToTop() {
             window.scrollTo({ top: 0, behavior: 'smooth' });
         }
 
-        function updateGlobalStats() {
-            const totalAlbums = allAlbumsData.length;
+        window.onload = function() {
+            fetchAllAlbums();
+        };
+
+        async function fetchAllAlbums() {
+            setSystemStatus('orange', 'กำลังซิงค์ข้อมูล...');
+            try {
+                const response = await fetch(SCRIPT_URL + "?action=getAlbums");
+                const result = await response.json();
+                if (result.status === "success") {
+                    allAlbumsData = result.data || [];
+                    updateStats();
+                    renderCurrentLevel();
+                    setSystemStatus('green', 'พร้อมใช้งาน');
+                } else {
+                    setSystemStatus('red', 'โหลดข้อมูลไม่สำเร็จ');
+                }
+            } catch (err) {
+                console.error(err);
+                setSystemStatus('red', 'เชื่อมต่อเซิร์ฟเวอร์ล้มเหลว');
+            } finally {
+                loadingModal.style.display = 'none';
+            }
+        }
+
+        function updateStats() {
+            let totalAlbums = allAlbumsData.length;
             let totalImages = 0;
             let smartCount = 0;
             let freeCount = 0;
 
-            allAlbumsData.forEach(item => {
-                if (item.images && Array.isArray(item.images)) {
-                    totalImages += item.images.length;
-                }
-                if (item.category === "Smartแถม") {
+            allAlbumsData.forEach(album => {
+                totalImages += (album.images ? album.images.length : 0);
+                if (album.optionType === 'Smartแถม') {
                     freeCount++;
                 } else {
                     smartCount++;
@@ -921,621 +923,439 @@
             document.getElementById('statFreeAlbums').innerText = freeCount;
         }
 
-        function showAlert(title, desc, isError = false) {
-            document.getElementById('alertTitle').innerText = title;
-            document.getElementById('alertTitle').style.color = isError ? "#fca5a5" : "#38bdf8";
-            document.getElementById('alertDesc').innerText = desc;
-            document.getElementById('customAlertModal').style.display = 'flex';
-        }
-
-        function closeCustomAlert() {
-            document.getElementById('customAlertModal').style.display = 'none';
-            if(window.shouldReloadAfterAlert) {
-                fetchAlbums(false);
-                window.shouldReloadAfterAlert = false;
-            }
-        }
-
-        async function fetchAlbums(isBackground = false) {
-            try {
-                if (!isBackground) {
-                    document.getElementById('loadingTitle').innerText = "กรุณารอสักครู่";
-                    document.getElementById('loadingDesc').innerText = "กำลังโหลดข้อมูล...";
-                    loadingModal.style.display = 'flex';
-                }
-
-                const response = await fetch(SCRIPT_URL);
-                const newData = await response.json();
-                
-                const isDataChanged = JSON.stringify(allAlbumsData) !== JSON.stringify(newData);
-                allAlbumsData = newData;
-                
-                updateGlobalStats();
-                setSystemStatus('green', 'พร้อมใช้งาน');
-
-                if (!isBackground) {
-                    loadingModal.style.display = 'none';
-                    if (history.state) {
-                        navigationLevel = history.state.level || 'years';
-                        currentSelectedYear = history.state.year || null;
-                        currentSelectedMonth = history.state.month || null;
-                    }
-                    renderView(false);
-                } else if (isDataChanged) {
-                    renderView(false);
-                }
-
-            } catch (error) {
-                setSystemStatus('red', 'ขาดการเชื่อมต่อ');
-
-                if (!isBackground) {
-                    loadingModal.style.display = 'none';
-                    console.error('เกิดข้อผิดพลาดในการโหลดข้อมูล');
-                }
-            }
-        }
-
-        setInterval(() => {
-            fetchAlbums(true);
-        }, 5000);
-
-        window.onpopstate = function(event) {
-            const modal = document.getElementById('imageModal');
-            if (modal.style.display === 'flex') {
-                modal.style.display = 'none';
-                return;
-            }
-
-            if (event.state) {
-                navigationLevel = event.state.level || 'years';
-                currentSelectedYear = event.state.year || null;
-                currentSelectedMonth = event.state.month || null;
-            } else {
-                navigationLevel = 'years';
-                currentSelectedYear = null;
-                currentSelectedMonth = null;
-            }
-            renderView(false);
-        };
-
-        function applyFilters() {
-            renderView(false);
-        }
-
-        function renderView(pushHistory = true) {
-            const searchKeyword = searchCombinedInput.value.trim().toLowerCase();
-            const selectedCategory = categorySelect.value;
-
-            if (searchKeyword !== '') {
-                stackControlsWrapper.style.display = 'flex';
-                navButtonsGroup.style.display = 'inline-flex';
-                sectionTitle.innerHTML = `<span>🔍 ผลการค้นหา: "${searchKeyword}"</span>`;
-
-                let filtered = allAlbumsData.filter(item => item.folderName.toLowerCase().includes(searchKeyword));
-                if (selectedCategory !== 'all') {
-                    filtered = filtered.filter(item => item.category === selectedCategory);
-                }
-                renderAlbumsList(filtered);
-                return;
-            }
+        function renderCurrentLevel() {
+            stackControlsWrapper.style.display = 'none';
+            searchCombinedInput.value = '';
+            categorySelect.value = 'all';
 
             if (navigationLevel === 'years') {
-                stackControlsWrapper.style.display = 'none';
                 navButtonsGroup.style.display = 'none';
-                sectionTitle.innerHTML = `<span>📁 เลือกปีประจำระบบ</span>`;
-
-                const yearsSet = new Set();
-                allAlbumsData.forEach(item => {
-                    if (item.month) {
-                        const yr = item.month.split('-')[0];
-                        if (yr) yearsSet.add(yr);
-                    }
-                });
-
-                const sortedYears = Array.from(yearsSet).sort().reverse();
-
-                if (sortedYears.length === 0) {
-                    mainContainer.innerHTML = '<p style="color: #6b7280; text-align: center; padding: 2.5rem; font-weight: 500;">ยังไม่มีข้อมูลอัลบั้มในระบบ</p>';
-                    return;
-                }
-
-                const folderGrid = document.createElement('div');
-                folderGrid.className = 'folder-grid';
-
-                sortedYears.forEach(year => {
-                    const count = allAlbumsData.filter(item => item.month && item.month.startsWith(year)).length;
-                    const folderCard = document.createElement('div');
-                    folderCard.className = 'folder-card';
-                    folderCard.onclick = () => selectYearFolder(year);
-                    folderCard.innerHTML = `
-                        <div class="folder-icon">📁</div>
-                        <div class="folder-info">
-                            <h3>ปี ${year}</h3>
-                            <p>${count} อัลบั้ม</p>
-                        </div>
-                    `;
-                    folderGrid.appendChild(folderCard);
-                });
-
-                mainContainer.innerHTML = '';
-                mainContainer.appendChild(folderGrid);
-
+                sectionTitle.innerHTML = '<span>📁 เลือกปีประจำระบบ</span>';
+                renderYearsView();
             } else if (navigationLevel === 'months') {
-                stackControlsWrapper.style.display = 'none';
-                navButtonsGroup.style.display = 'inline-flex';
-                sectionTitle.innerHTML = `<span>📁 ปี ${currentSelectedYear} - เลือกเดือน</span>`;
-
-                const monthsSet = new Set();
-                allAlbumsData.forEach(item => {
-                    if (item.month && item.month.startsWith(currentSelectedYear)) {
-                        monthsSet.add(item.month);
-                    }
-                });
-
-                const sortedMonths = Array.from(monthsSet).sort().reverse();
-
-                const monthNames = {
-                    "01": "มกราคม", "02": "กุมภาพันธ์", "03": "มีนาคม", "04": "เมษายน",
-                    "05": "พฤษภาคม", "06": "มิถุนายน", "07": "กรกฎาคม", "08": "สิงหาคม",
-                    "09": "กันยายน", "10": "ตุลาคม", "11": "พฤศจิกายน", "12": "ธันวาคม"
-                };
-
-                const folderGrid = document.createElement('div');
-                folderGrid.className = 'folder-grid';
-
-                sortedMonths.forEach(mStr => {
-                    const parts = mStr.split('-');
-                    const mNum = parts[1] || mStr;
-                    const mLabel = monthNames[mNum] ? `เดือน${monthNames[mNum]}` : `เดือน ${mNum}`;
-                    const count = allAlbumsData.filter(item => item.month === mStr).length;
-
-                    const folderCard = document.createElement('div');
-                    folderCard.className = 'folder-card';
-                    folderCard.onclick = () => selectMonthFolder(mStr);
-                    folderCard.innerHTML = `
-                        <div class="folder-icon">📂</div>
-                        <div class="folder-info">
-                            <h3>${mLabel}</h3>
-                            <p>${count} อัลบั้ม</p>
-                        </div>
-                    `;
-                    folderGrid.appendChild(folderCard);
-                });
-
-                mainContainer.innerHTML = '';
-                mainContainer.appendChild(folderGrid);
-
+                navButtonsGroup.style.display = 'flex';
+                sectionTitle.innerHTML = `<span>📁 ปี ${currentSelectedYear} • เลือกเดือน</span>`;
+                renderMonthsView();
             } else if (navigationLevel === 'albums') {
+                navButtonsGroup.style.display = 'flex';
+                sectionTitle.innerHTML = `<span>📁 ปี ${currentSelectedYear} / เดือน ${currentSelectedMonth} • อัลบั้มงาน</span>`;
                 stackControlsWrapper.style.display = 'flex';
-                navButtonsGroup.style.display = 'inline-flex';
-                sectionTitle.innerHTML = `<span>📁 อัลบั้มประจำเดือน ${currentSelectedMonth}</span>`;
-
-                let filteredAlbums = allAlbumsData.filter(item => item.month === currentSelectedMonth);
-
-                if (selectedCategory !== 'all') {
-                    filteredAlbums = filteredAlbums.filter(item => item.category === selectedCategory);
-                }
-
-                mainContainer.innerHTML = '';
-                renderAlbumsList(filteredAlbums);
+                renderAlbumsView();
             }
-
-            if (pushHistory) {
-                history.pushState({ level: navigationLevel, year: currentSelectedYear, month: currentSelectedMonth }, "", window.location.pathname);
-            }
-        }
-
-        function selectYearFolder(year) {
-            currentSelectedYear = year;
-            navigationLevel = 'months';
-            renderView();
-        }
-
-        function selectMonthFolder(monthStr) {
-            currentSelectedMonth = monthStr;
-            navigationLevel = 'albums';
-            renderView();
         }
 
         function goToHome() {
-            searchCombinedInput.value = '';
-            categorySelect.value = 'all';
             navigationLevel = 'years';
             currentSelectedYear = null;
             currentSelectedMonth = null;
-            renderView();
+            renderCurrentLevel();
         }
 
         function goBackToFolderLevel() {
-            searchCombinedInput.value = '';
-            categorySelect.value = 'all';
-
             if (navigationLevel === 'albums') {
                 navigationLevel = 'months';
                 currentSelectedMonth = null;
             } else if (navigationLevel === 'months') {
                 navigationLevel = 'years';
                 currentSelectedYear = null;
-            } else {
-                navigationLevel = 'years';
             }
-            renderView();
+            renderCurrentLevel();
         }
 
-        function renderAlbumsList(albums) {
-            if (!albums || albums.length === 0) {
-                mainContainer.innerHTML = '<p style="color: #6b7280; text-align: center; padding: 2rem; font-weight: 500;">ไม่พบรายการอัลบั้มในเงื่อนไขนี้</p>';
-                return;
-            }
+        function renderYearsView() {
+            let yearsMap = {};
+            allAlbumsData.forEach(album => {
+                let parts = album.month ? album.month.split('/') : [];
+                let year = parts.length === 3 ? parts[2] : 'อื่นๆ';
+                if (!yearsMap[year]) yearsMap[year] = { count: 0, images: 0 };
+                yearsMap[year].count++;
+                yearsMap[year].images += (album.images ? album.images.length : 0);
+            });
 
-            const grid = document.createElement('div');
-            grid.className = 'album-grid';
-
-            albums.forEach(item => {
-                const card = document.createElement('div');
-                card.className = 'album-card';
-
-                const isFree = item.category === "Smartแถม";
-                const badgeText = isFree ? "Smart (แถม)" : "Smart";
-                const badgeClass = isFree ? "badge-free" : "badge-smart";
-
-                let imagesHtml = '';
-                if (item.images && item.images.length > 0) {
-                    imagesHtml = `<div class="album-images-container">`;
-                    const rawUrls = item.images.map(img => img.url);
-                    
-                    const displayCount = Math.min(rawUrls.length, 3);
-                    for (let i = 0; i < displayCount; i++) {
-                        imagesHtml += `<img src="${rawUrls[i]}" class="thumb-img" onclick='openModal(${JSON.stringify(rawUrls)}, ${i})' alt="Work Photo">`;
-                    }
-
-                    if (rawUrls.length > 3) {
-                        imagesHtml += `<div class="more-images-box" onclick='openModal(${JSON.stringify(rawUrls)}, 3)'><span>+${rawUrls.length - 3}</span><span style="font-size: 0.65rem; font-weight: 500; color: #94a3b8;">รูปทั้งหมด</span></div>`;
-                    }
-                    imagesHtml += `</div>`;
-                }
-
-                card.innerHTML = `
-                    <div class="album-header-bar">
-                        <span>📅 ${item.folderName}</span>
-                        <span class="badge-tag ${badgeClass}">${badgeText}</span>
-                    </div>
-                    ${imagesHtml}
-                    <div class="album-action-bar">
-                        <div class="album-footer-info">
-                            รูปภาพ: <span style="color: #38bdf8; font-weight: 700;">${item.images.length} รูป</span>
-                        </div>
-                        <div class="action-btns">
-                            <button class="btn-action btn-download-album" onclick='downloadAlbumZip(${JSON.stringify(item.images)}, "${item.folderName}")'>📥 โหลดทั้งหมด</button>
-                            <button class="btn-action btn-add-img" onclick="promptAddImages('${item.category}', '${item.folderName}')">➕ เพิ่ม</button>
-                            <button class="btn-action btn-del-album" onclick="promptDeleteAlbum('${item.category}', '${item.folderName}')">🗑️ ลบ</button>
+            let sortedYears = Object.keys(yearsMap).sort().reverse();
+            let html = '<div class="folder-grid">';
+            sortedYears.forEach(year => {
+                html += `
+                    <div class="folder-card" onclick="selectYear('${year}')">
+                        <div class="folder-icon">📁</div>
+                        <div class="folder-info">
+                            <h3>ปี ${year}</h3>
+                            <p>${yearsMap[year].count} อัลบั้ม (${yearsMap[year].images} รูป)</p>
                         </div>
                     </div>
                 `;
-                grid.appendChild(card);
             });
-
-            mainContainer.appendChild(grid);
+            html += '</div>';
+            mainContainer.innerHTML = html;
         }
 
-        async function downloadAlbumZip(images, folderName) {
-            if (!images || images.length === 0) {
-                showAlert("แจ้งเตือน", "ไม่มีรูปภาพในอัลบั้มนี้", false);
+        function selectYear(year) {
+            currentSelectedYear = year;
+            navigationLevel = 'months';
+            renderCurrentLevel();
+        }
+
+        function renderMonthsView() {
+            let monthsMap = {};
+            allAlbumsData.forEach(album => {
+                let parts = album.month ? album.month.split('/') : [];
+                let year = parts.length === 3 ? parts[2] : 'อื่นๆ';
+                if (year === currentSelectedYear) {
+                    let month = parts[1];
+                    if (!monthsMap[month]) monthsMap[month] = { count: 0, images: 0 };
+                    monthsMap[month].count++;
+                    monthsMap[month].images += (album.images ? album.images.length : 0);
+                }
+            });
+
+            let monthNames = {
+                "01": "มกราคม", "02": "กุมภาพันธ์", "03": "มีนาคม", "04": "เมษายน",
+                "05": "พฤษภาคม", "06": "มิถุนายน", "07": "กรกฎาคม", "08": "สิงหาคม",
+                "09": "กันยายน", "10": "ตุลาคม", "11": "พฤศจิกายน", "12": "ธันวาคม"
+            };
+
+            let sortedMonths = Object.keys(monthsMap).sort().reverse();
+            let html = '<div class="folder-grid">';
+            sortedMonths.forEach(m => {
+                let mName = monthNames[m] || `เดือน ${m}`;
+                html += `
+                    <div class="folder-card" onclick="selectMonth('${m}')">
+                        <div class="folder-icon">📂</div>
+                        <div class="folder-info">
+                            <h3>${mName} (${m})</h3>
+                            <p>${monthsMap[m].count} อัลบั้ม (${monthsMap[m].images} รูป)</p>
+                        </div>
+                    </div>
+                `;
+            });
+            html += '</div>';
+            mainContainer.innerHTML = html;
+        }
+
+        function selectMonth(m) {
+            currentSelectedMonth = m;
+            navigationLevel = 'albums';
+            renderCurrentLevel();
+        }
+
+        function renderAlbumsView() {
+            let filtered = allAlbumsData.filter(album => {
+                let parts = album.month ? album.month.split('/') : [];
+                let year = parts.length === 3 ? parts[2] : 'อื่นๆ';
+                let month = parts[1];
+                return year === currentSelectedYear && month === currentSelectedMonth;
+            });
+
+            let catFilter = categorySelect.value;
+            if (catFilter !== 'all') {
+                filtered = filtered.filter(a => a.optionType === catFilter);
+            }
+
+            let searchVal = searchCombinedInput.value.toLowerCase().trim();
+            if (searchVal !== '') {
+                filtered = filtered.filter(a => a.folderName.toLowerCase().includes(searchVal));
+            }
+
+            if (filtered.length === 0) {
+                mainContainer.innerHTML = '<div style="text-align: center; color: #94a3b8; padding: 3rem;">ไม่พบอัลบั้มภาพในเงื่อนไขนี้</div>';
                 return;
             }
 
-            document.getElementById('loadingTitle').innerText = "กรุณารอสักครู่";
-            document.getElementById('loadingDesc').innerText = `กำลังรวบรวมรูปภาพ (${images.length} รูป) ลงเครื่อง`;
-            loadingModal.style.display = 'flex';
+            let html = '<div class="album-grid">';
+            filtered.forEach(album => {
+                let badgeClass = album.optionType === 'Smartแถม' ? 'badge-free' : 'badge-smart';
+                let badgeText = album.optionType === 'Smartแถม' ? 'Smart (แถม)' : 'Smart';
+                
+                html += `
+                    <div class="album-card">
+                        <div class="album-header-bar">
+                            <span style="overflow: hidden; text-overflow: ellipsis; white-space: nowrap; margin-right: 0.5rem;" title="${album.folderName}">${album.folderName}</span>
+                            <span class="badge-tag ${badgeClass}">${badgeText}</span>
+                        </div>
+                        <div class="album-images-container">
+                `;
 
-            const zip = new JSZip();
-            const folder = zip.folder(`Album_${folderName}`);
-
-            try {
-                for (let i = 0; i < images.length; i++) {
-                    const imgUrl = images[i].url;
-                    const response = await fetch(imgUrl);
-                    const blob = await response.blob();
-                    folder.file(`photo_${i + 1}.jpg`, blob);
+                let imgs = album.images || [];
+                let displayCount = Math.min(imgs.length, 3);
+                for (let i = 0; i < displayCount; i++) {
+                    html += `<img src="${imgs[i]}" class="thumb-img" onclick="openModal('${encodeURIComponent(JSON.stringify(imgs))}', ${i})">`;
                 }
 
-                const content = await zip.generateAsync({ type: "blob" });
-                const link = document.createElement('a');
-                link.href = URL.createObjectURL(content);
-                link.download = `SmartMonitoring_${folderName}.zip`;
-                document.body.appendChild(link);
-                link.click();
-                document.body.removeChild(link);
-
-                loadingModal.style.display = 'none';
-            } catch (error) {
-                loadingModal.style.display = 'none';
-                showAlert("เกิดข้อผิดพลาด", "ไม่สามารถดาวน์โหลดไฟล์ได้ กรุณาลองใหม่อีกครั้ง", true);
-            }
-        }
-
-        async function downloadCurrentModalImage() {
-            const currentImgUrl = currentAlbumImages[currentIndex];
-            
-            document.getElementById('loadingTitle').innerText = "กรุณารอสักครู่";
-            document.getElementById('loadingDesc').innerText = "กำลังบันทึกลงเครื่องของคุณ";
-            loadingModal.style.display = 'flex';
-
-            try {
-                const response = await fetch(currentImgUrl);
-                const blob = await response.blob();
-                const link = document.createElement('a');
-                link.href = URL.createObjectURL(blob);
-                link.download = `SmartMonitoring_Image_${currentIndex + 1}.jpg`;
-                document.body.appendChild(link);
-                link.click();
-                document.body.removeChild(link);
-
-                loadingModal.style.display = 'none';
-            } catch (error) {
-                loadingModal.style.display = 'none';
-                const fallbackLink = document.createElement('a');
-                fallbackLink.href = currentImgUrl;
-                fallbackLink.target = '_blank';
-                fallbackLink.download = `Image_${currentIndex + 1}.jpg`;
-                fallbackLink.click();
-            }
-        }
-
-        function promptDeleteAlbum(category, folderName) {
-            pendingAction = 'delete';
-            selectedCategory = category;
-            selectedFolderName = folderName;
-            document.getElementById('dialogTitle').innerText = "🗑️ ใส่รหัสผ่านเพื่อลบอัลบั้ม";
-            document.getElementById('adminPasswordInput').value = '';
-            document.getElementById('passwordModal').style.display = 'flex';
-            setTimeout(() => document.getElementById('adminPasswordInput').focus(), 100);
-        }
-
-        function promptAddImages(category, folderName) {
-            pendingAction = 'add';
-            selectedCategory = category;
-            selectedFolderName = folderName;
-            document.getElementById('dialogTitle').innerText = "📷 ใส่รหัสผ่านเพื่อเพิ่มรูป";
-            document.getElementById('adminPasswordInput').value = '';
-            document.getElementById('passwordModal').style.display = 'flex';
-            setTimeout(() => document.getElementById('adminPasswordInput').focus(), 100);
-        }
-
-        function closePasswordModal() {
-            document.getElementById('passwordModal').style.display = 'none';
-        }
-
-        function checkPasswordLength(input) {
-            if (input.value.length === 4) {
-                const password = input.value;
-                closePasswordModal();
-
-                if (password !== "6004") {
-                    window.shouldReloadAfterAlert = false;
-                    showAlert("รหัสผ่านผิด", "รหัสผ่านไม่ถูกต้อง กรุณาลองใหม่อีกครั้ง", true);
-                    return;
-                }
-
-                if (pendingAction === 'delete') {
-                    setSystemStatus('orange', 'กำลังดำเนินการ...');
-                    showLoading("กรุณารอสักครู่", "ระบบกำลังดำเนินการลบอัลบั้ม...");
-                    sendDriveRequest({ action: 'delete', optionType: selectedCategory, folderName: selectedFolderName, password: password });
-                } else if (pendingAction === 'add') {
-                    window.verifiedPasswordForAdd = password;
-                    document.getElementById('targetAlbumLabel').innerText = `อัลบั้ม: ${selectedFolderName}`;
-                    document.getElementById('addImagesModal').style.display = 'flex';
-                }
-            }
-        }
-
-        async function uploadAdditionalImages() {
-            const fileInput = document.getElementById('additionalImagesInput');
-            if (fileInput.files.length === 0) {
-                showAlert("แจ้งเตือน", "กรุณาเลือกรูปภาพอย่างน้อย 1 รูป", false);
-                return;
-            }
-            document.getElementById('addImagesModal').style.display = 'none';
-            
-            setSystemStatus('orange', 'กำลังอัปโหลด...');
-            showLoading("กรุณารอสักครู่", `กำลังเพิ่มรูปภาพ (${fileInput.files.length} รูป)...`);
-            
-            let base64Images = [];
-            for (let file of fileInput.files) {
-                let base64 = await resizeAndCompressImage(file);
-                base64Images.push(base64);
-            }
-
-            sendDriveRequest({
-                action: 'add_images',
-                optionType: selectedCategory,
-                folderName: selectedFolderName,
-                password: window.verifiedPasswordForAdd,
-                images: base64Images
-            });
-        }
-
-        function showLoading(title, desc) {
-            document.getElementById('loadingTitle').innerText = title;
-            document.getElementById('loadingDesc').innerText = desc;
-            loadingModal.style.display = 'flex';
-        }
-
-        function resizeAndCompressImage(file) {
-            return new Promise((resolve) => {
-                const reader = new FileReader();
-                reader.readAsDataURL(file);
-                reader.onload = event => {
-                    const img = new Image();
-                    img.src = event.target.result;
-                    img.onload = () => {
-                        const canvas = document.createElement('canvas');
-                        let width = img.width;
-                        let height = img.height;
-                        const maxDim = 1200;
-                        if (width > height && width > maxDim) {
-                            height *= maxDim / width;
-                            width = maxDim;
-                        } else if (height > maxDim) {
-                            width *= maxDim / height;
-                            height = maxDim;
-                        }
-                        canvas.width = width;
-                        canvas.height = height;
-                        const ctx = canvas.getContext('2d');
-                        ctx.drawImage(img, 0, 0, width, height);
-                        resolve(canvas.toDataURL('image/jpeg', 0.8));
+                if (imgs.length > 3) {
+                    html += `
+                        <div class="more-images-box" onclick="openModal('${encodeURIComponent(JSON.stringify(imgs))}', 3)">
+                            <span>+${imgs.length - 3}</span>
+                            <span style="font-size: 0.65rem;">ดูทั้งหมด</span>
+                        </div>
+                    `;
+                } else if (imgs.length < 4) {
+                    for (let i = imgs.length; i < 4; i++) {
+                        html += `<div style="background: rgba(255,255,255,0.02); border-radius: 6px; height: 75px;"></div>`;
                     }
                 }
+
+                html += `
+                        </div>
+                        <div class="album-action-bar">
+                            <span class="album-footer-info">📅 ${album.month} (${imgs.length} รูป)</span>
+                            <div class="action-btns">
+                                <button class="btn-action btn-download-album" onclick="downloadAlbumZip('${encodeURIComponent(album.folderName)}', '${encodeURIComponent(JSON.stringify(imgs))}')">⬇️ โหลด ZIP</button>
+                                <button class="btn-action btn-add-img" onclick="promptAddImages('${album.folderName}')">➕ เพิ่มรูป</button>
+                                <button class="btn-action btn-del-album" onclick="promptDeleteAlbum('${album.folderName}', '${album.optionType}')">🗑️ ลบ</button>
+                            </div>
+                        </div>
+                    </div>
+                `;
             });
+            html += '</div>';
+            mainContainer.innerHTML = html;
         }
 
-        async function sendDriveRequest(payload) {
-            try {
-                const response = await fetch(SCRIPT_URL, {
-                    method: 'POST',
-                    body: JSON.stringify(payload)
-                });
-                const result = await response.json();
-                loadingModal.style.display = 'none';
-
-                if (result.status === "success") {
-                    setSystemStatus('green', 'พร้อมใช้งาน');
-                    window.shouldReloadAfterAlert = true;
-                    showAlert("สำเร็จ", "ดำเนินการเรียบร้อยแล้ว", false);
-                    fetchAlbums(false);
-                } else {
-                    setSystemStatus('green', 'พร้อมใช้งาน');
-                    window.shouldReloadAfterAlert = false;
-                    showAlert("รหัสผ่านผิด", result.message || "รหัสผ่านไม่ถูกต้อง", true);
-                }
-            } catch (err) {
-                loadingModal.style.display = 'none';
-                setSystemStatus('red', 'ขาดการเชื่อมต่อ');
-                window.shouldReloadAfterAlert = false;
-                showAlert("เกิดข้อผิดพลาด", "ไม่สามารถเชื่อมต่อกับเซิร์ฟเวอร์ได้", true);
+        function applyFilters() {
+            if (navigationLevel === 'albums') {
+                renderAlbumsView();
             }
         }
 
-        // --- ระบบซูมภาพและการเลื่อนรูป (Zoom & Swipe/Pan) ---
-        let scale = 1;
-        let panning = false;
-        let pointX = 0;
-        let pointY = 0;
-        let startX = 0;
-        let startY = 0;
+        // Modal รูปภาพ
+        let activeModalImages = [];
+        let activeModalIndex = 0;
+        let scale = 1, panning = false, pointX = 0, pointY = 0, startX = 0, startY = 0;
 
-        function openModal(imagesArray, index) {
-            currentAlbumImages = imagesArray;
-            currentIndex = index;
-            resetZoom();
-            updateModalImage();
-            
-            history.pushState({ modalOpen: true }, "", window.location.href);
+        function openModal(imagesJson, index) {
+            activeModalImages = JSON.parse(decodeURIComponent(imagesJson));
+            activeModalIndex = index;
+            showImageInModal();
             document.getElementById('imageModal').style.display = 'flex';
-        }
-
-        function updateModalImage() {
-            const modalImg = document.getElementById('modalImg');
-            const modalCounter = document.getElementById('modalCounter');
-            modalImg.src = currentAlbumImages[currentIndex];
-            modalCounter.innerText = `${currentIndex + 1} / ${currentAlbumImages.length}`;
-            resetZoom();
-        }
-
-        function resetZoom() {
-            scale = 1;
-            pointX = 0;
-            pointY = 0;
-            const modalImg = document.getElementById('modalImg');
-            modalImg.style.transform = `translate(0px, 0px) scale(1)`;
-        }
-
-        function nextImage() {
-            if (scale > 1) return; // ถ้าซูมอยู่ จะไม่ให้เลื่อนรูปถัดไปอัตโนมัติเพื่อป้องกันการชนกัน
-            currentIndex = (currentIndex + 1) % currentAlbumImages.length;
-            updateModalImage();
-        }
-
-        function prevImage() {
-            if (scale > 1) return;
-            currentIndex = (currentIndex - 1 + currentAlbumImages.length) % currentAlbumImages.length;
-            updateModalImage();
         }
 
         function closeModal() {
             document.getElementById('imageModal').style.display = 'none';
         }
 
-        // รองรับการซูมด้วย Mouse Wheel บนคอมพิวเตอร์
-        const modalImg = document.getElementById('modalImg');
-        const modalWrapper = document.getElementById('modalWrapper');
+        function showImageInModal() {
+            const img = document.getElementById('modalImg');
+            img.src = activeModalImages[activeModalIndex];
+            document.getElementById('modalCounter').innerText = `${activeModalIndex + 1} / ${activeModalImages.length}`;
+            resetTransform();
+        }
 
+        function nextImage() {
+            activeModalIndex = (activeModalIndex + 1) % activeModalImages.length;
+            showImageInModal();
+        }
+
+        function prevImage() {
+            activeModalIndex = (activeModalIndex - 1 + activeModalImages.length) % activeModalImages.length;
+            showImageInModal();
+        }
+
+        function resetTransform() {
+            scale = 1; pointX = 0; pointY = 0;
+            updateTransform();
+        }
+
+        function updateTransform() {
+            const img = document.getElementById('modalImg');
+            img.style.transform = `translate(${pointX}px, ${pointY}px) scale(${scale})`;
+        }
+
+        const modalWrapper = document.getElementById('modalWrapper');
         modalWrapper.addEventListener('wheel', (e) => {
             e.preventDefault();
-            const xs = (e.clientX - pointX);
-            const ys = (e.clientY - pointY);
-            if (e.deltaY < 0) {
-                scale *= 1.1;
-            } else {
-                scale /= 1.1;
-            }
-            scale = Math.max(1, Math.min(scale, 5)); // ซูมได้สูงสุด 5 เท่า ต่ำสุด 1 เท่า
-            if (scale === 1) {
-                pointX = 0;
-                pointY = 0;
-            }
-            modalImg.style.transform = `translate(${pointX}px, ${pointY}px) scale(${scale})`;
+            const img = document.getElementById('modalImg');
+            let xs = (e.clientX - pointX), ys = (e.clientY - pointY);
+            if (e.deltaY < 0) { scale *= 1.2; } else { scale /= 1.2; }
+            scale = Math.max(1, Math.min(scale, 5));
+            updateTransform();
         });
 
-        // รองรับการลากภาพ (Pan) เมื่อซูม หรือปัดเปลี่ยนรูปเมื่อไม่ได้ซูม
-        let touchStartX = 0;
-        let touchStartY = 0;
+        modalWrapper.addEventListener('mousedown', (e) => {
+            e.preventDefault();
+            startX = e.clientX - pointX; startY = e.clientY - pointY;
+            panning = true;
+        });
 
-        modalWrapper.addEventListener('pointerdown', (e) => {
-            if (scale > 1) {
-                panning = true;
-                startX = e.clientX - pointX;
-                startY = e.clientY - pointY;
-                modalImg.setPointerCapture(e.pointerId);
-            } else {
-                touchStartX = e.clientX;
-                touchStartY = e.clientY;
+        modalWrapper.addEventListener('mouseup', () => { panning = false; });
+        modalWrapper.addEventListener('mousemove', (e) => {
+            if (!panning) return;
+            e.preventDefault();
+            pointX = e.clientX - startX; pointY = e.clientY - startY;
+            updateTransform();
+        });
+
+        function downloadCurrentModalImage() {
+            let imgUrl = activeModalImages[activeModalIndex];
+            let a = document.createElement('a');
+            a.href = imgUrl;
+            a.download = `Photo_${activeModalIndex + 1}.jpg`;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+        }
+
+        // ระบบดาวน์โหลด ZIP
+        async function downloadAlbumZip(folderNameEncoded, imagesJson) {
+            let folderName = decodeURIComponent(folderNameEncoded);
+            let imgs = JSON.parse(decodeURIComponent(imagesJson));
+
+            document.getElementById('loadingTitle').innerText = "กำลังสร้างไฟล์ ZIP";
+            document.getElementById('loadingDesc').innerText = `กำลังรวบรวมรูปภาพ ${imgs.length} รูป...`;
+            loadingModal.style.display = 'flex';
+
+            try {
+                const zip = new JSZip();
+                let imgFolder = zip.folder(folderName);
+
+                for (let i = 0; i < imgs.length; i++) {
+                    let response = await fetch(imgs[i]);
+                    let blob = await response.blob();
+                    imgFolder.file(`Photo_${i + 1}.jpg`, blob);
+                }
+
+                let content = await zip.generateAsync({ type: "blob" });
+                let a = document.createElement('a');
+                a.href = URL.createObjectURL(content);
+                a.download = `${folderName}.zip`;
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+                loadingModal.style.display = 'none';
+            } catch (err) {
+                loadingModal.style.display = 'none';
+                alert("ไม่สามารถสร้างไฟล์ ZIP ได้");
             }
-        });
+        }
 
-        modalWrapper.addEventListener('pointermove', (e) => {
-            if (!panning || scale <= 1) return;
-            pointX = e.clientX - startX;
-            pointY = e.clientY - startY;
-            modalImg.style.transform = `translate(${pointX}px, ${pointY}px) scale(${scale})`;
-        });
+        // ระบบรหัสผ่านและการจัดการแอดมิน (ลบอัลบั้ม / เพิ่มรูป)
+        function promptDeleteAlbum(folderName, optionType) {
+            pendingAction = { type: 'delete', folderName: folderName, optionType: optionType };
+            document.getElementById('dialogTitle').innerText = "🔒 ใส่รหัสผ่านเพื่อลบอัลบั้ม";
+            document.getElementById('adminPasswordInput').value = '';
+            document.getElementById('passwordModal').style.display = 'flex';
+            document.getElementById('adminPasswordInput').focus();
+        }
 
-        modalWrapper.addEventListener('pointerup', (e) => {
-            if (scale <= 1) {
-                const diffX = e.clientX - touchStartX;
-                const diffY = e.clientY - touchStartY;
-                if (Math.abs(diffX) > 50 && Math.abs(diffY) < 50) {
-                    if (diffX < 0) {
-                        nextImage();
-                    } else {
-                        prevImage();
-                    }
+        function promptAddImages(folderName) {
+            selectedFolderName = folderName;
+            document.getElementById('targetAlbumLabel').innerText = folderName;
+            document.getElementById('additionalImagesInput').value = '';
+            document.getElementById('addImagesModal').style.display = 'flex';
+        }
+
+        function closePasswordModal() {
+            document.getElementById('passwordModal').style.display = 'none';
+            pendingAction = null;
+        }
+
+        function checkPasswordLength(input) {
+            if (input.value.length === 4) {
+                let pwd = input.value;
+                closePasswordModal();
+                if (pwd === "1234") { // เปลี่ยนรหัสผ่านตรงนี้ได้ตามต้องการ
+                    executePendingAction();
+                } else {
+                    document.getElementById('alertTitle').innerText = "รหัสผ่านไม่ถูกต้อง";
+                    document.getElementById('alertDesc').innerText = "กรุณากรอกรหัสผ่าน 4 หลักใหม่อีกครั้ง";
+                    document.getElementById('customAlertModal').style.display = 'flex';
                 }
             }
-            panning = false;
-        });
+        }
 
-        document.addEventListener('keydown', function(e) {
-            const modal = document.getElementById('imageModal');
-            if (modal.style.display === 'flex') {
-                if (e.key === 'ArrowRight' && scale === 1) nextImage();
-                if (e.key === 'ArrowLeft' && scale === 1) prevImage();
-                if (e.key === 'Escape') closeModal();
+        function closeCustomAlert() {
+            document.getElementById('customAlertModal').style.display = 'none';
+        }
+
+        async function executePendingAction() {
+            if (!pendingAction) return;
+            if (pendingAction.type === 'delete') {
+                document.getElementById('loadingTitle').innerText = "กำลังลบอัลบั้ม";
+                document.getElementById('loadingDesc').innerText = "โปรดรอสักครู่...";
+                loadingModal.style.display = 'flex';
+
+                try {
+                    let response = await fetch(SCRIPT_URL, {
+                        method: 'POST',
+                        body: JSON.stringify({
+                            action: 'delete',
+                            folderName: pendingAction.folderName,
+                            optionType: pendingAction.optionType
+                        })
+                    });
+                    let result = await response.json();
+                    loadingModal.style.display = 'none';
+                    if (result.status === "success") {
+                        alert("ลบอัลบั้มสำเร็จ!");
+                        fetchAllAlbums();
+                    } else {
+                        alert("ผิดพลาด: " + result.message);
+                    }
+                } catch (err) {
+                    loadingModal.style.display = 'none';
+                    alert("เชื่อมต่อเซิร์ฟเวอร์ไม่สำเร็จ");
+                }
             }
-        });
+            pendingAction = null;
+        }
 
-        fetchAlbums();
+        async function uploadAdditionalImages() {
+            let input = document.getElementById('additionalImagesInput');
+            if (!input.files || input.files.length === 0) return alert("กรุณาเลือกรูปภาพ");
+
+            document.getElementById('addImagesModal').style.display = 'none';
+            document.getElementById('loadingTitle').innerText = "กำลังอัปโหลดรูปภาพเพิ่ม";
+            document.getElementById('loadingDesc').innerText = "กำลังประมวลผลและบันทึก...";
+            loadingModal.style.display = 'flex';
+
+            try {
+                let base64Images = [];
+                for (let file of input.files) {
+                    let b64 = await fileToBase64(file, 1200);
+                    base64Images.push(b64);
+                }
+
+                let response = await fetch(SCRIPT_URL, {
+                    method: 'POST',
+                    body: JSON.stringify({
+                        action: 'addImages',
+                        folderName: selectedFolderName,
+                        images: base64Images
+                    })
+                });
+                let result = await response.json();
+                loadingModal.style.display = 'none';
+
+                if (result.status === "success") {
+                    alert("เพิ่มรูปภาพสำเร็จ!");
+                    fetchAllAlbums();
+                } else {
+                    alert("ผิดพลาด: " + result.message);
+                }
+            } catch (err) {
+                loadingModal.style.display = 'none';
+                alert("เชื่อมต่อเซิร์ฟเวอร์ไม่สำเร็จ");
+            }
+        }
+
+        function fileToBase64(file, maxDim) {
+            return new Promise((resolve) => {
+                const reader = new FileReader();
+                reader.readAsDataURL(file);
+                reader.onload = e => {
+                    const img = new Image();
+                    img.src = e.target.result;
+                    img.onload = () => {
+                        const canvas = document.createElement('canvas');
+                        let w = img.width, h = img.height;
+                        if (w > h && w > maxDim) { h *= maxDim / w; w = maxDim; }
+                        else if (h > maxDim) { w *= maxDim / h; h = maxDim; }
+                        canvas.width = w; canvas.height = h;
+                        canvas.getContext('2d').drawImage(img, 0, 0, w, h);
+                        resolve(canvas.toDataURL('image/jpeg', 0.85).split(',')[1]);
+                    };
+                };
+            });
+        }
     </script>
 </body>
 </html>
