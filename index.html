@@ -136,52 +136,38 @@
         }
         .btn-add:hover { background-color: #115e59; transform: translateY(-1px); }
 
-        /* จัดระเบียบแถบควบคุมใหม่: 3 ช่องซ้ายรวมกัน, ช่องค้นหาขวา 20% */
+        /* ดีไซน์ตามแบบที่วาดมา: ค้นหาด้านบน, หมวดหมู่ด้านล่าง */
         .controls-wrapper {
             display: flex;
-            gap: 0.8rem;
-            flex-wrap: nowrap;
-            align-items: center;
-        }
-
-        .filters-group {
-            display: flex;
+            flex-direction: column;
             gap: 0.6rem;
-            flex: 1; /* กินพื้นที่ส่วนที่เหลือ */
-            flex-wrap: wrap;
             background-color: #323b4d;
             border: 1px solid #434e63;
-            padding: 0.6rem;
-            border-radius: 14px;
+            padding: 0.8rem 1rem;
+            border-radius: 16px;
             box-shadow: 0 4px 15px rgba(0,0,0,0.2);
-        }
-
-        .filter-item {
-            display: flex;
-            gap: 0.4rem;
-            align-items: center;
-            flex: 1;
-            min-width: 140px;
         }
 
         .search-container {
             display: flex;
-            gap: 0.5rem;
+            gap: 0.6rem;
             align-items: center;
-            background-color: #323b4d;
-            border: 1px solid #434e63;
-            padding: 0.6rem 0.8rem;
-            border-radius: 14px;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
-            flex: 0 0 22%; /* ประมาณ 20-22% ตามต้องการ */
-            min-width: 180px;
+            width: 100%;
+        }
+
+        .filter-container {
+            display: flex;
+            gap: 0.6rem;
+            align-items: center;
+            width: 100%;
         }
 
         .filter-label {
-            font-size: 0.82rem;
+            font-size: 0.9rem;
             color: #94a3b8;
             font-weight: 600;
             white-space: nowrap;
+            min-width: 55px;
         }
 
         .filter-select, .search-input {
@@ -189,21 +175,15 @@
             background-color: #262c38;
             color: #f8fafc;
             border: 1px solid #4d5b73;
-            padding: 0.5rem 0.7rem;
-            border-radius: 8px;
-            font-size: 0.85rem;
+            padding: 0.6rem 0.9rem;
+            border-radius: 10px;
+            font-size: 0.9rem;
             font-weight: 600;
             outline: none;
             transition: border-color 0.2s;
-            width: 100%;
         }
         .filter-select:focus, .search-input:focus { border-color: #38bdf8; }
-        .search-input::placeholder { color: #64748b; font-weight: 400; font-size: 0.82rem; }
-
-        @media(max-width: 900px) {
-            .controls-wrapper { flex-wrap: wrap; }
-            .search-container { flex: 1 1 100%; min-width: 100%; }
-        }
+        .search-input::placeholder { color: #64748b; font-weight: 400; }
 
         .folder-grid {
             display: grid;
@@ -493,7 +473,7 @@
             </div>
         </div>
 
-        <!-- แถบควบคุมแบบคอมแพค ล็อคติดด้านบน -->
+        <!-- แถบควบคุมตามแบบที่วาดมา ล็อคติดด้านบน -->
         <div class="sticky-nav-area">
             <div class="top-action-bar">
                 <div class="section-title" id="sectionTitle">
@@ -505,36 +485,21 @@
                 </div>
             </div>
 
-            <!-- ช่องตัวเลือกเรียงตามลำดับ ปี > หมวด > วัน/เดือน/ปีอัลบั้ม (และช่องค้นหาขวา 20%) -->
             <div class="controls-wrapper">
-                <div class="filters-group">
-                    <div class="filter-item">
-                        <span class="filter-label">📅 ปี:</span>
-                        <select id="yearSelect" class="filter-select" onchange="applyFilters()">
-                            <option value="all">ทั้งหมด</option>
-                        </select>
-                    </div>
-
-                    <div class="filter-item">
-                        <span class="filter-label">🔍 หมวด:</span>
-                        <select id="categorySelect" class="filter-select" onchange="applyFilters()">
-                            <option value="all">ทั้งหมด</option>
-                            <option value="Smart">Smart</option>
-                            <option value="Smartแถม">Smart (แถม)</option>
-                        </select>
-                    </div>
-
-                    <div class="filter-item">
-                        <span class="filter-label">📂 งวด:</span>
-                        <select id="monthFolderSelect" class="filter-select" onchange="applyMonthFolderSelect(this.value)">
-                            <option value="all">ทุกเดือน</option>
-                        </select>
-                    </div>
+                <!-- ช่องค้นหาด้านบน -->
+                <div class="search-container">
+                    <span class="filter-label">ค้นหา:</span>
+                    <input type="text" id="searchInput" class="search-input" placeholder="พิมพ์ชื่อหัวข้ออัลบั้ม..." oninput="applyFilters()">
                 </div>
 
-                <div class="search-container">
-                    <span class="filter-label">🔎</span>
-                    <input type="text" id="searchInput" class="search-input" placeholder="ค้นหาชื่ออัลบั้ม..." oninput="applyFilters()">
+                <!-- ช่องเลือกหมวดหมู่ด้านล่าง -->
+                <div class="filter-container">
+                    <span class="filter-label">หมวด:</span>
+                    <select id="categorySelect" class="filter-select" onchange="applyFilters()">
+                        <option value="all">ทั้งหมด</option>
+                        <option value="Smart">Smart</option>
+                        <option value="Smartแถม">Smart (แถม)</option>
+                    </select>
                 </div>
             </div>
         </div>
@@ -661,7 +626,6 @@
                 allAlbumsData = await response.json();
                 
                 loadingView.style.display = 'none';
-                populateDropdowns();
                 
                 if (history.state) {
                     if (history.state.month) {
@@ -691,100 +655,28 @@
             renderView(false);
         };
 
-        function populateDropdowns() {
-            const yearSelect = document.getElementById('yearSelect');
-            const monthFolderSelect = document.getElementById('monthFolderSelect');
-            const years = new Set();
-            const months = new Set();
-
-            allAlbumsData.forEach(item => {
-                if (item.month) {
-                    const year = item.month.split('-')[0];
-                    if (year) years.add(year);
-                    months.add(item.month);
-                }
-            });
-
-            const sortedYears = Array.from(years).sort().reverse();
-            yearSelect.innerHTML = '<option value="all">ทั้งหมด</option>';
-            sortedYears.forEach(year => {
-                yearSelect.innerHTML += `<option value="${year}">${year}</option>`;
-            });
-
-            const sortedMonths = Array.from(months).sort().reverse();
-            monthFolderSelect.innerHTML = '<option value="all">ทุกเดือนในระบบ</option>';
-            sortedMonths.forEach(m => {
-                monthFolderSelect.innerHTML += `<option value="${m}">${formatMonthDisplay(m)}</option>`;
-            });
-        }
-
         function applyFilters() {
-            // ถ้ารีเซ็ตช่องปี ให้กรองเดือนตามปีที่เลือก
-            const selectedYear = document.getElementById('yearSelect').value;
-            const monthFolderSelect = document.getElementById('monthFolderSelect');
-            
-            const months = new Set();
-            allAlbumsData.forEach(item => {
-                if (item.month) {
-                    if (selectedYear === 'all' || item.month.startsWith(selectedYear)) {
-                        months.add(item.month);
-                    }
-                }
-            });
-            const sortedMonths = Array.from(months).sort().reverse();
-            const currentVal = monthFolderSelect.value;
-            
-            monthFolderSelect.innerHTML = '<option value="all">ทุกเดือนในระบบ</option>';
-            sortedMonths.forEach(m => {
-                monthFolderSelect.innerHTML += `<option value="${m}">${formatMonthDisplay(m)}</option>`;
-            });
-            if (months.has(currentVal)) {
-                monthFolderSelect.value = currentVal;
-            } else {
-                monthFolderSelect.value = 'all';
-            }
-
-            renderView();
-        }
-
-        function applyMonthFolderSelect(monthVal) {
-            if (monthVal !== 'all') {
-                currentSelectedMonth = monthVal;
-            } else {
-                currentSelectedMonth = null;
-            }
             renderView();
         }
 
         function renderView(pushHistory = true) {
             mainContainer.innerHTML = '';
 
-            const selectedYear = document.getElementById('yearSelect').value;
             const selectedCategory = document.getElementById('categorySelect').value;
-            const selectedMonthFolder = document.getElementById('monthFolderSelect').value;
             const searchKeyword = document.getElementById('searchInput').value.trim().toLowerCase();
 
             let filteredAlbums = allAlbumsData;
             
-            if (selectedYear !== 'all') {
-                filteredAlbums = filteredAlbums.filter(item => item.month && item.month.startsWith(selectedYear));
-            }
-
             if (selectedCategory !== 'all') {
                 filteredAlbums = filteredAlbums.filter(item => item.category === selectedCategory);
-            }
-
-            if (selectedMonthFolder !== 'all') {
-                filteredAlbums = filteredAlbums.filter(item => item.month === selectedMonthFolder);
             }
 
             if (searchKeyword !== '') {
                 filteredAlbums = filteredAlbums.filter(item => item.folderName.toLowerCase().includes(searchKeyword));
             }
 
-            // ถ้ามีการใช้ช่องค้นหาหรือกรองหมวดหมู่หรือเลือกเดือนเจาะจง ให้แสดงรายการอัลบั้มตรงๆ เลย
-            if (searchKeyword !== '' || selectedCategory !== 'all' || selectedMonthFolder !== 'all') {
-                if (currentSelectedMonth === null && searchKeyword === '' && selectedCategory === 'all' && selectedMonthFolder === 'all') {
+            if (searchKeyword !== '' || selectedCategory !== 'all') {
+                if (currentSelectedMonth === null && searchKeyword === '' && selectedCategory === 'all') {
                     // หน้าแรกปกติ
                 } else {
                     renderAlbumsList(filteredAlbums);
@@ -840,18 +732,15 @@
 
         function selectMonthFolder(month) {
             currentSelectedMonth = month;
-            document.getElementById('monthFolderSelect').value = month;
             history.pushState({ month: month }, "", `#${month}`);
             renderView(false);
         }
 
         function goBackToFolders() {
             currentSelectedMonth = null;
-            document.getElementById('monthFolderSelect').value = 'all';
             history.pushState({ month: null }, "", window.location.pathname);
             document.getElementById('searchInput').value = '';
             document.getElementById('categorySelect').value = 'all';
-            document.getElementById('yearSelect').value = 'all';
             renderView(false);
         }
 
