@@ -110,17 +110,17 @@
 
         .preview-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(75px, 1fr));
+            grid-template-columns: repeat(auto-fill, minmax(110px, 1fr));
             gap: 0.6rem;
             margin-top: 0.8rem;
-            max-height: 180px;
+            max-height: 230px;
             overflow-y: auto;
             padding: 0.3rem;
         }
 
         .preview-item {
             position: relative;
-            height: 75px;
+            height: 100px;
             border-radius: 8px;
             overflow: hidden;
             border: 1px solid #4d5b73;
@@ -136,6 +136,24 @@
         }
         .preview-item img:hover {
             transform: scale(1.05);
+        }
+
+        .img-date-tag {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: rgba(15, 23, 42, 0.85);
+            color: #38bdf8;
+            font-size: 0.65rem;
+            font-weight: 700;
+            padding: 2px 4px;
+            text-align: center;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            pointer-events: none;
+            border-top: 1px solid rgba(56, 189, 248, 0.3);
         }
 
         .btn-remove-img {
@@ -155,6 +173,7 @@
             align-items: center;
             justify-content: center;
             box-shadow: 0 2px 5px rgba(0,0,0,0.3);
+            z-index: 5;
         }
 
         .form-actions {
@@ -197,10 +216,20 @@
         }
         .modal-content {
             max-width: 90%;
-            max-height: 80vh;
+            max-height: 75vh;
             border-radius: 10px;
             object-fit: contain;
             box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+        }
+        .modal-date-info {
+            color: #38bdf8;
+            font-size: 0.9rem;
+            font-weight: 700;
+            margin-top: 0.8rem;
+            background: rgba(30, 41, 59, 0.8);
+            padding: 0.4rem 1rem;
+            border-radius: 8px;
+            border: 1px solid #38bdf8;
         }
         .modal-close {
             position: absolute;
@@ -255,7 +284,7 @@
 
             <div class="form-group">
                 <label class="form-label">วันที่ปฏิบัติงาน (วัน/เดือน/ปี):</label>
-                <input type="text" id="dateInput" class="form-input" required readonly>
+                <input type="text" id="dateInput" class="form-input" placeholder="เช่น 26/10/2026" required>
             </div>
 
             <div class="form-group">
@@ -285,6 +314,7 @@
     <div id="imageModal" class="modal" onclick="closeModal()">
         <button class="modal-close" onclick="closeModal()">&times;</button>
         <img class="modal-content" id="modalImg">
+        <div id="modalDateInfo" class="modal-date-info"></div>
     </div>
 
     <!-- Modal กำลังโหลด -->
@@ -300,7 +330,7 @@
         let selectedCategory = "Smart";
         let selectedFiles = [];
 
-        // ตั้งค่าวันที่ปัจจุบัน (วัน/เดือน/ปี ค.ศ.)
+        // ตั้งค่าวันที่ปัจจุบันเป็นค่าเริ่มต้น
         const today = new Date();
         const dd = String(today.getDate()).padStart(2, '0');
         const mm = String(today.getMonth() + 1).padStart(2, '0');
@@ -318,14 +348,27 @@
             }
         }
 
+        function formatDate(dateObj) {
+            if (!dateObj || isNaN(dateObj.getTime())) return "ไม่ทราบวันที่";
+            const d = String(dateObj.getDate()).padStart(2, '0');
+            const m = String(dateObj.getMonth() + 1).padStart(2, '0');
+            const y = dateObj.getFullYear();
+            const hh = String(dateObj.getHours()).padStart(2, '0');
+            const min = String(dateObj.getMinutes()).padStart(2, '0');
+            return `${d}/${m}/${y} ${hh}:${min}`;
+        }
+
         function handleFileSelect(input) {
             if (!input.files || input.files.length === 0) return;
             
             for (let file of input.files) {
+                // อ่านเวลาแก้ไขล่าสุดของรูปถ่าย
+                const photoDate = file.lastModified ? new Date(file.lastModified) : new Date();
+                file.formattedDate = formatDate(photoDate);
                 selectedFiles.push(file);
             }
             renderPreview();
-            input.value = ''; // เคลียร์ค่าเพื่อให้เลือกซ้ำไฟล์เดิมได้
+            input.value = '';
         }
 
         function renderPreview() {
@@ -340,7 +383,7 @@
             }
 
             grid.style.display = 'grid';
-            label.innerText = `เลือกแล้ว ${selectedFiles.length} รูป (แตะรูปเพื่อดูตัวอย่าง)`;
+            label.innerText = `เลือกแล้ว ${selectedFiles.length} รูป (แตะรูปเพื่อดูตัวอย่าง/วันที่)`;
 
             selectedFiles.forEach((file, index) => {
                 const reader = new FileReader();
@@ -348,7 +391,8 @@
                     const item = document.createElement('div');
                     item.className = 'preview-item';
                     item.innerHTML = `
-                        <img src="${e.target.result}" onclick="openModal('${e.target.result}')" alt="Preview">
+                        <img src="${e.target.result}" onclick="openModal('${e.target.result}', '${file.formattedDate}')" alt="Preview">
+                        <div class="img-date-tag">📅 ${file.formattedDate}</div>
                         <button type="button" class="btn-remove-img" onclick="removeFile(${index})">&times;</button>
                     `;
                     grid.appendChild(item);
@@ -362,8 +406,9 @@
             renderPreview();
         }
 
-        function openModal(imgSrc) {
+        function openModal(imgSrc, dateText) {
             document.getElementById('modalImg').src = imgSrc;
+            document.getElementById('modalDateInfo').innerText = `📅 วันที่ถ่ายรูป: ${dateText}`;
             document.getElementById('imageModal').style.display = 'flex';
         }
 
