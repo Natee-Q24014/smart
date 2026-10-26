@@ -560,10 +560,10 @@
         let selectedFolderName = '';
 
         function formatMonthDisplay(monthStr) {
-            // แปลงจาก "YYYY-MM" (เช่น "2026-10") เป็น "MM-YYYY" (เช่น "10-2026")
+            // แปลงจาก "YYYY-MM" (เช่น "2026-10") เป็น "MM/YYYY" (เช่น "10/2026")
             if (!monthStr || !monthStr.includes('-')) return monthStr;
             const parts = monthStr.split('-');
-            return `${parts[1]}-${parts[0]}`;
+            return `${parts[1]}/${parts[0]}`;
         }
 
         function showAlert(title, desc, isError = false) {
@@ -667,14 +667,14 @@
 
                 sortedMonths.forEach(month => {
                     const count = filteredAlbums.filter(item => item.month === month).length;
-                    const displayMonth = formatMonthDisplay(month); // สลับเป็น เดือน-ปี เช่น 10-2026
+                    const displayMonth = formatMonthDisplay(month); // แสดงผลเป็น MM/YYYY เช่น 10/2026
                     const folderCard = document.createElement('div');
                     folderCard.className = 'folder-card';
                     folderCard.onclick = () => selectMonthFolder(month);
                     folderCard.innerHTML = `
                         <div class="folder-icon">📂</div>
                         <div class="folder-info">
-                            <h3>ประจำเดือน ${displayMonth}</h3>
+                            <h3>${displayMonth}</h3>
                             <p>${count} อัลบั้ม</p>
                         </div>
                     `;
@@ -685,7 +685,7 @@
 
             } else {
                 backBtn.style.display = 'inline-flex';
-                sectionTitle.innerHTML = `<span>📁 อัลบั้มประจำเดือน: ${formatMonthDisplay(currentSelectedMonth)}</span>`;
+                sectionTitle.innerHTML = `<span>📁 อัลบั้มเดือน: ${formatMonthDisplay(currentSelectedMonth)}</span>`;
 
                 const monthAlbums = filteredAlbums.filter(item => item.month === currentSelectedMonth);
                 renderAlbumsList(monthAlbums);
