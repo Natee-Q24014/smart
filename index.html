@@ -517,10 +517,11 @@
             position: fixed;
             z-index: 999;
             top: 0; left: 0; width: 100%; height: 100%;
-            background-color: rgba(18, 22, 30, 0.9);
+            background-color: rgba(18, 22, 30, 0.95);
             justify-content: center;
             align-items: center;
             flex-direction: column;
+            overflow: hidden;
         }
 
         .modal-top-bar {
@@ -552,20 +553,26 @@
 
         .modal-content-wrapper {
             position: relative;
-            max-width: 90%;
-            max-height: 75vh;
+            width: 100%;
+            height: 100%;
             display: flex;
             justify-content: center;
             align-items: center;
-            margin-top: 2rem;
+            overflow: hidden;
+            touch-action: none;
         }
 
         .modal-content {
-            max-width: 100%;
-            max-height: 75vh;
+            max-width: 90%;
+            max-height: 80vh;
             border-radius: 8px;
             object-fit: contain;
             user-select: none;
+            transition: transform 0.1s ease-out;
+            cursor: grab;
+        }
+        .modal-content:active {
+            cursor: grabbing;
         }
 
         .modal-close {
@@ -592,7 +599,14 @@
         .nav-prev { left: 5px; }
         .nav-next { right: 5px; }
 
-        .modal-counter { color: #94a3b8; margin-top: 0.8rem; font-size: 0.85rem; font-weight: 600; }
+        .modal-counter { 
+            position: absolute;
+            bottom: 20px;
+            color: #94a3b8; 
+            font-size: 0.85rem; 
+            font-weight: 600; 
+            z-index: 1000;
+        }
 
         .dialog-box {
             background-color: #323b4d;
@@ -750,7 +764,7 @@
     <button id="scrollTopBtn" class="scroll-top-btn" onclick="scrollToTop()" title="เลื่อนขึ้นด้านบน">&#8593;</button>
 
     <!-- Modal ดูรูปภาพ -->
-    <div id="imageModal" class="modal" style="z-index: 999;">
+    <div id="imageModal" class="modal">
         <div class="modal-top-bar">
             <button class="btn-modal-download" onclick="downloadCurrentModalImage()">⬇️ ดาวน์โหลดรูปนี้</button>
             <button class="modal-close" onclick="closeModal()">&times;</button>
@@ -775,22 +789,15 @@
         </div>
     </div>
 
-    <!-- Modal เลือกรูปเพิ่มและพรีวิวก่อนอัปโหลด -->
+    <!-- Modal เลือกรูปเพิ่ม -->
     <div id="addImagesModal" class="modal" style="z-index: 1005;">
-        <div class="dialog-box" style="max-width: 500px; width: 95%;">
-            <h3>📷 เพิ่มและตรวจสอบรูปภาพ</h3>
+        <div class="dialog-box">
+            <h3>📷 เพิ่มรูปภาพในอัลบั้ม</h3>
             <p id="targetAlbumLabel" style="font-size: 0.78rem; color: #38bdf8; margin-bottom: 0.6rem; word-break: break-all; font-weight: 600;"></p>
-            
-            <input type="file" id="additionalImagesInput" multiple accept="image/*" style="font-size: 0.8rem; padding: 0.4rem; margin-bottom: 0.8rem;" onchange="previewSelectedImages(this)">
-            
-            <!-- พื้นแสดงรูปตัวอย่างก่อนอัปโหลด -->
-            <div id="previewContainer" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(80px, 1fr)); gap: 0.5rem; max-height: 200px; overflow-y: auto; background: #262c38; padding: 0.5rem; border-radius: 8px; margin-bottom: 1rem; border: 1px solid #4d5b73;">
-                <p style="grid-column: 1 / -1; color: #64748b; font-size: 0.78rem; text-align: center; padding: 1rem;">ยังไม่ได้เลือกรูปภาพ</p>
-            </div>
-
+            <input type="file" id="additionalImagesInput" multiple accept="image/*" style="font-size: 0.8rem; padding: 0.4rem;">
             <div class="dialog-btns">
-                <button class="btn-cancel" onclick="closeAddModal()">ยกเลิก</button>
-                <button class="btn-confirm" id="btnUploadConfirm" onclick="uploadAdditionalImages()" disabled style="opacity: 0.5; cursor: not-allowed;">ยืนยันอัปโหลด</button>
+                <button class="btn-cancel" onclick="document.getElementById('addImagesModal').style.display='none'">ยกเลิก</button>
+                <button class="btn-confirm" onclick="uploadAdditionalImages()">อัปโหลด</button>
             </div>
         </div>
     </div>
@@ -838,7 +845,6 @@
         let pendingAction = null;
         let selectedCategory = '';
         let selectedFolderName = '';
-        let selectedFilesList = []; // เก็บไฟล์ที่ผู้ใช้เลือกไว้ชั่วคราว
 
         let deferredPrompt;
 
@@ -1300,12 +1306,6 @@
             document.getElementById('passwordModal').style.display = 'none';
         }
 
-        function closeAddModal() {
-            document.getElementById('addImagesModal').style.display = 'none';
-            selectedFilesList = [];
-            document.getElementById('additionalImagesInput').value = '';
-        }
-
         function checkPasswordLength(input) {
             if (input.value.length === 4) {
                 const password = input.value;
@@ -1324,79 +1324,24 @@
                 } else if (pendingAction === 'add') {
                     window.verifiedPasswordForAdd = password;
                     document.getElementById('targetAlbumLabel').innerText = `อัลบั้ม: ${selectedFolderName}`;
-                    // เคลียร์ค่าไฟล์พรีวิวก่อนเปิด
-                    selectedFilesList = [];
-                    document.getElementById('additionalImagesInput').value = '';
-                    document.getElementById('previewContainer').innerHTML = '<p style="grid-column: 1 / -1; color: #64748b; font-size: 0.78rem; text-align: center; padding: 1rem;">ยังไม่ได้เลือกรูปภาพ</p>';
-                    document.getElementById('btnUploadConfirm').disabled = true;
-                    document.getElementById('btnUploadConfirm').style.opacity = '0.5';
-                    document.getElementById('btnUploadConfirm').style.cursor = 'not-allowed';
-                    
                     document.getElementById('addImagesModal').style.display = 'flex';
                 }
             }
         }
 
-        function previewSelectedImages(input) {
-            if (!input.files || input.files.length === 0) return;
-            
-            selectedFilesList = Array.from(input.files);
-            renderPreviewGrid();
-        }
-
-        function renderPreviewGrid() {
-            const container = document.getElementById('previewContainer');
-            container.innerHTML = '';
-
-            if (selectedFilesList.length === 0) {
-                container.innerHTML = '<p style="grid-column: 1 / -1; color: #64748b; font-size: 0.78rem; text-align: center; padding: 1rem;">ยังไม่ได้เลือกรูปภาพ</p>';
-                document.getElementById('btnUploadConfirm').disabled = true;
-                document.getElementById('btnUploadConfirm').style.opacity = '0.5';
-                document.getElementById('btnUploadConfirm').style.cursor = 'not-allowed';
-                return;
-            }
-
-            document.getElementById('btnUploadConfirm').disabled = false;
-            document.getElementById('btnUploadConfirm').style.opacity = '1';
-            document.getElementById('btnUploadConfirm').style.cursor = 'pointer';
-
-            selectedFilesList.forEach((file, index) => {
-                const reader = new FileReader();
-                reader.onload = function(e) {
-                    const div = document.createElement('div');
-                    div.style.position = 'relative';
-                    div.style.height = '75px';
-                    div.style.borderRadius = '6px';
-                    div.style.overflow = 'hidden';
-                    div.style.border = '1px solid #4d5b73';
-
-                    div.innerHTML = `
-                        <img src="${e.target.result}" style="width: 100%; height: 100%; object-fit: cover;">
-                        <button onclick="removePreviewFile(${index})" style="position: absolute; top: 2px; right: 2px; background: rgba(239, 68, 68, 0.9); color: white; border: none; border-radius: 50%; width: 20px; height: 20px; font-size: 11px; font-weight: bold; cursor: pointer; display: flex; align-items: center; justify-content: center;">&times;</button>
-                    `;
-                    container.appendChild(div);
-                }
-                reader.readAsDataURL(file);
-            });
-        }
-
-        function removePreviewFile(index) {
-            selectedFilesList.splice(index, 1);
-            renderPreviewGrid();
-        }
-
         async function uploadAdditionalImages() {
-            if (selectedFilesList.length === 0) {
+            const fileInput = document.getElementById('additionalImagesInput');
+            if (fileInput.files.length === 0) {
                 showAlert("แจ้งเตือน", "กรุณาเลือกรูปภาพอย่างน้อย 1 รูป", false);
                 return;
             }
             document.getElementById('addImagesModal').style.display = 'none';
             
             setSystemStatus('orange', 'กำลังอัปโหลด...');
-            showLoading("กรุณารอสักครู่", `กำลังเพิ่มรูปภาพ (${selectedFilesList.length} รูป)...`);
+            showLoading("กรุณารอสักครู่", `กำลังเพิ่มรูปภาพ (${fileInput.files.length} รูป)...`);
             
             let base64Images = [];
-            for (let file of selectedFilesList) {
+            for (let file of fileInput.files) {
                 let base64 = await resizeAndCompressImage(file);
                 base64Images.push(base64);
             }
@@ -1472,9 +1417,18 @@
             }
         }
 
+        // --- ระบบซูมภาพและการเลื่อนรูป (Zoom & Swipe/Pan) ---
+        let scale = 1;
+        let panning = false;
+        let pointX = 0;
+        let pointY = 0;
+        let startX = 0;
+        let startY = 0;
+
         function openModal(imagesArray, index) {
             currentAlbumImages = imagesArray;
             currentIndex = index;
+            resetZoom();
             updateModalImage();
             
             history.pushState({ modalOpen: true }, "", window.location.href);
@@ -1486,14 +1440,25 @@
             const modalCounter = document.getElementById('modalCounter');
             modalImg.src = currentAlbumImages[currentIndex];
             modalCounter.innerText = `${currentIndex + 1} / ${currentAlbumImages.length}`;
+            resetZoom();
+        }
+
+        function resetZoom() {
+            scale = 1;
+            pointX = 0;
+            pointY = 0;
+            const modalImg = document.getElementById('modalImg');
+            modalImg.style.transform = `translate(0px, 0px) scale(1)`;
         }
 
         function nextImage() {
+            if (scale > 1) return; // ถ้าซูมอยู่ จะไม่ให้เลื่อนรูปถัดไปอัตโนมัติเพื่อป้องกันการชนกัน
             currentIndex = (currentIndex + 1) % currentAlbumImages.length;
             updateModalImage();
         }
 
         function prevImage() {
+            if (scale > 1) return;
             currentIndex = (currentIndex - 1 + currentAlbumImages.length) % currentAlbumImages.length;
             updateModalImage();
         }
@@ -1502,23 +1467,70 @@
             document.getElementById('imageModal').style.display = 'none';
         }
 
-        let touchStartX = 0;
-        let touchEndX = 0;
+        // รองรับการซูมด้วย Mouse Wheel บนคอมพิวเตอร์
+        const modalImg = document.getElementById('modalImg');
         const modalWrapper = document.getElementById('modalWrapper');
-        modalWrapper.addEventListener('touchstart', e => { touchStartX = e.changedTouches[0].screenX; }, {passive: true});
-        modalWrapper.addEventListener('touchend', e => { touchEndX = e.changedTouches[0].screenX; handleSwipe(); }, {passive: true});
 
-        const handleSwipe = () => {
-            const threshold = 50;
-            if (touchEndX < touchStartX - threshold) nextImage();
-            if (touchEndX > touchStartX + threshold) prevImage();
-        };
+        modalWrapper.addEventListener('wheel', (e) => {
+            e.preventDefault();
+            const xs = (e.clientX - pointX);
+            const ys = (e.clientY - pointY);
+            if (e.deltaY < 0) {
+                scale *= 1.1;
+            } else {
+                scale /= 1.1;
+            }
+            scale = Math.max(1, Math.min(scale, 5)); // ซูมได้สูงสุด 5 เท่า ต่ำสุด 1 เท่า
+            if (scale === 1) {
+                pointX = 0;
+                pointY = 0;
+            }
+            modalImg.style.transform = `translate(${pointX}px, ${pointY}px) scale(${scale})`;
+        });
+
+        // รองรับการลากภาพ (Pan) เมื่อซูม หรือปัดเปลี่ยนรูปเมื่อไม่ได้ซูม
+        let touchStartX = 0;
+        let touchStartY = 0;
+
+        modalWrapper.addEventListener('pointerdown', (e) => {
+            if (scale > 1) {
+                panning = true;
+                startX = e.clientX - pointX;
+                startY = e.clientY - pointY;
+                modalImg.setPointerCapture(e.pointerId);
+            } else {
+                touchStartX = e.clientX;
+                touchStartY = e.clientY;
+            }
+        });
+
+        modalWrapper.addEventListener('pointermove', (e) => {
+            if (!panning || scale <= 1) return;
+            pointX = e.clientX - startX;
+            pointY = e.clientY - startY;
+            modalImg.style.transform = `translate(${pointX}px, ${pointY}px) scale(${scale})`;
+        });
+
+        modalWrapper.addEventListener('pointerup', (e) => {
+            if (scale <= 1) {
+                const diffX = e.clientX - touchStartX;
+                const diffY = e.clientY - touchStartY;
+                if (Math.abs(diffX) > 50 && Math.abs(diffY) < 50) {
+                    if (diffX < 0) {
+                        nextImage();
+                    } else {
+                        prevImage();
+                    }
+                }
+            }
+            panning = false;
+        });
 
         document.addEventListener('keydown', function(e) {
             const modal = document.getElementById('imageModal');
             if (modal.style.display === 'flex') {
-                if (e.key === 'ArrowRight') nextImage();
-                if (e.key === 'ArrowLeft') prevImage();
+                if (e.key === 'ArrowRight' && scale === 1) nextImage();
+                if (e.key === 'ArrowLeft' && scale === 1) prevImage();
                 if (e.key === 'Escape') closeModal();
             }
         });
