@@ -136,7 +136,7 @@
         }
         .btn-add:hover { background-color: #115e59; transform: translateY(-1px); }
 
-        /* แถบควบคุมหลัก: ตัวเลือกหลัก (ซ้าย 80%) และ ค้นหา (ขวา 20%) */
+        /* หน้าแรก: ตัวเลือกหลัก (ปี) (80%) และ ค้นหา (20%) */
         .controls-wrapper {
             display: flex;
             gap: 0.8rem;
@@ -162,7 +162,7 @@
             flex: 0 0 20%;
         }
 
-        /* แถบย่อย (แสดงเมื่อเลือกปีแล้ว): นำ วัน/เดือน และ หมวด มาอยู่ซ้อนกันแบบเป็นระเบียบ */
+        /* แถบย่อย (แสดงเมื่อเลือกปีแล้ว): วัน/เดือน (ซ้าย) และ หมวด (ขวา) อยู่ในบรรทัดเดียวกัน */
         .sub-controls-wrapper {
             display: flex;
             gap: 0.8rem;
@@ -509,7 +509,7 @@
         <div class="sticky-nav-area">
             <div class="top-action-bar">
                 <div class="section-title" id="sectionTitle">
-                    <span>📁 โฟลเดอร์ประจำเดือน</span>
+                    <span>📁 เลือกปีประจำระบบ</span>
                 </div>
                 <div>
                     <button id="backBtn" class="btn-back-folder" style="display: none;" onclick="goBackToFolders()">⬅️ กลับหน้าเลือกปี</button>
@@ -531,12 +531,12 @@
                 </div>
             </div>
 
-            <!-- แถบย่อย (แสดงเมื่อเลือกปีแล้ว): ดึงวัน/เดือนจากอัลบั้มที่อัปโหลดจริง และหมวดหมู่มาซ้อนกันในแถวเดียว -->
+            <!-- แถบย่อย (แสดงเมื่อเลือกปีแล้ว): วัน/เดือน (ดึงจากอัลบั้มจริง) และ หมวดหมู่ อยู่ในแถวเดียวกัน -->
             <div id="subControlsWrapper" class="sub-controls-wrapper" style="display: none;">
                 <div class="sub-left">
                     <span class="filter-label">วัน/เดือน:</span>
                     <select id="albumDateSelect" class="filter-select" onchange="applyFilters()">
-                        <option value="all">ทุกวัน/เดือน ในปีนี้</option>
+                        <option value="all">ทุกวัน/เดือน</option>
                     </select>
                 </div>
                 <div class="sub-right">
@@ -738,20 +738,24 @@
             });
         }
 
-        // ดึงข้อมูลวัน/เดือนจากอัลบั้มที่อัปโหลดไว้จริงในปีกนั้นๆ (ไม่ใช่เดือน/ปี)
+        // ตัดปีออก ให้เหลือแค่วันและเดือน (เช่น จาก 2026-10-26 เหลือ 10-26 หรือรูปแบบที่คุณต้องการ)
         function updateAlbumDateDropdown(year) {
             const datesSet = new Set();
             allAlbumsData.forEach(item => {
                 if (item.month && item.month.startsWith(year) && item.folderName) {
-                    // สมมติชื่อโฟลเดอร์หรือวันที่อัปโหลด เช่น 2026-10-26 หรือดึงจาก folderName
-                    datesSet.add(item.folderName);
+                    // สมมติ folderName มีรูปแบบ YYYY-MM-DD ให้ตัดส่วนปีออก หรือแสดงเฉพาะเดือน/วัน
+                    let parts = item.folderName.split('-');
+                    let shortDate = parts.length >= 3 ? `${parts[1]}-${parts[2]}` : item.folderName;
+                    datesSet.add({ full: item.folderName, display: shortDate });
                 }
             });
 
-            const sortedDates = Array.from(datesSet).sort().reverse();
-            albumDateSelect.innerHTML = '<option value="all">ทุกวัน/เดือน ในปีนี้</option>';
+            // แปลงเป็น Array แล้วเรียงลำดับ
+            const sortedDates = Array.from(datesSet).sort((a, b) => b.full.localeCompare(a.full));
+            
+            albumDateSelect.innerHTML = '<option value="all">ทุกวัน/เดือน</option>';
             sortedDates.forEach(d => {
-                albumDateSelect.innerHTML += `<option value="${d}">${d}</option>`;
+                albumDateSelect.innerHTML += `<option value="${d.full}">${d.display}</option>`;
             });
         }
 
@@ -764,7 +768,6 @@
                 document.getElementById('categorySelect').value = 'all';
                 populateYearDropdown();
             } else {
-                // เลือกปีแล้ว
                 currentSelectedYear = val;
                 subControlsWrapper.style.display = 'flex';
                 updateAlbumDateDropdown(val);
