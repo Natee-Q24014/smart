@@ -577,12 +577,12 @@
         </div>
     </div>
 
-    <!-- Modal แสดงสถานะกำลังดำเนินการ -->
-    <div id="loadingModal" class="modal" style="z-index: 1010;">
+    <!-- Modal แสดงสถานะกำลังดำเนินการ (มีรูปหมุนและข้อความกรุณารอสักครู่) -->
+    <div id="loadingModal" class="modal" style="z-index: 1010; display: flex;">
         <div class="dialog-box">
             <div class="loading-spinner"></div>
-            <h3 id="loadingTitle" style="color: #38bdf8; margin-bottom: 0.2rem; font-size: 1rem;">กำลังประมวลผล...</h3>
-            <p id="loadingDesc" style="font-size: 0.78rem; color: #94a3b8;">ระบบกำลังดำเนินการ</p>
+            <h3 id="loadingTitle" style="color: #38bdf8; margin-bottom: 0.2rem; font-size: 1rem;">กรุณารอสักครู่</h3>
+            <p id="loadingDesc" style="font-size: 0.78rem; color: #94a3b8;">ระบบกำลังโหลดข้อมูล...</p>
         </div>
     </div>
 
@@ -605,6 +605,7 @@
         const stackControlsWrapper = document.getElementById('stackControlsWrapper');
         const searchCombinedInput = document.getElementById('searchCombinedInput');
         const categorySelect = document.getElementById('categorySelect');
+        const loadingModal = document.getElementById('loadingModal');
 
         let allAlbumsData = [];
         let navigationLevel = 'years'; 
@@ -647,6 +648,12 @@
 
         async function fetchAlbums(isBackground = false) {
             try {
+                if (!isBackground) {
+                    document.getElementById('loadingTitle').innerText = "กรุณารอสักครู่";
+                    document.getElementById('loadingDesc').innerText = "กำลังโหลดข้อมูล...";
+                    loadingModal.style.display = 'flex';
+                }
+
                 const response = await fetch(SCRIPT_URL);
                 const newData = await response.json();
                 
@@ -654,6 +661,7 @@
                 allAlbumsData = newData;
                 
                 if (!isBackground) {
+                    loadingModal.style.display = 'none';
                     if (history.state) {
                         navigationLevel = history.state.level || 'years';
                         currentSelectedYear = history.state.year || null;
@@ -666,6 +674,7 @@
 
             } catch (error) {
                 if (!isBackground) {
+                    loadingModal.style.display = 'none';
                     console.error('เกิดข้อผิดพลาดในการโหลดข้อมูล');
                 }
             }
@@ -914,9 +923,9 @@
                 return;
             }
 
-            document.getElementById('loadingTitle').innerText = "กำลังดาวน์โหลดไฟล์ ZIP...";
+            document.getElementById('loadingTitle').innerText = "กรุณารอสักครู่";
             document.getElementById('loadingDesc').innerText = `กำลังรวบรวมรูปภาพ (${images.length} รูป) ลงเครื่อง`;
-            document.getElementById('loadingModal').style.display = 'flex';
+            loadingModal.style.display = 'flex';
 
             const zip = new JSZip();
             const folder = zip.folder(`Album_${folderName}`);
@@ -937,9 +946,9 @@
                 link.click();
                 document.body.removeChild(link);
 
-                document.getElementById('loadingModal').style.display = 'none';
+                loadingModal.style.display = 'none';
             } catch (error) {
-                document.getElementById('loadingModal').style.display = 'none';
+                loadingModal.style.display = 'none';
                 showAlert("เกิดข้อผิดพลาด", "ไม่สามารถดาวน์โหลดไฟล์ได้ กรุณาลองใหม่อีกครั้ง", true);
             }
         }
@@ -947,9 +956,9 @@
         async function downloadCurrentModalImage() {
             const currentImgUrl = currentAlbumImages[currentIndex];
             
-            document.getElementById('loadingTitle').innerText = "กำลังดาวน์โหลดรูปภาพ...";
+            document.getElementById('loadingTitle').innerText = "กรุณารอสักครู่";
             document.getElementById('loadingDesc').innerText = "กำลังบันทึกลงเครื่องของคุณ";
-            document.getElementById('loadingModal').style.display = 'flex';
+            loadingModal.style.display = 'flex';
 
             try {
                 const response = await fetch(currentImgUrl);
@@ -961,9 +970,9 @@
                 link.click();
                 document.body.removeChild(link);
 
-                document.getElementById('loadingModal').style.display = 'none';
+                loadingModal.style.display = 'none';
             } catch (error) {
-                document.getElementById('loadingModal').style.display = 'none';
+                loadingModal.style.display = 'none';
                 const fallbackLink = document.createElement('a');
                 fallbackLink.href = currentImgUrl;
                 fallbackLink.target = '_blank';
@@ -1008,7 +1017,7 @@
                 }
 
                 if (pendingAction === 'delete') {
-                    showLoading("กำลังลบอัลบั้ม...", "ระบบกำลังดำเนินการลบ...");
+                    showLoading("กรุณารอสักครู่", "ระบบกำลังดำเนินการลบอัลบั้ม...");
                     sendDriveRequest({ action: 'delete', optionType: selectedCategory, folderName: selectedFolderName, password: password });
                 } else if (pendingAction === 'add') {
                     window.verifiedPasswordForAdd = password;
@@ -1025,7 +1034,7 @@
                 return;
             }
             document.getElementById('addImagesModal').style.display = 'none';
-            showLoading("กำลังอัปโหลด...", `กำลังเพิ่มรูปภาพ (${fileInput.files.length} รูป) `);
+            showLoading("กรุณารอสักครู่", `กำลังเพิ่มรูปภาพ (${fileInput.files.length} รูป)...`);
             
             let base64Images = [];
             for (let file of fileInput.files) {
@@ -1045,7 +1054,7 @@
         function showLoading(title, desc) {
             document.getElementById('loadingTitle').innerText = title;
             document.getElementById('loadingDesc').innerText = desc;
-            document.getElementById('loadingModal').style.display = 'flex';
+            loadingModal.style.display = 'flex';
         }
 
         function resizeAndCompressImage(file) {
@@ -1084,7 +1093,7 @@
                     body: JSON.stringify(payload)
                 });
                 const result = await response.json();
-                document.getElementById('loadingModal').style.display = 'none';
+                loadingModal.style.display = 'none';
 
                 if (result.status === "success") {
                     window.shouldReloadAfterAlert = true;
@@ -1095,7 +1104,7 @@
                     showAlert("รหัสผ่านผิด", result.message || "รหัสผ่านไม่ถูกต้อง", true);
                 }
             } catch (err) {
-                document.getElementById('loadingModal').style.display = 'none';
+                loadingModal.style.display = 'none';
                 window.shouldReloadAfterAlert = false;
                 showAlert("เกิดข้อผิดพลาด", "ไม่สามารถเชื่อมต่อกับเซิร์ฟเวอร์ได้", true);
             }
