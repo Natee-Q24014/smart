@@ -560,7 +560,6 @@
         let selectedFolderName = '';
 
         function formatMonthDisplay(monthStr) {
-            // แปลงจาก "YYYY-MM" (เช่น "2026-10") เป็น "MM/YYYY" (เช่น "10/2026")
             if (!monthStr || !monthStr.includes('-')) return monthStr;
             const parts = monthStr.split('-');
             return `${parts[1]}/${parts[0]}`;
@@ -587,12 +586,38 @@
                 
                 loadingView.style.display = 'none';
                 populateYearDropdown();
+                
+                // ตรวจสอบสถานะประวัติเบราว์เซอร์ตอนโหลดหน้าเว็บ
+                if (history.state) {
+                    if (history.state.month) {
+                        currentSelectedMonth = history.state.month;
+                    }
+                }
+                
                 renderView();
 
             } catch (error) {
                 loadingView.innerText = 'เกิดข้อผิดพลาดในการโหลดข้อมูล';
             }
         }
+
+        // จัดการปุ่ม Back / Forward ของเบราว์เซอร์และมือถือ
+        window.onpopstate = function(event) {
+            const modal = document.getElementById('imageModal');
+            
+            // ถ้าเปิด Modal ดูรูปอยู่ ให้ปิด Modal ก่อนเมื่อกด Back
+            if (modal.style.display === 'flex') {
+                modal.style.display = 'none';
+                return;
+            }
+
+            if (event.state && event.state.month) {
+                currentSelectedMonth = event.state.month;
+            } else {
+                currentSelectedMonth = null;
+            }
+            renderView(false);
+        };
 
         function populateYearDropdown() {
             const yearSelect = document.getElementById('yearSelect');
@@ -616,7 +641,7 @@
             renderView();
         }
 
-        function renderView() {
+        function renderView(pushHistory = true) {
             mainContainer.innerHTML = '';
 
             const selectedYear = document.getElementById('yearSelect').value;
@@ -667,7 +692,7 @@
 
                 sortedMonths.forEach(month => {
                     const count = filteredAlbums.filter(item => item.month === month).length;
-                    const displayMonth = formatMonthDisplay(month); // แสดงผลเป็น MM/YYYY เช่น 10/2026
+                    const displayMonth = formatMonthDisplay(month); 
                     const folderCard = document.createElement('div');
                     folderCard.className = 'folder-card';
                     folderCard.onclick = () => selectMonthFolder(month);
@@ -694,15 +719,17 @@
 
         function selectMonthFolder(month) {
             currentSelectedMonth = month;
-            renderView();
+            history.pushState({ month: month }, "", `#${month}`);
+            renderView(false);
         }
 
         function goBackToFolders() {
             currentSelectedMonth = null;
+            history.pushState({ month: null }, "", window.location.pathname);
             document.getElementById('searchInput').value = '';
             document.getElementById('categorySelect').value = 'all';
             document.getElementById('yearSelect').value = 'all';
-            renderView();
+            renderView(false);
         }
 
         function renderAlbumsList(albums) {
@@ -886,6 +913,9 @@
             currentAlbumImages = imagesArray;
             currentIndex = index;
             updateModalImage();
+            
+            // ดักประวัติเมื่อเปิด Modal ดูรูป เพื่อให้พอกด Back แล้วปิดรูป แต่ยังอยู่หน้าอัลบั้มเดิม
+            history.pushState({ modalOpen: true }, "", window.location.href);
             document.getElementById('imageModal').style.display = 'flex';
         }
 
