@@ -141,33 +141,7 @@
         }
         .btn-add:hover { background-color: #115e59; transform: translateY(-1px); }
 
-        /* หน้าแรก: ตัวเลือกปี และ ค้นหา */
-        .controls-wrapper {
-            display: flex;
-            gap: 0.6rem;
-            align-items: center;
-            background-color: #323b4d;
-            border: 1px solid #434e63;
-            padding: 0.6rem 0.8rem;
-            border-radius: 12px;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.2);
-        }
-
-        .select-container {
-            display: flex;
-            gap: 0.5rem;
-            align-items: center;
-            flex: 0 0 75%;
-        }
-
-        .search-container {
-            display: flex;
-            gap: 0.5rem;
-            align-items: center;
-            flex: 0 0 25%;
-        }
-
-        /* หน้าอัลบั้ม: แสดงเฉพาะ หมวด และ ค้นหา */
+        /* แถบกรองข้อมูล (แสดงเฉพาะหน้าอัลบั้ม) */
         .stack-controls-wrapper {
             display: flex;
             flex-direction: column;
@@ -208,11 +182,6 @@
         }
         .filter-select:focus, .search-input:focus { border-color: #38bdf8; }
         .search-input::placeholder { color: #64748b; font-weight: 400; }
-
-        @media(max-width: 600px) {
-            .controls-wrapper { flex-direction: column; gap: 0.5rem; }
-            .select-container, .search-container { flex: 1 1 100%; width: 100%; }
-        }
 
         .folder-grid {
             display: grid;
@@ -508,26 +477,12 @@
                     <span>📁 เลือกปีประจำระบบ</span>
                 </div>
                 <div>
-                    <button id="backBtn" class="btn-back-folder" style="display: none;" onclick="goBackToFolders()">⬅️ กลับหน้าเลือกปี</button>
+                    <button id="backBtn" class="btn-back-folder" style="display: none;" onclick="goBackToFolderLevel()">⬅️ ย้อนกลับ</button>
                     <a href="add.html" class="btn-add">➕ เพิ่มอัลบั้มใหม่</a>
                 </div>
             </div>
 
-            <!-- หน้าแรก: ตัวเลือกปี (75%) และ ค้นหา (25%) -->
-            <div class="controls-wrapper" id="mainControls">
-                <div class="select-container">
-                    <span class="filter-label">ปี:</span>
-                    <select id="primarySelect" class="filter-select" onchange="handlePrimaryChange(this.value)">
-                        <option value="all">ทั้งหมด (ทุกปี)</option>
-                    </select>
-                </div>
-
-                <div class="search-container">
-                    <input type="text" id="searchInput" class="search-input" placeholder="ค้นหา..." oninput="applyFilters()">
-                </div>
-            </div>
-
-            <!-- หน้าอัลบั้ม: แสดงเฉพาะ หมวด และ ค้นหา -->
+            <!-- แถบกรองข้อมูล (แสดงเฉพาะเมื่ออยู่ในหน้าอัลบั้ม) -->
             <div id="stackControlsWrapper" class="stack-controls-wrapper" style="display: none;">
                 <div class="stack-row-item">
                     <span class="filter-label">หมวด:</span>
@@ -616,15 +571,14 @@
         const sectionTitle = document.getElementById('sectionTitle');
         const backBtn = document.getElementById('backBtn');
         const scrollTopBtn = document.getElementById('scrollTopBtn');
-        const mainControls = document.getElementById('mainControls');
         const stackControlsWrapper = document.getElementById('stackControlsWrapper');
-        const primarySelect = document.getElementById('primarySelect');
-        const searchInput = document.getElementById('searchInput');
         const searchCombinedInput = document.getElementById('searchCombinedInput');
         const categorySelect = document.getElementById('categorySelect');
 
         let allAlbumsData = [];
-        let currentSelectedYear = 'all';
+        let navigationLevel = 'years'; // 'years', 'months', 'albums'
+        let currentSelectedYear = null;
+        let currentSelectedMonth = null;
 
         let currentAlbumImages = [];
         let currentIndex = 0;
@@ -665,16 +619,11 @@
                 allAlbumsData = await response.json();
                 
                 loadingView.style.display = 'none';
-                populateYearDropdown();
                 
                 if (history.state) {
-                    if (history.state.year) {
-                        currentSelectedYear = history.state.year;
-                        if (currentSelectedYear !== 'all') {
-                            mainControls.style.display = 'none';
-                            stackControlsWrapper.style.display = 'flex';
-                        }
-                    }
+                    navigationLevel = history.state.level || 'years';
+                    currentSelectedYear = history.state.year || null;
+                    currentSelectedMonth = history.state.month || null;
                 }
                 
                 renderView();
@@ -692,94 +641,48 @@
             }
 
             if (event.state) {
-                currentSelectedYear = event.state.year || 'all';
-                if (currentSelectedYear === 'all') {
-                    populateYearDropdown();
-                    primarySelect.value = 'all';
-                    mainControls.style.display = 'flex';
-                    stackControlsWrapper.style.display = 'none';
-                } else {
-                    mainControls.style.display = 'none';
-                    stackControlsWrapper.style.display = 'flex';
-                }
+                navigationLevel = event.state.level || 'years';
+                currentSelectedYear = event.state.year || null;
+                currentSelectedMonth = event.state.month || null;
             } else {
-                goBackToFolders(false);
+                navigationLevel = 'years';
+                currentSelectedYear = null;
+                currentSelectedMonth = null;
             }
             renderView(false);
         };
 
-        function populateYearDropdown() {
-            const years = new Set();
-            allAlbumsData.forEach(item => {
-                if (item.month) {
-                    const year = item.month.split('-')[0];
-                    if (year) years.add(year);
-                }
-            });
-
-            const sortedYears = Array.from(years).sort().reverse();
-            primarySelect.innerHTML = '<option value="all">ทั้งหมด (ทุกปี)</option>';
-            sortedYears.forEach(year => {
-                primarySelect.innerHTML += `<option value="${year}">${year}</option>`;
-            });
-        }
-
-        function handlePrimaryChange(val) {
-            if (val === 'all') {
-                currentSelectedYear = 'all';
-                mainControls.style.display = 'flex';
-                stackControlsWrapper.style.display = 'none';
-                history.pushState({ year: 'all' }, "", window.location.pathname);
-                searchInput.value = '';
-                searchCombinedInput.value = '';
-                categorySelect.value = 'all';
-                populateYearDropdown();
-            } else {
-                currentSelectedYear = val;
-                mainControls.style.display = 'none';
-                stackControlsWrapper.style.display = 'flex';
-                history.pushState({ year: val }, "", `#year-${val}`);
-            }
-            renderView(false);
-        }
-
         function applyFilters() {
-            renderView();
+            renderView(false);
         }
 
         function renderView(pushHistory = true) {
             mainContainer.innerHTML = '';
 
-            const searchKeyword = (searchInput.value || searchCombinedInput.value).trim().toLowerCase();
+            const searchKeyword = searchCombinedInput.value.trim().toLowerCase();
             const selectedCategory = categorySelect.value;
 
-            let filteredAlbums = allAlbumsData;
-            
-            if (currentSelectedYear !== 'all') {
-                filteredAlbums = filteredAlbums.filter(item => item.month && item.month.startsWith(currentSelectedYear));
-            }
-
-            if (selectedCategory !== 'all') {
-                filteredAlbums = filteredAlbums.filter(item => item.category === selectedCategory);
-            }
-
+            // หากมีการพิมพ์ค้นหา ให้แสดงผลลัพธ์แบบข้ามระดับขั้นไปที่รายการอัลบั้มทันที
             if (searchKeyword !== '') {
-                filteredAlbums = filteredAlbums.filter(item => item.folderName.toLowerCase().includes(searchKeyword));
-            }
+                stackControlsWrapper.style.display = 'flex';
+                backBtn.style.display = 'inline-flex';
+                sectionTitle.innerHTML = `<span>🔍 ผลการค้นหา: "${searchKeyword}"</span>`;
 
-            if (searchKeyword !== '') {
-                renderAlbumsList(filteredAlbums);
+                let filtered = allAlbumsData.filter(item => item.folderName.toLowerCase().includes(searchKeyword));
+                if (selectedCategory !== 'all') {
+                    filtered = filtered.filter(item => item.category === selectedCategory);
+                }
+                renderAlbumsList(filtered);
                 return;
             }
 
-            if (currentSelectedYear === 'all') {
-                mainControls.style.display = 'flex';
+            if (navigationLevel === 'years') {
                 stackControlsWrapper.style.display = 'none';
                 backBtn.style.display = 'none';
                 sectionTitle.innerHTML = `<span>📁 เลือกปีประจำระบบ</span>`;
 
                 const yearsSet = new Set();
-                filteredAlbums.forEach(item => {
+                allAlbumsData.forEach(item => {
                     if (item.month) {
                         const yr = item.month.split('-')[0];
                         if (yr) yearsSet.add(yr);
@@ -797,7 +700,7 @@
                 folderGrid.className = 'folder-grid';
 
                 sortedYears.forEach(year => {
-                    const count = filteredAlbums.filter(item => item.month && item.month.startsWith(year)).length;
+                    const count = allAlbumsData.filter(item => item.month && item.month.startsWith(year)).length;
                     const folderCard = document.createElement('div');
                     folderCard.className = 'folder-card';
                     folderCard.onclick = () => selectYearFolder(year);
@@ -813,41 +716,100 @@
 
                 mainContainer.appendChild(folderGrid);
 
-            } else {
-                mainControls.style.display = 'none';
+            } else if (navigationLevel === 'months') {
+                stackControlsWrapper.style.display = 'none';
+                backBtn.style.display = 'inline-flex';
+                sectionTitle.innerHTML = `<span>📁 ปี ${currentSelectedYear} - เลือกเดือน</span>`;
+
+                const monthsSet = new Set();
+                allAlbumsData.forEach(item => {
+                    if (item.month && item.month.startsWith(currentSelectedYear)) {
+                        monthsSet.add(item.month); // ตัวอย่างเช่น "2026-10"
+                    }
+                });
+
+                const sortedMonths = Array.from(monthsSet).sort().reverse();
+
+                const monthNames = {
+                    "01": "มกราคม", "02": "กุมภาพันธ์", "03": "มีนาคม", "04": "เมษายน",
+                    "05": "พฤษภาคม", "06": "มิถุนายน", "07": "กรกฎาคม", "08": "สิงหาคม",
+                    "09": "กันยายน", "10": "ตุลาคม", "11": "พฤศจิกายน", "12": "ธันวาคม"
+                };
+
+                const folderGrid = document.createElement('div');
+                folderGrid.className = 'folder-grid';
+
+                sortedMonths.forEach(mStr => {
+                    const parts = mStr.split('-');
+                    const mNum = parts[1] || mStr;
+                    const mLabel = monthNames[mNum] ? `เดือน${monthNames[mNum]}` : `เดือน ${mNum}`;
+                    const count = allAlbumsData.filter(item => item.month === mStr).length;
+
+                    const folderCard = document.createElement('div');
+                    folderCard.className = 'folder-card';
+                    folderCard.onclick = () => selectMonthFolder(mStr);
+                    folderCard.innerHTML = `
+                        <div class="folder-icon">📂</div>
+                        <div class="folder-info">
+                            <h3>${mLabel}</h3>
+                            <p>${count} อัลบั้ม</p>
+                        </div>
+                    `;
+                    folderGrid.appendChild(folderCard);
+                });
+
+                mainContainer.appendChild(folderGrid);
+
+            } else if (navigationLevel === 'albums') {
                 stackControlsWrapper.style.display = 'flex';
                 backBtn.style.display = 'inline-flex';
-                sectionTitle.innerHTML = `<span>📁 อัลบั้มปี ${currentSelectedYear}</span>`;
+                sectionTitle.innerHTML = `<span>📁 อัลบั้มประจำเดือน ${currentSelectedMonth}</span>`;
+
+                let filteredAlbums = allAlbumsData.filter(item => item.month === currentSelectedMonth);
+
+                if (selectedCategory !== 'all') {
+                    filteredAlbums = filteredAlbums.filter(item => item.category === selectedCategory);
+                }
 
                 renderAlbumsList(filteredAlbums);
+            }
+
+            if (pushHistory) {
+                history.pushState({ level: navigationLevel, year: currentSelectedYear, month: currentSelectedMonth }, "", window.location.pathname);
             }
         }
 
         function selectYearFolder(year) {
             currentSelectedYear = year;
-            primarySelect.value = year;
-            mainControls.style.display = 'none';
-            stackControlsWrapper.style.display = 'flex';
-            history.pushState({ year: year }, "", `#year-${year}`);
-            renderView(false);
+            navigationLevel = 'months';
+            renderView();
         }
 
-        function goBackToFolders() {
-            currentSelectedYear = 'all';
-            populateYearDropdown();
-            primarySelect.value = 'all';
-            mainControls.style.display = 'flex';
-            stackControlsWrapper.style.display = 'none';
-            history.pushState({ year: 'all' }, "", window.location.pathname);
-            searchInput.value = '';
+        function selectMonthFolder(monthStr) {
+            currentSelectedMonth = monthStr;
+            navigationLevel = 'albums';
+            renderView();
+        }
+
+        function goBackToFolderLevel() {
             searchCombinedInput.value = '';
             categorySelect.value = 'all';
-            renderView(false);
+
+            if (navigationLevel === 'albums') {
+                navigationLevel = 'months';
+                currentSelectedMonth = null;
+            } else if (navigationLevel === 'months') {
+                navigationLevel = 'years';
+                currentSelectedYear = null;
+            } else {
+                navigationLevel = 'years';
+            }
+            renderView();
         }
 
         function renderAlbumsList(albums) {
             if (!albums || albums.length === 0) {
-                mainContainer.innerHTML = '<p style="color: #6b7280; text-align: center; padding: 2rem; font-weight: 500;">ไม่พบรายการอัลบั้มที่ค้นหา</p>';
+                mainContainer.innerHTML = '<p style="color: #6b7280; text-align: center; padding: 2rem; font-weight: 500;">ไม่พบรายการอัลบั้มในเงื่อนไขนี้</p>';
                 return;
             }
 
