@@ -93,7 +93,7 @@
             display: grid;
             grid-template-columns: repeat(auto-fill, minmax(75px, 1fr));
             gap: 0.5rem;
-            margin-top: 0.6rem;
+            margin-top: 0.8rem;
             max-height: 160px;
             overflow-y: auto;
         }
@@ -244,6 +244,7 @@
         <div class="form-group">
             <label>เลือกรูปภาพ:</label>
             <input type="file" id="imageInput" multiple accept="image/*" onchange="previewImages(event)">
+            <!-- ช่องแสดงรูปตัวอย่าง -->
             <div class="preview-container" id="previewContainer"></div>
         </div>
 
@@ -310,6 +311,8 @@
             previewImageUrls = [];
 
             const files = event.target.files;
+            if (!files || files.length === 0) return;
+
             for (let file of files) {
                 selectedFilesData.push(file);
                 const reader = new FileReader();
@@ -359,7 +362,6 @@
             document.getElementById('imageModal').style.display = 'none';
         }
 
-        // รองรับการปัดหน้าจอ (Swipe) หรือกดลูกศรคีย์บอร์ดในโหมดดูรูป
         let touchStartX = 0;
         let touchEndX = 0;
         const modalWrapper = document.getElementById('modalWrapper');
@@ -405,7 +407,7 @@
             }
 
             if (selectedFilesData.length === 0) {
-                showAlert("ยังไม่ได้เลือกรูป", "กรุณาเลือกรูปภาพ", false);
+                showAlert("ยังไม่ได้เลือกรูป", "กรุณาเลือกรูปภาพอย่างน้อย 1 รูป", false);
                 return;
             }
 
@@ -445,7 +447,7 @@
                 }
 
             } catch (error) {
-                document.getElementById('loadingModal'].style.display = 'none';
+                document.getElementById('loadingModal').style.display = 'none';
                 showAlert("เกิดข้อผิดพลาด", "ไม่สามารถเชื่อมต่อกับเซิร์ฟเวอร์ได้", false);
             }
         }
