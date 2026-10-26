@@ -24,7 +24,6 @@
         
         .container { max-width: 1400px; margin: 0 auto; }
 
-        /* ปรับขนาดส่วนหัวและรูปมาสคอตในคอมให้ใหญ่และสมส่วนยิ่งขึ้น */
         .header-card {
             background-color: #323b4d;
             border: 1px solid #434e63;
@@ -32,7 +31,7 @@
             border-radius: 16px;
             text-align: center;
             box-shadow: 0 10px 25px rgba(0,0,0,0.35);
-            margin-bottom: 1.2rem;
+            margin-bottom: 1rem;
             display: flex;
             flex-direction: column;
             align-items: center;
@@ -84,6 +83,55 @@
         
         .header-info .creator-text { font-size: 0.88rem; color: #94a3b8; font-weight: 600; margin-bottom: 0.2rem; }
         .header-info p { font-size: 0.82rem; color: #9ca3af; }
+
+        /* แผงสถิติภาพรวม (Dashboard Statistics) */
+        .stats-dashboard {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 0.8rem;
+            margin-bottom: 1.2rem;
+        }
+        @media(min-width: 768px) {
+            .stats-dashboard { grid-template-columns: repeat(4, 1fr); gap: 1rem; }
+        }
+
+        .stat-card {
+            background-color: #323b4d;
+            border: 1px solid #434e63;
+            border-radius: 14px;
+            padding: 1rem 1.2rem;
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+        }
+
+        .stat-icon {
+            font-size: 2rem;
+            background: rgba(56, 189, 248, 0.1);
+            width: 50px;
+            height: 50px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 12px;
+            border: 1px solid rgba(56, 189, 248, 0.2);
+        }
+
+        .stat-info h4 {
+            font-size: 0.78rem;
+            color: #94a3b8;
+            font-weight: 600;
+            margin-bottom: 0.1rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .stat-info .stat-value {
+            font-size: 1.4rem;
+            color: #f8fafc;
+            font-weight: 700;
+        }
 
         .sticky-nav-area {
             position: sticky;
@@ -494,6 +542,7 @@
 <body>
 
     <div class="container">
+        <!-- ส่วนหัว (Header) -->
         <div class="header-card">
             <div class="header-left">
                 <img src="big.jpeg" alt="Smart Monitoring Box Mascot" class="character-img">
@@ -502,6 +551,38 @@
                     <h1>Smart Monitoring Box</h1>
                     <div class="creator-text">By: Natee Intharam</div>
                     <p>คลังจัดเก็บอัลบั้มภาพถ่ายสำหรับตรวจสอบการปฏิบัติงาน</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- แผงสถิติภาพรวม (Dashboard Statistics) -->
+        <div class="stats-dashboard">
+            <div class="stat-card">
+                <div class="stat-icon">📁</div>
+                <div class="stat-info">
+                    <h4>อัลบั้มทั้งหมด</h4>
+                    <div class="stat-value" id="statTotalAlbums">0</div>
+                </div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon">📸</div>
+                <div class="stat-info">
+                    <h4>รูปภาพทั้งหมด</h4>
+                    <div class="stat-value" id="statTotalImages">0</div>
+                </div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon">⚡</div>
+                <div class="stat-info">
+                    <h4>หมวด Smart</h4>
+                    <div class="stat-value" id="statSmartAlbums">0</div>
+                </div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon">🎁</div>
+                <div class="stat-info">
+                    <h4>หมวด (แถม)</h4>
+                    <div class="stat-value" id="statFreeAlbums">0</div>
                 </div>
             </div>
         </div>
@@ -637,6 +718,29 @@
             window.scrollTo({ top: 0, behavior: 'smooth' });
         }
 
+        function updateGlobalStats() {
+            const totalAlbums = allAlbumsData.length;
+            let totalImages = 0;
+            let smartCount = 0;
+            let freeCount = 0;
+
+            allAlbumsData.forEach(item => {
+                if (item.images && Array.isArray(item.images)) {
+                    totalImages += item.images.length;
+                }
+                if (item.category === "Smartแถม") {
+                    freeCount++;
+                } else {
+                    smartCount++;
+                }
+            });
+
+            document.getElementById('statTotalAlbums').innerText = totalAlbums;
+            document.getElementById('statTotalImages').innerText = totalImages;
+            document.getElementById('statSmartAlbums').innerText = smartCount;
+            document.getElementById('statFreeAlbums').innerText = freeCount;
+        }
+
         function showAlert(title, desc, isError = false) {
             document.getElementById('alertTitle').innerText = title;
             document.getElementById('alertTitle').style.color = isError ? "#fca5a5" : "#38bdf8";
@@ -666,6 +770,8 @@
                 const isDataChanged = JSON.stringify(allAlbumsData) !== JSON.stringify(newData);
                 allAlbumsData = newData;
                 
+                updateGlobalStats();
+
                 if (!isBackground) {
                     loadingModal.style.display = 'none';
                     if (history.state) {
@@ -1153,7 +1259,6 @@
         modalWrapper.addEventListener('touchend', e => { touchEndX = e.changedTouches[0].screenX; handleSwipe(); }, {passive: true});
 
         const handleSwipe = () => {
-            const textWidth = 50;
             const threshold = 50;
             if (touchEndX < touchStartX - threshold) nextImage();
             if (touchEndX > touchStartX + threshold) prevImage();
