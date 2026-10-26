@@ -556,7 +556,7 @@
             border-radius: 8px;
             object-fit: contain;
             user-select: none;
-            transition: transform 0.1s ease-out;
+            transition: transform 0.05s ease-out;
             cursor: grab;
         }
         .modal-content:active { cursor: grabbing; }
@@ -1128,10 +1128,11 @@
             }
         }
 
-        // Modal รูปภาพ
+        // Modal รูปภาพ (รองรับทั้งเมาส์และหน้าจอสัมผัสมือถือ)
         let activeModalImages = [];
         let activeModalIndex = 0;
         let scale = 1, panning = false, pointX = 0, pointY = 0, startX = 0, startY = 0;
+        let initialPinchDistance = null;
 
         function openModal(imagesJson, index) {
             activeModalImages = JSON.parse(decodeURIComponent(imagesJson));
@@ -1172,10 +1173,10 @@
         }
 
         const modalWrapper = document.getElementById('modalWrapper');
+        
+        // --- รองรับ Desktop (Mouse Wheel & Drag) ---
         modalWrapper.addEventListener('wheel', (e) => {
             e.preventDefault();
-            const img = document.getElementById('modalImg');
-            let xs = (e.clientX - pointX), ys = (e.clientY - pointY);
             if (e.deltaY < 0) { scale *= 1.2; } else { scale /= 1.2; }
             scale = Math.max(1, Math.min(scale, 5));
             updateTransform();
@@ -1187,12 +1188,55 @@
             panning = true;
         });
 
-        modalWrapper.addEventListener('mouseup', () => { panning = false; });
+        window.addEventListener('mouseup', () => { panning = false; });
         modalWrapper.addEventListener('mousemove', (e) => {
             if (!panning) return;
             e.preventDefault();
             pointX = e.clientX - startX; pointY = e.clientY - startY;
             updateTransform();
+        });
+
+        // --- รองรับ Mobile (Touch Pinch Zoom & Touch Pan) ---
+        modalWrapper.addEventListener('touchstart', (e) => {
+            if (e.touches.length === 1) {
+                panning = true;
+                startX = e.touches[0].clientX - pointX;
+                startY = e.touches[0].clientY - pointY;
+            } else if (e.touches.length === 2) {
+                panning = false;
+                initialPinchDistance = Math.hypot(
+                    e.touches[0].clientX - e.touches[1].clientX,
+                    e.touches[0].clientY - e.touches[1].clientY
+                );
+            }
+        }, { passive: false });
+
+        modalWrapper.addEventListener('touchmove', (e) => {
+            if (e.touches.length === 1 && panning) {
+                e.preventDefault();
+                pointX = e.touches[0].clientX - startX;
+                pointY = e.touches[0].clientY - startY;
+                updateTransform();
+            } else if (e.touches.length === 2 && initialPinchDistance !== null) {
+                e.preventDefault();
+                let currentDistance = Math.hypot(
+                    e.touches[0].clientX - e.touches[1].clientX,
+                    e.touches[0].clientY - e.touches[1].clientY
+                );
+                let factor = currentDistance / initialPinchDistance;
+                scale = Math.max(1, Math.min(scale * factor, 5));
+                initialPinchDistance = currentDistance;
+                updateTransform();
+            }
+        }, { passive: false });
+
+        modalWrapper.addEventListener('touchend', (e) => {
+            if (e.touches.length < 2) {
+                initialPinchDistance = null;
+            }
+            if (e.touches.length === 0) {
+                panning = false;
+            }
         });
 
         // ดาวน์โหลดรูปภาพเดี่ยวจาก Modal ทันทีแบบ Blob
@@ -1210,7 +1254,6 @@
                 document.body.removeChild(a);
                 window.URL.revokeObjectURL(blobUrl);
             } catch (err) {
-                // กรณีติดข้อจำกัด CORS ให้เปิดดาวน์โหลดทางตรงแทน
                 let a = document.createElement('a');
                 a.href = imgUrl;
                 a.target = '_blank';
