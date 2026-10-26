@@ -77,6 +77,8 @@
             justify-content: space-between;
             align-items: center;
             margin-bottom: 1.2rem;
+            flex-wrap: wrap;
+            gap: 0.8rem;
         }
 
         .section-title {
@@ -85,7 +87,26 @@
             font-weight: 700;
             border-left: 4px solid #38bdf8;
             padding-left: 0.6rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
         }
+
+        .btn-back-folder {
+            background-color: #3e495e;
+            color: #e2e8f0;
+            padding: 0.5rem 1rem;
+            border-radius: 10px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            border: 1px solid #4d5b73;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.4rem;
+            transition: all 0.2s;
+        }
+        .btn-back-folder:hover { background-color: #4d5b73; color: #fff; }
 
         .btn-add {
             background-color: #0f766e;
@@ -158,16 +179,46 @@
         .filter-select:focus, .search-input:focus { border-color: #38bdf8; }
         .search-input::placeholder { color: #64748b; font-weight: 400; }
 
-        .month-group-title {
-            font-size: 1.15rem;
-            color: #fbbf24;
-            font-weight: 700;
-            margin: 1.8rem 0 0.8rem 0;
+        /* สไตล์สำหรับกล่องโฟลเดอร์เดือน */
+        .folder-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+            gap: 1.2rem;
+        }
+
+        .folder-card {
+            background-color: #323b4d;
+            border: 1px solid #434e63;
+            border-radius: 16px;
+            padding: 1.5rem;
             display: flex;
             align-items: center;
-            gap: 0.5rem;
-            border-bottom: 2px solid #3d4a61;
-            padding-bottom: 0.4rem;
+            gap: 1.2rem;
+            cursor: pointer;
+            box-shadow: 0 6px 20px rgba(0,0,0,0.25);
+            transition: all 0.2s;
+        }
+        .folder-card:hover {
+            border-color: #38bdf8;
+            transform: translateY(-2px);
+            background-color: #384357;
+        }
+
+        .folder-icon {
+            font-size: 2.8rem;
+        }
+
+        .folder-info h3 {
+            color: #f8fafc;
+            font-size: 1.15rem;
+            margin-bottom: 0.3rem;
+            font-weight: 700;
+        }
+
+        .folder-info p {
+            color: #94a3b8;
+            font-size: 0.85rem;
+            font-weight: 500;
         }
 
         .album-grid {
@@ -397,12 +448,17 @@
         </div>
 
         <div class="top-action-bar">
-            <div class="section-title">📂 รายการอัลบั้ม</div>
-            <a href="add.html" class="btn-add">➕ เพิ่มอัลบั้มใหม่</a>
+            <div class="section-title" id="sectionTitle">
+                <span>📁 โฟลเดอร์ประจำเดือน</span>
+            </div>
+            <div>
+                <button id="backBtn" class="btn-back-folder" style="display: none;" onclick="goBackToFolders()">⬅️ กลับหน้าโฟลเดอร์เดือน</button>
+                <a href="add.html" class="btn-add">➕ เพิ่มอัลบั้มใหม่</a>
+            </div>
         </div>
 
         <!-- แถบกรองปี, หมวดหมู่ และช่องค้นหา -->
-        <div class="controls-wrapper">
+        <div class="controls-wrapper" id="controlsWrapper">
             <div class="filter-container">
                 <span class="filter-label">📅 ปี:</span>
                 <select id="yearSelect" class="filter-select" onchange="applyFilters()">
@@ -425,8 +481,8 @@
             </div>
         </div>
         
-        <div id="loadingView" class="loading-view">⏳ กำลังโหลดอัลบั้ม...</div>
-        <div id="albumContainer"></div>
+        <div id="loadingView" class="loading-view">⏳ กำลังโหลดข้อมูล...</div>
+        <div id="mainContainer"></div>
 
         <div class="footer">
             ระบบบันทึกข้อมูลอัตโนมัติ • QTC Energy PCL.
@@ -491,9 +547,14 @@
         const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyASRCNjL0XhJBWJyNkSRsqiF17vCEXWSX00i59xIaKpY5tWBY448bl0t1P7Fyq0d1Xgg/exec";
 
         const loadingView = document.getElementById('loadingView');
-        const albumContainer = document.getElementById('albumContainer');
+        const mainContainer = document.getElementById('mainContainer');
+        const sectionTitle = document.getElementById('sectionTitle');
+        const backBtn = document.getElementById('backBtn');
+        const controlsWrapper = document.getElementById('controlsWrapper');
 
         let allAlbumsData = [];
+        let currentSelectedMonth = null; // ถ้าเป็น null แสดงว่าอยู่หน้าเลือกโฟลเดอร์เดือน
+
         let currentAlbumImages = [];
         let currentIndex = 0;
 
@@ -522,7 +583,7 @@
                 
                 loadingView.style.display = 'none';
                 populateYearDropdown();
-                renderAlbums();
+                renderView();
 
             } catch (error) {
                 loadingView.innerText = 'เกิดข้อผิดพลาดในการโหลดข้อมูล';
@@ -535,15 +596,12 @@
 
             allAlbumsData.forEach(item => {
                 if (item.month) {
-                    const year = item.month.split('-')[0]; // ดึงปีจาก YYYY-MM
+                    const year = item.month.split('-')[0];
                     if (year) years.add(year);
                 }
             });
 
-            // เรียงปีจากล่าสุดไปเก่าสุด
             const sortedYears = Array.from(years).sort().reverse();
-            
-            // คงตัวเลือก "ทั้งหมด" ไว้ แล้วเพิ่มปีเข้าไป
             yearSelect.innerHTML = '<option value="all">ทั้งหมด</option>';
             sortedYears.forEach(year => {
                 yearSelect.innerHTML += `<option value="${year}">${year}</option>`;
@@ -551,11 +609,11 @@
         }
 
         function applyFilters() {
-            renderAlbums();
+            renderView();
         }
 
-        function renderAlbums() {
-            albumContainer.innerHTML = '';
+        function renderView() {
+            mainContainer.innerHTML = '';
 
             const selectedYear = document.getElementById('yearSelect').value;
             const selectedCategory = document.getElementById('categorySelect').value;
@@ -578,74 +636,124 @@
                 filteredAlbums = filteredAlbums.filter(item => item.folderName.toLowerCase().includes(searchKeyword));
             }
 
-            if (!filteredAlbums || filteredAlbums.length === 0) {
-                albumContainer.innerHTML = '<p style="color: #6b7280; text-align: center; padding: 2.5rem; grid-column: 1/-1; font-weight: 500;">ไม่พบรายการอัลบั้มที่ค้นหา</p>';
+            // ถ้ากำลังพิมพ์ค้นหา ให้ข้ามหน้าเลือกโฟลเดอร์แล้วแสดงผลลัพธ์อัลบั้มทันที
+            if (searchKeyword !== '' || selectedCategory !== 'all' || selectedYear !== 'all') {
+                if (currentSelectedMonth === null && searchKeyword === '' && selectedCategory === 'all' && selectedYear === 'all') {
+                    // อยู่หน้าแรกปกติ
+                } else {
+                    // ถ้ามีการกรอง ให้แสดงรายการอัลบั้มตรงๆ เลย
+                    renderAlbumsList(filteredAlbums);
+                    return;
+                }
+            }
+
+            if (currentSelectedMonth === null) {
+                // แสดงหน้าเลือกโฟลเดอร์เดือน
+                backBtn.style.display = 'none';
+                sectionTitle.innerHTML = `<span>📁 โฟลเดอร์ประจำเดือน</span>`;
+
+                const monthsSet = new Set();
+                filteredAlbums.forEach(item => {
+                    if (item.month) monthsSet.add(item.month);
+                });
+
+                const sortedMonths = Array.from(monthsSet).sort().reverse();
+
+                if (sortedMonths.length === 0) {
+                    mainContainer.innerHTML = '<p style="color: #6b7280; text-align: center; padding: 2.5rem; font-weight: 500;">ยังไม่มีข้อมูลอัลบั้มในระบบ</p>';
+                    return;
+                }
+
+                const folderGrid = document.createElement('div');
+                folderGrid.className = 'folder-grid';
+
+                sortedMonths.forEach(month => {
+                    const count = filteredAlbums.filter(item => item.month === month).length;
+                    const folderCard = document.createElement('div');
+                    folderCard.className = 'folder-card';
+                    folderCard.onclick = () => selectMonthFolder(month);
+                    folderCard.innerHTML = `
+                        <div class="folder-icon">📂</div>
+                        <div class="folder-info">
+                            <h3>ประจำเดือน ${month}</h3>
+                            <p>${count} อัลบั้ม</p>
+                        </div>
+                    `;
+                    folderGrid.appendChild(folderCard);
+                });
+
+                mainContainer.appendChild(folderGrid);
+
+            } else {
+                // แสดงรายการอัลบั้มภายในเดือนที่เลือก
+                backBtn.style.display = 'inline-flex';
+                sectionTitle.innerHTML = `<span>📁 อัลบั้มประจำเดือน: ${currentSelectedMonth}</span>`;
+
+                const monthAlbums = filteredAlbums.filter(item => item.month === currentSelectedMonth);
+                renderAlbumsList(monthAlbums);
+            }
+        }
+
+        function selectMonthFolder(month) {
+            currentSelectedMonth = month;
+            renderView();
+        }
+
+        function goBackToFolders() {
+            currentSelectedMonth = null;
+            document.getElementById('searchInput').value = '';
+            document.getElementById('categorySelect').value = 'all';
+            document.getElementById('yearSelect').value = 'all';
+            renderView();
+        }
+
+        function renderAlbumsList(albums) {
+            if (!albums || albums.length === 0) {
+                mainContainer.innerHTML = '<p style="color: #6b7280; text-align: center; padding: 2.5rem; font-weight: 500;">ไม่พบรายการอัลบั้มในเดือนนี้</p>';
                 return;
             }
 
-            // จัดกลุ่มข้อมูลตามเดือน (item.month)
-            const groupedByMonth = {};
-            filteredAlbums.forEach(item => {
-                const monthKey = item.month || "อื่นๆ";
-                if (!groupedByMonth[monthKey]) {
-                    groupedByMonth[monthKey] = [];
+            const grid = document.createElement('div');
+            grid.className = 'album-grid';
+
+            albums.forEach(item => {
+                const card = document.createElement('div');
+                card.className = 'album-card';
+
+                const isFree = item.category === "Smartแถม";
+                const badgeText = isFree ? "Smart (แถม)" : "Smart";
+                const badgeClass = isFree ? "badge-free" : "badge-smart";
+
+                let imagesHtml = '';
+                if (item.images && item.images.length > 0) {
+                    imagesHtml = `<div class="album-images-container">`;
+                    const rawUrls = item.images.map(img => img.url);
+                    rawUrls.forEach((imgSrc, imgIndex) => {
+                        imagesHtml += `<img src="${imgSrc}" class="thumb-img" onclick='openModal(${JSON.stringify(rawUrls)}, ${imgIndex})' alt="Work Photo">`;
+                    });
+                    imagesHtml += `</div>`;
                 }
-                groupedByMonth[monthKey].push(item);
+
+                card.innerHTML = `
+                    <div class="album-header-bar">
+                        <span>📅 ${item.folderName}</span>
+                        <span class="badge-tag ${badgeClass}">${badgeText}</span>
+                    </div>
+                    ${imagesHtml}
+                    <div class="album-action-bar">
+                        <div class="album-footer-info">
+                            รูปภาพ: <span style="color: #38bdf8; font-weight: 700;">${item.images.length} รูป</span>
+                        </div>
+                        <div class="action-btns">
+                            <button class="btn-action btn-add-img" onclick="promptAddImages('${item.category}', '${item.folderName}')">➕ เพิ่มรูป</button>
+                            <button class="btn-action btn-del-album" onclick="promptDeleteAlbum('${item.category}', '${item.folderName}')">🗑️ ลบอัลบั้ม</button>
+                        </div>
+                    </div>
+                `;
+                grid.appendChild(card);
             });
 
-            // เรียงลำดับเดือนจากล่าสุดไปเก่าสุด
-            const sortedMonths = Object.keys(groupedByMonth).sort().reverse();
-
-            sortedMonths.forEach(month => {
-                // สร้างหัวข้อกลุ่มเดือน
-                const monthTitle = document.createElement('div');
-                monthTitle.className = 'month-group-title';
-                monthTitle.innerHTML = `📁 ประจำเดือน: ${month}`;
-                albumContainer.appendChild(monthTitle);
-
-                // สร้าง Grid สำหรับอัลบั้มในเดือนนั้น
-                const grid = document.createElement('div');
-                grid.className = 'album-grid';
-
-                groupedByMonth[month].forEach(item => {
-                    const card = document.createElement('div');
-                    card.className = 'album-card';
-
-                    const isFree = item.category === "Smartแถม";
-                    const badgeText = isFree ? "Smart (แถม)" : "Smart";
-                    const badgeClass = isFree ? "badge-free" : "badge-smart";
-
-                    let imagesHtml = '';
-                    if (item.images && item.images.length > 0) {
-                        imagesHtml = `<div class="album-images-container">`;
-                        const rawUrls = item.images.map(img => img.url);
-                        rawUrls.forEach((imgSrc, imgIndex) => {
-                            imagesHtml += `<img src="${imgSrc}" class="thumb-img" onclick='openModal(${JSON.stringify(rawUrls)}, ${imgIndex})' alt="Work Photo">`;
-                        });
-                        imagesHtml += `</div>`;
-                    }
-
-                    card.innerHTML = `
-                        <div class="album-header-bar">
-                            <span>📅 ${item.folderName}</span>
-                            <span class="badge-tag ${badgeClass}">${badgeText}</span>
-                        </div>
-                        ${imagesHtml}
-                        <div class="album-action-bar">
-                            <div class="album-footer-info">
-                                รูปภาพ: <span style="color: #38bdf8; font-weight: 700;">${item.images.length} รูป</span>
-                            </div>
-                            <div class="action-btns">
-                                <button class="btn-action btn-add-img" onclick="promptAddImages('${item.category}', '${item.folderName}')">➕ เพิ่มรูป</button>
-                                <button class="btn-action btn-del-album" onclick="promptDeleteAlbum('${item.category}', '${item.folderName}')">🗑️ ลบอัลบั้ม</button>
-                            </div>
-                        </div>
-                    `;
-                    grid.appendChild(card);
-                });
-
-                albumContainer.appendChild(grid);
-            });
+            mainContainer.appendChild(grid);
         }
 
         function promptDeleteAlbum(category, folderName) {
