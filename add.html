@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>เพิ่มอัลบั้มใหม่ - Smart Monitoring Box</title>
+    <title>เพิ่มอัลบั้มภาพถ่ายใหม่ - Smart Monitoring Box</title>
     <style>
         * { box-sizing: border-box; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; margin: 0; padding: 0; }
         
@@ -17,24 +17,24 @@
             background-size: 100% 100%, 100% 100%, 40px 40px, 40px 40px;
             color: #e2e8f0; 
             min-height: 100vh; 
-            padding: 1rem; 
             display: flex;
             justify-content: center;
             align-items: center;
+            padding: 1rem; 
         }
-        
-        .container { width: 100%; max-width: 500px; }
 
         .form-card {
             background-color: #323b4d;
             border: 1px solid #434e63;
             padding: 1.5rem;
             border-radius: 16px;
-            box-shadow: 0 10px 25px rgba(0,0,0,0.4);
+            width: 100%;
+            max-width: 550px;
+            box-shadow: 0 12px 30px rgba(0,0,0,0.4);
         }
 
         .form-title {
-            font-size: 1.15rem;
+            font-size: 1.2rem;
             color: #38bdf8;
             font-weight: 700;
             margin-bottom: 1.2rem;
@@ -46,10 +46,10 @@
         }
 
         .form-group {
-            margin-bottom: 1.1rem;
+            margin-bottom: 1rem;
         }
 
-        label {
+        .form-label {
             display: block;
             font-size: 0.85rem;
             color: #94a3b8;
@@ -57,338 +57,348 @@
             margin-bottom: 0.4rem;
         }
 
-        .radio-group {
-            display: flex;
-            gap: 0.8rem;
+        .option-group {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 0.6rem;
         }
 
-        .radio-btn {
-            flex: 1;
+        .option-btn {
             background-color: #262c38;
-            border: 1px solid #4d5b73;
             color: #94a3b8;
+            border: 1px solid #4d5b73;
             padding: 0.7rem;
-            text-align: center;
             border-radius: 10px;
-            cursor: pointer;
-            font-weight: 600;
             font-size: 0.9rem;
+            font-weight: 600;
+            cursor: pointer;
+            text-align: center;
             transition: all 0.2s;
         }
 
-        .radio-btn.active {
+        .option-btn.active {
             background-color: #0369a1;
-            color: #e0f2fe;
+            color: #fff;
             border-color: #38bdf8;
-            box-shadow: 0 4px 12px rgba(3, 105, 161, 0.3);
+            box-shadow: 0 0 10px rgba(56, 189, 248, 0.3);
         }
 
-        input[type="date"], 
-        input[type="text"] {
+        .form-input {
             width: 100%;
             background-color: #262c38;
             color: #f8fafc;
             border: 1px solid #4d5b73;
             padding: 0.7rem 0.9rem;
             border-radius: 10px;
-            font-size: 0.9rem;
+            font-size: 0.95rem;
             font-weight: 600;
             outline: none;
+            transition: border-color 0.2s;
         }
-        input:focus { border-color: #38bdf8; }
-
-        input[type="date"]::-webkit-datetime-edit-year-field { position: relative; padding: 0 2px; }
-        input[type="date"]::-webkit-datetime-edit-month-field { position: relative; padding: 0 2px; }
-        input[type="date"]::-webkit-datetime-edit-day-field { position: relative; padding: 0 2px; }
+        .form-input:focus { border-color: #38bdf8; }
 
         .file-upload-box {
             border: 2px dashed #4d5b73;
-            padding: 0.6rem;
+            padding: 1rem;
             border-radius: 10px;
             text-align: center;
             background-color: #262c38;
             cursor: pointer;
             transition: border-color 0.2s;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 0.6rem;
         }
         .file-upload-box:hover { border-color: #38bdf8; }
-        
-        input[type="file"] { display: none; }
 
-        .file-label-text {
-            color: #38bdf8;
-            font-weight: 600;
-            font-size: 0.82rem;
-            cursor: pointer;
-            display: inline-flex;
-            align-items: center;
-            gap: 0.3rem;
-            padding: 0.35rem 0.7rem;
-            background-color: rgba(56, 189, 248, 0.1);
-            border-radius: 6px;
-            border: 1px solid rgba(56, 189, 248, 0.2);
-            white-space: nowrap;
-        }
-
-        .file-count-text {
-            font-size: 0.78rem;
-            color: #94a3b8;
-            white-space: nowrap;
-        }
-
-        .preview-container {
+        .preview-grid {
             display: grid;
             grid-template-columns: repeat(auto-fill, minmax(75px, 1fr));
             gap: 0.6rem;
             margin-top: 0.8rem;
             max-height: 180px;
             overflow-y: auto;
+            padding: 0.3rem;
         }
 
         .preview-item {
             position: relative;
-            width: 100%;
             height: 75px;
+            border-radius: 8px;
+            overflow: hidden;
+            border: 1px solid #4d5b73;
+            background: #1e232d;
         }
 
-        .preview-img {
+        .preview-item img {
             width: 100%;
             height: 100%;
             object-fit: cover;
-            border-radius: 8px;
-            border: 1px solid #4d5b73;
+            cursor: pointer;
+            transition: transform 0.2s;
+        }
+        .preview-item img:hover {
+            transform: scale(1.05);
         }
 
-        .btn-remove-single {
+        .btn-remove-img {
             position: absolute;
-            top: -5px;
-            right: -5px;
-            background-color: #ef4444;
+            top: 3px;
+            right: 3px;
+            background: rgba(239, 68, 68, 0.9);
             color: white;
             border: none;
             border-radius: 50%;
             width: 22px;
             height: 22px;
-            font-size: 0.75rem;
+            font-size: 12px;
             font-weight: bold;
+            cursor: pointer;
             display: flex;
             align-items: center;
             justify-content: center;
-            cursor: pointer;
-            box-shadow: 0 2px 6px rgba(0,0,0,0.3);
+            box-shadow: 0 2px 5px rgba(0,0,0,0.3);
         }
-        .btn-remove-single:hover { background-color: #dc2626; }
 
-        .btn-action-row {
+        .form-actions {
             display: flex;
             gap: 0.8rem;
             margin-top: 1.5rem;
         }
 
-        .btn {
+        .btn-submit, .btn-back {
             flex: 1;
             padding: 0.75rem;
             border-radius: 10px;
-            font-weight: 600;
-            font-size: 0.9rem;
+            font-size: 0.95rem;
+            font-weight: 700;
             cursor: pointer;
             border: none;
-            text-align: center;
-            text-decoration: none;
-            display: flex;
+            display: inline-flex;
             align-items: center;
             justify-content: center;
             gap: 0.4rem;
+            transition: all 0.2s;
+            text-decoration: none;
         }
 
-        .btn-back { background-color: #3e495e; color: #cbd5e1; border: 1px solid #4d5b73; }
+        .btn-submit { background-color: #047857; color: #fff; box-shadow: 0 4px 12px rgba(4, 120, 87, 0.3); }
+        .btn-submit:hover { background-color: #059669; }
+        .btn-back { background-color: #3e495e; color: #cbd5e1; }
         .btn-back:hover { background-color: #4d5b73; color: #fff; }
 
-        .btn-submit { background-color: #0f766e; color: #e2e8f0; box-shadow: 0 4px 12px rgba(15, 118, 110, 0.3); }
-        .btn-submit:hover { background-color: #115e59; }
-
+        /* Modal พรีวิวภาพขนาดใหญ่ */
         .modal {
             display: none;
             position: fixed;
             z-index: 999;
             top: 0; left: 0; width: 100%; height: 100%;
+            background-color: rgba(18, 22, 30, 0.92);
+            justify-content: center;
+            align-items: center;
+            flex-direction: column;
+        }
+        .modal-content {
+            max-width: 90%;
+            max-height: 80vh;
+            border-radius: 10px;
+            object-fit: contain;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+        }
+        .modal-close {
+            position: absolute;
+            top: 20px;
+            right: 25px;
+            color: #fff;
+            font-size: 2.5rem;
+            font-weight: 300;
+            cursor: pointer;
+            background: none;
+            border: none;
+        }
+        .modal-close:hover { color: #38bdf8; }
+
+        .loading-modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            top: 0; left: 0; width: 100%; height: 100%;
             background-color: rgba(18, 22, 30, 0.85);
             justify-content: center;
             align-items: center;
+            flex-direction: column;
         }
-
-        .dialog-box {
-            background-color: #323b4d;
-            border: 1px solid #434e63;
-            padding: 1.8rem;
-            border-radius: 16px;
-            width: 90%;
-            max-width: 320px;
-            text-align: center;
-            box-shadow: 0 15px 35px rgba(0,0,0,0.4);
-        }
-
         .loading-spinner {
-            width: 40px;
-            height: 40px;
-            border: 3px solid #434e63;
-            border-top: 3px solid #38bdf8;
+            width: 45px;
+            height: 45px;
+            border: 4px solid #434e63;
+            border-top: 4px solid #38bdf8;
             border-radius: 50%;
             animation: spin 1s linear infinite;
-            margin: 0 auto 0.8rem auto;
+            margin-bottom: 1rem;
         }
-
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
     </style>
 </head>
 <body>
 
-    <div class="container">
-        <div class="form-card">
-            <div class="form-title">
-                <span>➕ เพิ่มอัลบั้มภาพถ่ายใหม่</span>
+    <div class="form-card">
+        <div class="form-title">
+            <span>➕ เพิ่มอัลบั้มภาพถ่ายใหม่</span>
+        </div>
+
+        <form id="uploadForm" onsubmit="handleFormSubmit(event)">
+            <div class="form-group">
+                <label class="form-label">หมวดหมู่ผลงาน:</label>
+                <div class="option-group">
+                    <div id="btnSmart" class="option-btn active" onclick="setCategory('Smart')">Smart</div>
+                    <div id="btnFree" class="option-btn" onclick="setCategory('Smartแถม')">Smart (แถม)</div>
+                </div>
             </div>
 
-            <form id="uploadForm" onsubmit="handleFormSubmit(event)">
-                <div class="form-group">
-                    <label>หมวดหมู่ผลงาน:</label>
-                    <div class="radio-group">
-                        <div id="btnSmart" class="radio-btn active" onclick="setCategory('Smart')">Smart</div>
-                        <div id="btnFree" class="radio-btn" onclick="setCategory('Smartแถม')">Smart (แถม)</div>
-                    </div>
-                </div>
+            <div class="form-group">
+                <label class="form-label">วันที่ปฏิบัติงาน (วัน/เดือน/ปี):</label>
+                <input type="text" id="dateInput" class="form-input" required readonly>
+            </div>
 
-                <div class="form-group">
-                    <label>วันที่ปฏิบัติงาน (วัน/เดือน/ปี):</label>
-                    <input type="date" id="workDate" style="direction: ltr;" required>
-                </div>
+            <div class="form-group">
+                <label class="form-label">ชื่อหัวข้ออัลบั้ม:</label>
+                <input type="text" id="folderNameInput" class="form-input" placeholder="เช่น SOD123456 S/N6312345 TR100" required>
+            </div>
 
-                <div class="form-group">
-                    <label>ชื่อหัวข้ออัลบั้ม:</label>
-                    <input type="text" id="folderName" placeholder="เช่น SOD123456 S/N6312345 TR100" required>
+            <div class="form-group">
+                <label class="form-label">เลือกรูปภาพ:</label>
+                <div class="file-upload-box" onclick="document.getElementById('fileInput').click()">
+                    <span style="font-size: 1.2rem;">📁</span>
+                    <span id="fileCountLabel" style="font-size: 0.85rem; color: #38bdf8; font-weight: 600; display: block; margin-top: 0.2rem;">คลิกเพื่อเลือกรูปภาพ</span>
                 </div>
+                <input type="file" id="fileInput" multiple accept="image/*" style="display: none;" onchange="handleFileSelect(this)">
+                
+                <div id="previewGrid" class="preview-grid" style="display: none;"></div>
+            </div>
 
-                <div class="form-group">
-                    <label>เลือกรูปภาพ:</label>
-                    <div class="file-upload-box" onclick="document.getElementById('imageFiles').click()">
-                        <span class="file-label-text">📁 เลือกรูปภาพ</span>
-                        <span id="fileCountText" class="file-count-text">ยังไม่ได้เลือกรูปภาพ</span>
-                    </div>
-                    <input type="file" id="imageFiles" multiple accept="image/*" onchange="previewImages(event)">
-                    
-                    <div id="previewContainer" class="preview-container"></div>
-                </div>
-
-                <div class="btn-action-row">
-                    <a href="index.html" class="btn btn-back">⬅️ กลับหน้าหลัก</a>
-                    <button type="submit" class="btn btn-submit">💾 บันทึกข้อมูล</button>
-                </div>
-            </form>
-        </div>
+            <div class="form-actions">
+                <a href="index.html" class="btn-back">⬅️ กลับหน้าหลัก</a>
+                <button type="submit" class="btn-submit" id="btnSubmit">💾 บันทึกข้อมูล</button>
+            </div>
+        </form>
     </div>
 
-    <div id="loadingModal" class="modal">
-        <div class="dialog-box">
-            <div id="spinnerBox" class="loading-spinner"></div>
-            <h3 id="modalTitle" style="color: #38bdf8; margin-bottom: 0.4rem; font-size: 1.1rem;">กำลังอัปโหลดข้อมูล...</h3>
-            <p id="modalDesc" style="font-size: 0.82rem; color: #94a3b8; margin-bottom: 1.2rem;">กรุณารอสักครู่ ระบบกำลังส่งรูปภาพไปยัง Google Drive</p>
-            <button id="modalCloseBtn" class="btn btn-submit" style="display: none; width: 100%;" onclick="closeModalAndRedirect()">ตกลง</button>
-        </div>
+    <!-- Modal ขยายดูรูปใหญ่ -->
+    <div id="imageModal" class="modal" onclick="closeModal()">
+        <button class="modal-close" onclick="closeModal()">&times;</button>
+        <img class="modal-content" id="modalImg">
+    </div>
+
+    <!-- Modal กำลังโหลด -->
+    <div id="loadingModal" class="loading-modal">
+        <div class="loading-spinner"></div>
+        <h3 id="loadingTitle" style="color: #38bdf8; margin-bottom: 0.3rem; font-size: 1.1rem;">กำลังบันทึกข้อมูล</h3>
+        <p id="loadingDesc" style="font-size: 0.8rem; color: #94a3b8;">กรุณารอสักครู่ ระบบกำลังอัปโหลดรูปภาพ...</p>
     </div>
 
     <script>
         const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyASRCNjL0XhJBWJyNkSRsqiF17vCEXWSX00i59xIaKpY5tWBY448bl0t1P7Fyq0d1Xgg/exec";
         
-        let selectedCategory = 'Smart';
-        let selectedFilesArray = [];
+        let selectedCategory = "Smart";
+        let selectedFiles = [];
 
-        document.getElementById('workDate').valueAsDate = new Date();
+        // ตั้งค่าวันที่ปัจจุบัน (วัน/เดือน/ปี ค.ศ.)
+        const today = new Date();
+        const dd = String(today.getDate()).padStart(2, '0');
+        const mm = String(today.getMonth() + 1).padStart(2, '0');
+        const yyyy = today.getFullYear();
+        document.getElementById('dateInput').value = `${dd}/${mm}/${yyyy}`;
 
         function setCategory(cat) {
             selectedCategory = cat;
-            if(cat === 'Smart') {
-                document.getElementById('btnSmart').classList.add('active');
-                document.getElementById('btnFree').classList.remove('active');
+            if (cat === 'Smart') {
+                document.getElementById('btnSmart').className = 'option-btn active';
+                document.getElementById('btnFree').className = 'option-btn';
             } else {
-                document.getElementById('btnFree').classList.add('active');
-                document.getElementById('btnSmart').classList.remove('active');
+                document.getElementById('btnSmart').className = 'option-btn';
+                document.getElementById('btnFree').className = 'option-btn active';
             }
         }
 
-        function previewImages(event) {
-            const files = Array.from(event.target.files);
-            selectedFilesArray = selectedFilesArray.concat(files);
-            updatePreviewUI();
+        function handleFileSelect(input) {
+            if (!input.files || input.files.length === 0) return;
+            
+            for (let file of input.files) {
+                selectedFiles.push(file);
+            }
+            renderPreview();
+            input.value = ''; // เคลียร์ค่าเพื่อให้เลือกซ้ำไฟล์เดิมได้
         }
 
-        function removeSelectedFile(index) {
-            selectedFilesArray.splice(index, 1);
-            updatePreviewUI();
-        }
+        function renderPreview() {
+            const grid = document.getElementById('previewGrid');
+            const label = document.getElementById('fileCountLabel');
+            grid.innerHTML = '';
 
-        function updatePreviewUI() {
-            const container = document.getElementById('previewContainer');
-            const fileCountText = document.getElementById('fileCountText');
-            container.innerHTML = '';
-
-            if (selectedFilesArray.length === 0) {
-                fileCountText.innerText = "ยังไม่ได้เลือกรูปภาพ";
+            if (selectedFiles.length === 0) {
+                grid.style.display = 'none';
+                label.innerText = "คลิกเพื่อเลือกรูปภาพ";
                 return;
             }
 
-            fileCountText.innerText = `เลือกแล้ว ${selectedFilesArray.length} รูป`;
+            grid.style.display = 'grid';
+            label.innerText = `เลือกแล้ว ${selectedFiles.length} รูป (แตะรูปเพื่อดูตัวอย่าง)`;
 
-            selectedFilesArray.forEach((file, index) => {
+            selectedFiles.forEach((file, index) => {
                 const reader = new FileReader();
                 reader.onload = function(e) {
-                    const itemDiv = document.createElement('div');
-                    itemDiv.className = 'preview-item';
-                    itemDiv.innerHTML = `
-                        <img src="${e.target.result}" class="preview-img">
-                        <button type="button" class="btn-remove-single" onclick="removeSelectedFile(${index})" title="ลบรูปนี้">✕</button>
+                    const item = document.createElement('div');
+                    item.className = 'preview-item';
+                    item.innerHTML = `
+                        <img src="${e.target.result}" onclick="openModal('${e.target.result}')" alt="Preview">
+                        <button type="button" class="btn-remove-img" onclick="removeFile(${index})">&times;</button>
                     `;
-                    container.appendChild(itemDiv);
+                    grid.appendChild(item);
                 }
                 reader.readAsDataURL(file);
             });
         }
 
-        async function handleFormSubmit(event) {
-            event.preventDefault();
+        function removeFile(index) {
+            selectedFiles.splice(index, 1);
+            renderPreview();
+        }
 
-            if (selectedFilesArray.length === 0) {
+        function openModal(imgSrc) {
+            document.getElementById('modalImg').src = imgSrc;
+            document.getElementById('imageModal').style.display = 'flex';
+        }
+
+        function closeModal() {
+            document.getElementById('imageModal').style.display = 'none';
+        }
+
+        async function handleFormSubmit(e) {
+            e.preventDefault();
+            
+            if (selectedFiles.length === 0) {
                 alert("กรุณาเลือกรูปภาพอย่างน้อย 1 รูป");
                 return;
             }
 
-            const rawDate = document.getElementById('workDate').value;
-            const folderName = document.getElementById('folderName').value.trim();
-
-            if (!rawDate || !folderName) {
-                alert("กรุณากรอกข้อมูลให้ครบถ้วน");
+            const folderName = document.getElementById('folderNameInput').value.trim();
+            if (!folderName) {
+                alert("กรุณากรอกชื่อหัวข้ออัลบั้ม");
                 return;
             }
 
-            document.getElementById('modalTitle').innerText = "กำลังอัปโหลดข้อมูล...";
-            document.getElementById('modalDesc').innerText = `กำลังประมวลผล (${selectedFilesArray.length} รูป)`;
-            document.getElementById('spinnerBox').style.display = 'block';
-            document.getElementById('modalCloseBtn').style.display = 'none';
             document.getElementById('loadingModal').style.display = 'flex';
+            document.getElementById('loadingDesc').innerText = `กำลังบีบอัดและอัปโหลดรูปภาพ (${selectedFiles.length} รูป)...`;
 
             try {
                 let base64Images = [];
-                for (let file of selectedFilesArray) {
+                for (let file of selectedFiles) {
                     let base64 = await resizeAndCompressImage(file);
                     base64Images.push(base64);
                 }
 
                 const payload = {
-                    action: 'create',
+                    action: 'create_album',
                     optionType: selectedCategory,
-                    month: rawDate,
+                    date: document.getElementById('dateInput').value,
                     folderName: folderName,
                     images: base64Images
                 };
@@ -399,21 +409,18 @@
                 });
                 const result = await response.json();
 
-                document.getElementById('spinnerBox').style.display = 'none';
+                document.getElementById('loadingModal').style.display = 'none';
+
                 if (result.status === "success") {
-                    document.getElementById('modalTitle').innerText = "✅ บันทึกสำเร็จ!";
-                    document.getElementById('modalDesc').innerText = "อัปโหลดอัลบั้มภาพเข้าสู่ระบบเรียบร้อยแล้ว";
+                    alert("บันทึกอัลบั้มสำเร็จ!");
+                    window.location.href = "index.html";
                 } else {
-                    document.getElementById('modalTitle').innerText = "❌ เกิดข้อผิดพลาด";
-                    document.getElementById('modalDesc').innerText = result.message || "ไม่สามารถบันทึกข้อมูลได้";
+                    alert("เกิดข้อผิดพลาด: " + (result.message || "ไม่สามารถบันทึกได้"));
                 }
-                document.getElementById('modalCloseBtn').style.display = 'block';
 
             } catch (err) {
-                document.getElementById('spinnerBox').style.display = 'none';
-                document.getElementById('modalTitle').innerText = "❌ เกิดข้อผิดพลาด";
-                document.getElementById('modalDesc').innerText = "ไม่สามารถเชื่อมต่อกับเซิร์ฟเวอร์ได้";
-                document.getElementById('modalCloseBtn').style.display = 'block';
+                document.getElementById('loadingModal').style.display = 'none';
+                alert("ไม่สามารถเชื่อมต่อกับเซิร์ฟเวอร์ได้ กรุณาลองใหม่อีกครั้ง");
             }
         }
 
@@ -444,11 +451,6 @@
                     }
                 }
             });
-        }
-
-        function closeModalAndRedirect() {
-            document.getElementById('loadingModal').style.display = 'none';
-            window.location.href = 'index.html';
         }
     </script>
 </body>
