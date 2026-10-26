@@ -97,7 +97,6 @@
         }
         input:focus { border-color: #38bdf8; }
 
-        /* จัดรูปแบบปฏิทินให้แสดงเป็น วัน/เดือน/ปี (DD/MM/YYYY) บนเบราว์เซอร์รองรับ */
         input[type="date"]::-webkit-datetime-edit-year-field { position: relative; padding: 0 2px; }
         input[type="date"]::-webkit-datetime-edit-month-field { position: relative; padding: 0 2px; }
         input[type="date"]::-webkit-datetime-edit-day-field { position: relative; padding: 0 2px; }
@@ -365,7 +364,7 @@
                 return;
             }
 
-            const rawDate = document.getElementById('workDate').value; // ได้ค่า YYYY-MM-DD จากปฏิทิน
+            const rawDate = document.getElementById('workDate').value;
             const folderName = document.getElementById('folderName').value.trim();
 
             if (!rawDate || !folderName) {
