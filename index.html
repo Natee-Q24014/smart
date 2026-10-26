@@ -4,6 +4,16 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Smart Monitoring Box - Work Archives</title>
+    
+    <!-- แท็กสำหรับ PWA และการรองรับบน iOS / Android -->
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#323b4d">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="MonitoringBox">
+    <link rel="apple-touch-icon" href="icon-192.png">
+
     <!-- โหลดไลบรารี JSZip สำหรับรวมรูปดาวน์โหลดเป็นไฟล์ ZIP -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
     <style>
@@ -85,7 +95,6 @@
         .header-info .creator-text { font-size: 0.82rem; color: #94a3b8; font-weight: 600; margin-bottom: 0.2rem; }
         .header-info p { font-size: 0.78rem; color: #9ca3af; margin-bottom: 0.5rem; }
 
-        /* แถบสถานะและเวลาด้านล่างหัวข้อ */
         .header-sub-bar {
             display: flex;
             justify-content: space-between;
@@ -137,7 +146,6 @@
             100% { opacity: 1; transform: scale(1); }
         }
 
-        /* หัวข้อสำหรับส่วนตารางภาพรวม */
         .block-title {
             font-size: 0.95rem;
             color: #38bdf8;
@@ -151,7 +159,6 @@
             .block-title { font-size: 1.05rem; margin-bottom: 0.6rem; }
         }
 
-        /* ตารางสถิติภาพรวม */
         .stats-table-wrapper {
             background-color: #323b4d;
             border: 1px solid #434e63;
@@ -191,9 +198,7 @@
             padding: 0.6rem 0.3rem;
             border-right: 1px solid rgba(255, 255, 255, 0.05);
         }
-        .stats-table td:last-child {
-            border-right: none;
-        }
+        .stats-table td:last-child { border-right: none; }
         @media(min-width: 768px) {
             .stats-table td { font-size: 1.3rem; padding: 0.9rem 0.5rem; }
         }
@@ -267,6 +272,23 @@
             transition: all 0.2s;
         }
         .btn-add:hover { background-color: #115e59; transform: translateY(-1px); }
+
+        .btn-install-pwa {
+            background-color: #0284c7;
+            color: #ffffff;
+            padding: 0.4rem 0.8rem;
+            border-radius: 8px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            border: 1px solid #38bdf8;
+            cursor: pointer;
+            display: none;
+            align-items: center;
+            gap: 0.3rem;
+            box-shadow: 0 3px 10px rgba(2, 132, 199, 0.3);
+            transition: all 0.2s;
+        }
+        .btn-install-pwa:hover { background-color: #0369a1; }
 
         .stack-controls-wrapper {
             display: flex;
@@ -655,7 +677,7 @@
                         <th>📁 อัลบั้มทั้งหมด</th>
                         <th>📸 รูปภาพทั้งหมด</th>
                         <th>⚡ หมวด Smart</th>
-                        <th>🎁 หมวด Smart(แถม)</th>
+                        <th>🎁 หมวด (แถม)</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -672,9 +694,12 @@
         <div class="sticky-nav-area">
             <div class="top-action-bar">
                 <div class="section-title" id="sectionTitle">
-                    <span>📁 เลือกปี</span>
+                    <span>📁 เลือกปีประจำระบบ</span>
                 </div>
                 <div style="display: flex; gap: 0.5rem; align-items: center;">
+                    <!-- ปุ่มสำหรับกดติดตั้งแอป PWA -->
+                    <button id="installAppBtn" class="btn-install-pwa" onclick="installPWA()">📲 ติดตั้งแอป</button>
+                    
                     <div id="navButtonsGroup" class="nav-buttons-group" style="display: none;">
                         <button class="btn-nav-action" onclick="goToHome()">🏠 หน้าแรก</button>
                         <button class="btn-nav-action" onclick="goBackToFolderLevel()">⬅️ ย้อนกลับ</button>
@@ -707,7 +732,7 @@
 
     <button id="scrollTopBtn" class="scroll-top-btn" onclick="scrollToTop()" title="เลื่อนขึ้นด้านบน">&#8593;</button>
 
-    <!-- Modal ดูรูปภาพ พร้อมปุ่มดาวน์โหลดลงเครื่อง -->
+    <!-- Modal ดูรูปภาพ -->
     <div id="imageModal" class="modal" style="z-index: 999;">
         <div class="modal-top-bar">
             <button class="btn-modal-download" onclick="downloadCurrentModalImage()">⬇️ ดาวน์โหลดรูปนี้</button>
@@ -776,6 +801,7 @@
         const categorySelect = document.getElementById('categorySelect');
         const loadingModal = document.getElementById('loadingModal');
         const systemStatusBadge = document.getElementById('systemStatusBadge');
+        const installAppBtn = document.getElementById('installAppBtn');
 
         let allAlbumsData = [];
         let navigationLevel = 'years'; 
@@ -789,7 +815,26 @@
         let selectedCategory = '';
         let selectedFolderName = '';
 
-        // ฟังก์ชันเปลี่ยนป้ายสถานะระบบ (green, orange, red)
+        // ตัวแปรสำหรับรองรับ PWA
+        let deferredPrompt;
+
+        window.addEventListener('beforeinstallprompt', (e) => {
+            e.preventDefault();
+            deferredPrompt = e;
+            if (installAppBtn) installAppBtn.style.display = 'inline-flex';
+        });
+
+        async function installPWA() {
+            if (deferredPrompt) {
+                deferredPrompt.prompt();
+                const { outcome } = await deferredPrompt.userChoice;
+                if (outcome === 'accepted') {
+                    installAppBtn.style.display = 'none';
+                }
+                deferredPrompt = null;
+            }
+        }
+
         function setSystemStatus(status, text) {
             if (!systemStatusBadge) return;
             systemStatusBadge.className = `status-badge status-${status}`;
@@ -799,7 +844,6 @@
             systemStatusBadge.innerHTML = `<span>${icon}</span> ${text}`;
         }
 
-        // ฟังก์ชันอัปเดตนาฬิกาแบบเรียลไทม์
         function updateLiveClock() {
             const now = new Date();
             const dateStr = now.toLocaleDateString('th-TH', { day: '2-digit', month: '2-digit', year: 'numeric' });
@@ -948,7 +992,7 @@
             if (navigationLevel === 'years') {
                 stackControlsWrapper.style.display = 'none';
                 navButtonsGroup.style.display = 'none';
-                sectionTitle.innerHTML = `<span>📁 เลือกปี</span>`;
+                sectionTitle.innerHTML = `<span>📁 เลือกปีประจำระบบ</span>`;
 
                 const yearsSet = new Set();
                 allAlbumsData.forEach(item => {
@@ -1144,8 +1188,8 @@
                 return;
             }
 
-            document.getElementById('loadingTitle').innerText = "กรุณารอสักครู่...";
-            document.getElementById('loadingDesc').innerText = `กำลังรวบรวมรูปภาพ (${images.length} รูป) `;
+            document.getElementById('loadingTitle').innerText = "กรุณารอสักครู่";
+            document.getElementById('loadingDesc').innerText = `กำลังรวบรวมรูปภาพ (${images.length} รูป) ลงเครื่อง`;
             loadingModal.style.display = 'flex';
 
             const zip = new JSZip();
