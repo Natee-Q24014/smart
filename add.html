@@ -97,7 +97,11 @@
         }
         input:focus { border-color: #38bdf8; }
 
-        /* ปรับกรอบอัปโหลดให้เล็กลง กระชับ ไม่กินพื้นที่ */
+        /* จัดรูปแบบปฏิทินให้แสดงเป็น วัน/เดือน/ปี (DD/MM/YYYY) บนเบราว์เซอร์รองรับ */
+        input[type="date"]::-webkit-datetime-edit-year-field { position: relative; padding: 0 2px; }
+        input[type="date"]::-webkit-datetime-edit-month-field { position: relative; padding: 0 2px; }
+        input[type="date"]::-webkit-datetime-edit-day-field { position: relative; padding: 0 2px; }
+
         .file-upload-box {
             border: 2px dashed #4d5b73;
             padding: 0.6rem;
@@ -136,7 +140,6 @@
             white-space: nowrap;
         }
 
-        /* พรีวิวรูปพร้อมปุ่มกากบาทลบรูป */
         .preview-container {
             display: grid;
             grid-template-columns: repeat(auto-fill, minmax(75px, 1fr));
@@ -208,7 +211,6 @@
         .btn-submit { background-color: #0f766e; color: #e2e8f0; box-shadow: 0 4px 12px rgba(15, 118, 110, 0.3); }
         .btn-submit:hover { background-color: #115e59; }
 
-        /* Modal แจ้งเตือนสถานะ */
         .modal {
             display: none;
             position: fixed;
@@ -261,8 +263,8 @@
                 </div>
 
                 <div class="form-group">
-                    <label>วันที่ปฏิบัติงาน:</label>
-                    <input type="date" id="workDate" required>
+                    <label>วันที่ปฏิบัติงาน (วัน/เดือน/ปี):</label>
+                    <input type="date" id="workDate" style="direction: ltr;" required>
                 </div>
 
                 <div class="form-group">
@@ -278,7 +280,6 @@
                     </div>
                     <input type="file" id="imageFiles" multiple accept="image/*" onchange="previewImages(event)">
                     
-                    <!-- พื้นที่แสดงรูปพรีวิว พร้อมปุ่มกากบาทลบแต่ละรูป -->
                     <div id="previewContainer" class="preview-container"></div>
                 </div>
 
@@ -290,7 +291,6 @@
         </div>
     </div>
 
-    <!-- Modal Loading / แจ้งเตือน -->
     <div id="loadingModal" class="modal">
         <div class="dialog-box">
             <div id="spinnerBox" class="loading-spinner"></div>
@@ -365,7 +365,7 @@
                 return;
             }
 
-            const rawDate = document.getElementById('workDate').value;
+            const rawDate = document.getElementById('workDate').value; // ได้ค่า YYYY-MM-DD จากปฏิทิน
             const folderName = document.getElementById('folderName').value.trim();
 
             if (!rawDate || !folderName) {
