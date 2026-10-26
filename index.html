@@ -19,65 +19,71 @@
             background-size: 100% 100%, 100% 100%, 40px 40px, 40px 40px;
             color: #e2e8f0; 
             min-height: 100vh; 
-            padding: 0.8rem; 
+            padding: 1.2rem; 
         }
         
         .container { max-width: 1400px; margin: 0 auto; }
 
+        /* ปรับขนาดส่วนหัวและรูปมาสคอตในคอมให้ใหญ่และสมส่วนยิ่งขึ้น */
         .header-card {
             background-color: #323b4d;
             border: 1px solid #434e63;
-            padding: 1rem 1.2rem;
-            border-radius: 14px;
+            padding: 1.2rem 1.5rem;
+            border-radius: 16px;
             text-align: center;
-            box-shadow: 0 8px 20px rgba(0,0,0,0.3);
-            margin-bottom: 0.8rem;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.35);
+            margin-bottom: 1.2rem;
             display: flex;
             flex-direction: column;
             align-items: center;
-            gap: 0.8rem;
+            gap: 1rem;
         }
 
         @media(min-width: 768px) {
-            .header-card { flex-direction: row; text-align: left; justify-content: space-between; padding: 1.5rem 2rem; }
+            .header-card { 
+                flex-direction: row; 
+                text-align: left; 
+                justify-content: space-between; 
+                padding: 1.8rem 2.5rem; 
+            }
         }
 
         .header-left {
             display: flex;
             align-items: center;
-            gap: 1rem;
+            gap: 1.2rem;
             flex-direction: column;
         }
         @media(min-width: 768px) {
-            .header-left { flex-direction: row; }
+            .header-left { flex-direction: row; gap: 1.5rem; }
         }
 
         .character-img {
-            width: 75px;
-            height: 75px;
+            width: 85px;
+            height: 85px;
             object-fit: cover;
-            border-radius: 12px;
+            border-radius: 14px;
             border: 2px solid #38bdf8;
-            box-shadow: 0 4px 12px rgba(56, 189, 248, 0.25);
+            box-shadow: 0 4px 15px rgba(56, 189, 248, 0.3);
         }
         @media(min-width: 768px) {
-            .character-img { width: 95px; height: 95px; }
+            .character-img { width: 120px; height: 120px; border-radius: 16px; }
         }
 
         .header-info .company-tag {
-            font-size: 0.7rem;
+            font-size: 0.75rem;
             color: #38bdf8;
             font-weight: 700;
             letter-spacing: 1.5px;
             text-transform: uppercase;
-            margin-bottom: 0.2rem;
+            margin-bottom: 0.3rem;
         }
 
-        .header-info h1 { font-size: 1.2rem; color: #f8fafc; margin-bottom: 0.1rem; font-weight: 700; }
-        @media(min-width: 768px) { .header-info h1 { font-size: 1.4rem; } }
+        .header-info h1 { font-size: 1.3rem; color: #f8fafc; margin-bottom: 0.2rem; font-weight: 700; }
+        @media(min-width: 768px) { .header-info h1 { font-size: 1.8rem; } }
         
-        .header-info .creator-text { font-size: 0.82rem; color: #94a3b8; font-weight: 600; margin-bottom: 0.2rem; }
-        .header-info p { font-size: 0.78rem; color: #9ca3af; }
+        .header-info .creator-text { font-size: 0.88rem; color: #94a3b8; font-weight: 600; margin-bottom: 0.2rem; }
+        .header-info p { font-size: 0.82rem; color: #9ca3af; }
 
         .sticky-nav-area {
             position: sticky;
@@ -85,26 +91,26 @@
             z-index: 900;
             background-color: rgba(38, 44, 56, 0.95);
             backdrop-filter: blur(10px);
-            padding-top: 0.3rem;
-            padding-bottom: 0.6rem;
-            margin-bottom: 0.8rem;
+            padding-top: 0.4rem;
+            padding-bottom: 0.8rem;
+            margin-bottom: 1rem;
         }
 
         .top-action-bar {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            margin-bottom: 0.5rem;
+            margin-bottom: 0.6rem;
             flex-wrap: wrap;
-            gap: 0.5rem;
+            gap: 0.6rem;
         }
 
         .section-title {
-            font-size: 1rem;
+            font-size: 1.1rem;
             color: #38bdf8;
             font-weight: 700;
             border-left: 4px solid #38bdf8;
-            padding-left: 0.5rem;
+            padding-left: 0.6rem;
             display: flex;
             align-items: center;
             gap: 0.4rem;
@@ -112,16 +118,16 @@
 
         .nav-buttons-group {
             display: flex;
-            gap: 0.4rem;
+            gap: 0.5rem;
             align-items: center;
         }
 
         .btn-nav-action {
             background-color: #3e495e;
             color: #e2e8f0;
-            padding: 0.4rem 0.8rem;
+            padding: 0.45rem 0.9rem;
             border-radius: 8px;
-            font-size: 0.8rem;
+            font-size: 0.85rem;
             font-weight: 600;
             border: 1px solid #4d5b73;
             cursor: pointer;
@@ -135,15 +141,15 @@
         .btn-add {
             background-color: #0f766e;
             color: #e2e8f0;
-            padding: 0.5rem 1rem;
+            padding: 0.55rem 1.1rem;
             border-radius: 10px;
-            font-size: 0.85rem;
+            font-size: 0.9rem;
             font-weight: 600;
             text-decoration: none;
             display: inline-flex;
             align-items: center;
             gap: 0.3rem;
-            box-shadow: 0 3px 10px rgba(15, 118, 110, 0.2);
+            box-shadow: 0 3px 10px rgba(15, 118, 110, 0.25);
             transition: all 0.2s;
         }
         .btn-add:hover { background-color: #115e59; transform: translateY(-1px); }
@@ -154,20 +160,20 @@
             gap: 0.6rem;
             background-color: #323b4d;
             border: 1px solid #434e63;
-            padding: 0.6rem 0.8rem;
+            padding: 0.8rem 1rem;
             border-radius: 12px;
             box-shadow: 0 4px 12px rgba(0,0,0,0.2);
         }
 
         .stack-row-item {
             display: flex;
-            gap: 0.5rem;
+            gap: 0.6rem;
             align-items: center;
             width: 100%;
         }
 
         .filter-label {
-            font-size: 0.82rem;
+            font-size: 0.85rem;
             color: #94a3b8;
             font-weight: 600;
             white-space: nowrap;
@@ -178,9 +184,9 @@
             background-color: #262c38;
             color: #f8fafc;
             border: 1px solid #4d5b73;
-            padding: 0.5rem 0.8rem;
+            padding: 0.55rem 0.9rem;
             border-radius: 8px;
-            font-size: 0.85rem;
+            font-size: 0.9rem;
             font-weight: 600;
             outline: none;
             transition: border-color 0.2s;
@@ -191,18 +197,18 @@
 
         .folder-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
-            gap: 0.8rem;
+            grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+            gap: 1rem;
         }
 
         .folder-card {
             background-color: #323b4d;
             border: 1px solid #434e63;
-            border-radius: 12px;
-            padding: 1rem;
+            border-radius: 14px;
+            padding: 1.2rem;
             display: flex;
             align-items: center;
-            gap: 1rem;
+            gap: 1.2rem;
             cursor: pointer;
             box-shadow: 0 4px 15px rgba(0,0,0,0.2);
             transition: all 0.2s;
@@ -213,25 +219,25 @@
             background-color: #384357;
         }
 
-        .folder-icon { font-size: 2.2rem; }
+        .folder-icon { font-size: 2.5rem; }
 
         .folder-info h3 {
             color: #f8fafc;
-            font-size: 1.05rem;
+            font-size: 1.15rem;
             margin-bottom: 0.2rem;
             font-weight: 700;
         }
 
         .folder-info p {
             color: #94a3b8;
-            font-size: 0.8rem;
+            font-size: 0.85rem;
             font-weight: 500;
         }
 
         .album-grid {
             display: grid;
             grid-template-columns: 1fr;
-            gap: 0.8rem;
+            gap: 1rem;
         }
 
         @media(min-width: 768px) {
@@ -245,7 +251,7 @@
         .album-card {
             background-color: #323b4d;
             border: 1px solid #434e63;
-            border-radius: 12px;
+            border-radius: 14px;
             overflow: hidden;
             box-shadow: 0 4px 15px rgba(0,0,0,0.2);
             display: flex;
@@ -254,8 +260,8 @@
 
         .album-header-bar {
             background-color: #262c38;
-            padding: 0.6rem 0.8rem;
-            font-size: 0.82rem;
+            padding: 0.7rem 1rem;
+            font-size: 0.88rem;
             color: #f8fafc;
             font-weight: 700;
             display: flex;
@@ -265,25 +271,25 @@
             word-break: break-all;
         }
 
-        .badge-tag { font-size: 0.68rem; padding: 0.15rem 0.5rem; border-radius: 5px; font-weight: 700; }
+        .badge-tag { font-size: 0.72rem; padding: 0.2rem 0.6rem; border-radius: 6px; font-weight: 700; }
         .badge-smart { background-color: rgba(56, 189, 248, 0.12); color: #38bdf8; border: 1px solid rgba(56, 189, 248, 0.2); }
         .badge-free { background-color: rgba(251, 191, 36, 0.12); color: #fbbf24; border: 1px solid rgba(251, 191, 36, 0.2); }
 
         .album-images-container {
-            padding: 0.6rem;
+            padding: 0.8rem;
             display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(75px, 1fr));
-            gap: 0.5rem;
-            max-height: 220px;
+            grid-template-columns: repeat(auto-fill, minmax(80px, 1fr));
+            gap: 0.6rem;
+            max-height: 240px;
             overflow-y: auto;
             background-color: #323b4d;
         }
 
         .thumb-img {
             width: 100%;
-            height: 75px;
+            height: 80px;
             object-fit: cover;
-            border-radius: 6px;
+            border-radius: 8px;
             border: 1px solid #4d5b73;
             cursor: pointer;
             transition: transform 0.2s, border-color 0.2s;
@@ -291,7 +297,7 @@
         .thumb-img:hover { transform: scale(1.03); border-color: #38bdf8; }
 
         .album-action-bar {
-            padding: 0.6rem 0.8rem;
+            padding: 0.7rem 1rem;
             background-color: #262c38;
             border-top: 1px solid #434e63;
             display: flex;
@@ -299,13 +305,13 @@
             align-items: center;
         }
 
-        .album-footer-info { font-size: 0.75rem; color: #94a3b8; font-weight: 500; }
-        .action-btns { display: flex; gap: 0.4rem; }
+        .album-footer-info { font-size: 0.8rem; color: #94a3b8; font-weight: 500; }
+        .action-btns { display: flex; gap: 0.5rem; }
 
         .btn-action {
-            padding: 0.35rem 0.6rem;
+            padding: 0.4rem 0.7rem;
             border-radius: 6px;
-            font-size: 0.73rem;
+            font-size: 0.78rem;
             font-weight: 600;
             cursor: pointer;
             border: none;
@@ -319,16 +325,16 @@
         .scroll-top-btn {
             display: none;
             position: fixed;
-            bottom: 20px;
-            right: 20px;
+            bottom: 25px;
+            right: 25px;
             z-index: 950;
             background: none;
             color: #ffffff;
             border: none;
             outline: none;
-            width: 42px;
-            height: 42px;
-            font-size: 1.8rem;
+            width: 45px;
+            height: 45px;
+            font-size: 2rem;
             cursor: pointer;
             align-items: center;
             justify-content: center;
@@ -350,9 +356,9 @@
 
         .modal-top-bar {
             position: absolute;
-            top: 15px;
-            left: 20px;
-            right: 20px;
+            top: 20px;
+            left: 25px;
+            right: 25px;
             display: flex;
             justify-content: space-between;
             align-items: center;
@@ -362,9 +368,9 @@
         .btn-modal-download {
             background-color: #047857;
             color: #fff;
-            padding: 0.4rem 0.9rem;
+            padding: 0.5rem 1rem;
             border-radius: 8px;
-            font-size: 0.85rem;
+            font-size: 0.9rem;
             font-weight: 600;
             border: none;
             cursor: pointer;
@@ -394,7 +400,7 @@
         }
 
         .modal-close {
-            color: #fff; font-size: 2.2rem; font-weight: 300;
+            color: #fff; font-size: 2.5rem; font-weight: 300;
             cursor: pointer;
             background: none;
             border: none;
@@ -408,26 +414,26 @@
             background: none;
             border: none;
             color: rgba(255, 255, 255, 0.8);
-            font-size: 2.5rem;
+            font-size: 2.8rem;
             cursor: pointer;
-            padding: 0.8rem;
+            padding: 1rem;
             z-index: 1000;
         }
         .modal-nav-btn:hover { color: #38bdf8; }
-        .nav-prev { left: 5px; }
-        .nav-next { right: 5px; }
+        .nav-prev { left: 10px; }
+        .nav-next { right: 10px; }
 
-        .modal-counter { color: #94a3b8; margin-top: 0.8rem; font-size: 0.85rem; font-weight: 600; }
+        .modal-counter { color: #94a3b8; margin-top: 1rem; font-size: 0.9rem; font-weight: 600; }
 
         .dialog-box {
             background-color: #323b4d;
             border: 1px solid #434e63;
-            padding: 1.5rem;
-            border-radius: 14px;
+            padding: 1.8rem;
+            border-radius: 16px;
             width: 90%;
-            max-width: 300px;
+            max-width: 320px;
             text-align: center;
-            box-shadow: 0 12px 30px rgba(0,0,0,0.4);
+            box-shadow: 0 15px 35px rgba(0,0,0,0.4);
             animation: popIn 0.2s ease-out;
         }
 
@@ -436,31 +442,31 @@
             100% { transform: scale(1); opacity: 1; }
         }
 
-        .dialog-box h3 { color: #f8fafc; margin-bottom: 0.4rem; font-size: 1.1rem; font-weight: 700; }
+        .dialog-box h3 { color: #f8fafc; margin-bottom: 0.5rem; font-size: 1.2rem; font-weight: 700; }
         
         .dialog-box input[type="password"],
         .dialog-box input[type="file"] {
             width: 100%;
-            padding: 0.6rem;
+            padding: 0.7rem;
             border-radius: 8px;
             border: 1px solid #4d5b73;
             background: #262c38;
             color: #fff;
             margin-bottom: 1rem;
             text-align: center;
-            font-size: 1.1rem;
-            letter-spacing: 5px;
+            font-size: 1.2rem;
+            letter-spacing: 6px;
         }
 
-        .dialog-btns { display: flex; gap: 0.6rem; justify-content: center; }
+        .dialog-btns { display: flex; gap: 0.8rem; justify-content: center; }
         .dialog-btns button {
             flex: 1;
-            padding: 0.5rem;
+            padding: 0.6rem;
             border-radius: 8px;
             font-weight: 600;
             cursor: pointer;
             border: none;
-            font-size: 0.85rem;
+            font-size: 0.9rem;
         }
         .btn-confirm { background-color: #0369a1; color: #e0f2fe; box-shadow: 0 2px 6px rgba(3, 105, 161, 0.2); }
         .btn-confirm:hover { background-color: #0284c7; }
@@ -468,8 +474,8 @@
         .btn-cancel:hover { background-color: #4d5b73; color: #fff; }
 
         .loading-spinner {
-            width: 38px;
-            height: 38px;
+            width: 42px;
+            height: 42px;
             border: 3px solid #434e63;
             border-top: 3px solid #38bdf8;
             border-radius: 50%;
@@ -482,7 +488,7 @@
             100% { transform: rotate(360deg); }
         }
 
-        .footer { text-align: center; margin-top: 2rem; font-size: 0.75rem; color: #6b7280; font-weight: 500; }
+        .footer { text-align: center; margin-top: 2.5rem; font-size: 0.8rem; color: #6b7280; font-weight: 500; }
     </style>
 </head>
 <body>
@@ -505,7 +511,7 @@
                 <div class="section-title" id="sectionTitle">
                     <span>📁 เลือกปีประจำระบบ</span>
                 </div>
-                <div style="display: flex; gap: 0.5rem; align-items: center;">
+                <div style="display: flex; gap: 0.6rem; align-items: center;">
                     <div id="navButtonsGroup" class="nav-buttons-group" style="display: none;">
                         <button class="btn-nav-action" onclick="goToHome()">🏠 หน้าแรก</button>
                         <button class="btn-nav-action" onclick="goBackToFolderLevel()">⬅️ ย้อนกลับ</button>
@@ -556,7 +562,7 @@
     <div id="passwordModal" class="modal" style="z-index: 1005;">
         <div class="dialog-box">
             <h3 id="dialogTitle">🔒 ใส่รหัสผ่าน 4 หลัก</h3>
-            <p style="font-size: 0.78rem; color: #94a3b8; margin-bottom: 0.6rem;">กรอกรหัสผ่านเพื่อดำเนินการต่อ</p>
+            <p style="font-size: 0.82rem; color: #94a3b8; margin-bottom: 0.8rem;">กรอกรหัสผ่านเพื่อดำเนินการต่อ</p>
             <input type="password" id="adminPasswordInput" maxlength="4" placeholder="••••" oninput="checkPasswordLength(this)">
             <div class="dialog-btns">
                 <button class="btn-cancel" onclick="closePasswordModal()">ยกเลิก</button>
@@ -568,8 +574,8 @@
     <div id="addImagesModal" class="modal" style="z-index: 1005;">
         <div class="dialog-box">
             <h3>📷 เพิ่มรูปภาพในอัลบั้ม</h3>
-            <p id="targetAlbumLabel" style="font-size: 0.78rem; color: #38bdf8; margin-bottom: 0.6rem; word-break: break-all; font-weight: 600;"></p>
-            <input type="file" id="additionalImagesInput" multiple accept="image/*" style="font-size: 0.8rem; padding: 0.4rem;">
+            <p id="targetAlbumLabel" style="font-size: 0.82rem; color: #38bdf8; margin-bottom: 0.8rem; word-break: break-all; font-weight: 600;"></p>
+            <input type="file" id="additionalImagesInput" multiple accept="image/*" style="font-size: 0.85rem; padding: 0.5rem;">
             <div class="dialog-btns">
                 <button class="btn-cancel" onclick="document.getElementById('addImagesModal').style.display='none'">ยกเลิก</button>
                 <button class="btn-confirm" onclick="uploadAdditionalImages()">อัปโหลด</button>
@@ -577,21 +583,21 @@
         </div>
     </div>
 
-    <!-- Modal แสดงสถานะกำลังดำเนินการ (มีรูปหมุนและข้อความกรุณารอสักครู่) -->
+    <!-- Modal แสดงสถานะกำลังดำเนินการ -->
     <div id="loadingModal" class="modal" style="z-index: 1010; display: flex;">
         <div class="dialog-box">
             <div class="loading-spinner"></div>
-            <h3 id="loadingTitle" style="color: #38bdf8; margin-bottom: 0.2rem; font-size: 1rem;">กรุณารอสักครู่</h3>
-            <p id="loadingDesc" style="font-size: 0.78rem; color: #94a3b8;">ระบบกำลังโหลดข้อมูล...</p>
+            <h3 id="loadingTitle" style="color: #38bdf8; margin-bottom: 0.3rem; font-size: 1.1rem;">กรุณารอสักครู่</h3>
+            <p id="loadingDesc" style="font-size: 0.82rem; color: #94a3b8;">กำลังโหลดข้อมูล...</p>
         </div>
     </div>
 
     <!-- Custom Alert Popup -->
     <div id="customAlertModal" class="modal" style="z-index: 1020;">
         <div class="dialog-box">
-            <h3 id="alertTitle" style="color: #fca5a5; margin-bottom: 0.3rem;">รหัสผ่านผิด</h3>
-            <p id="alertDesc" style="font-size: 0.8rem; color: #94a3b8; margin-bottom: 1rem; line-height: 1.4;">กรุณากรอกรหัสผ่านให้ถูกต้องใหม่อีกครั้ง</p>
-            <button class="btn-confirm" style="width: 100%; padding: 0.5rem;" onclick="closeCustomAlert()">ตกลง</button>
+            <h3 id="alertTitle" style="color: #fca5a5; margin-bottom: 0.4rem;">รหัสผ่านผิด</h3>
+            <p id="alertDesc" style="font-size: 0.85rem; color: #94a3b8; margin-bottom: 1.2rem; line-height: 1.4;">กรุณากรอกรหัสผ่านให้ถูกต้องใหม่อีกครั้ง</p>
+            <button class="btn-confirm" style="width: 100%; padding: 0.6rem;" onclick="closeCustomAlert()">ตกลง</button>
         </div>
     </div>
 
@@ -740,7 +746,7 @@
                 const sortedYears = Array.from(yearsSet).sort().reverse();
 
                 if (sortedYears.length === 0) {
-                    mainContainer.innerHTML = '<p style="color: #6b7280; text-align: center; padding: 2.5rem; font-weight: 500;">ยังไม่มีข้อมูลอัลบั้มในระบบ</p>';
+                    mainContainer.innerHTML = '<p style="color: #6b7280; text-align: center; padding: 3rem; font-weight: 500;">ยังไม่มีข้อมูลอัลบั้มในระบบ</p>';
                     return;
                 }
 
@@ -869,7 +875,7 @@
 
         function renderAlbumsList(albums) {
             if (!albums || albums.length === 0) {
-                mainContainer.innerHTML = '<p style="color: #6b7280; text-align: center; padding: 2rem; font-weight: 500;">ไม่พบรายการอัลบั้มในเงื่อนไขนี้</p>';
+                mainContainer.innerHTML = '<p style="color: #6b7280; text-align: center; padding: 2.5rem; font-weight: 500;">ไม่พบรายการอัลบั้มในเงื่อนไขนี้</p>';
                 return;
             }
 
@@ -1147,6 +1153,7 @@
         modalWrapper.addEventListener('touchend', e => { touchEndX = e.changedTouches[0].screenX; handleSwipe(); }, {passive: true});
 
         const handleSwipe = () => {
+            const textWidth = 50;
             const threshold = 50;
             if (touchEndX < touchStartX - threshold) nextImage();
             if (touchEndX > touchStartX + threshold) prevImage();
