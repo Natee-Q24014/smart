@@ -4,6 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Smart Monitoring Box - Work Archives</title>
+    <!-- โหลดไลบรารี JSZip สำหรับรวมรูปดาวน์โหลดเป็นไฟล์ ZIP -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
     <style>
         * { box-sizing: border-box; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; margin: 0; padding: 0; }
         
@@ -77,7 +79,6 @@
         .header-info .creator-text { font-size: 0.82rem; color: #94a3b8; font-weight: 600; margin-bottom: 0.2rem; }
         .header-info p { font-size: 0.78rem; color: #9ca3af; }
 
-        /* ล็อคแถบควบคุมให้อยู่ติดด้านบนเมื่อเลื่อนหน้าจอ */
         .sticky-nav-area {
             position: sticky;
             top: 0;
@@ -141,7 +142,6 @@
         }
         .btn-add:hover { background-color: #115e59; transform: translateY(-1px); }
 
-        /* แถบกรองข้อมูล (แสดงเฉพาะหน้าอัลบั้ม) */
         .stack-controls-wrapper {
             display: flex;
             flex-direction: column;
@@ -297,19 +297,19 @@
         .action-btns { display: flex; gap: 0.4rem; }
 
         .btn-action {
-            padding: 0.35rem 0.7rem;
+            padding: 0.35rem 0.6rem;
             border-radius: 6px;
-            font-size: 0.75rem;
+            font-size: 0.73rem;
             font-weight: 600;
             cursor: pointer;
             border: none;
             transition: all 0.2s;
         }
         .btn-action:hover { opacity: 0.9; transform: translateY(-1px); }
+        .btn-download-album { background-color: #047857; color: #ecfdf5; box-shadow: 0 2px 5px rgba(4, 120, 87, 0.2); }
         .btn-add-img { background-color: #0369a1; color: #e0f2fe; box-shadow: 0 2px 5px rgba(3, 105, 161, 0.2); }
         .btn-del-album { background-color: rgba(239, 68, 68, 0.1); color: #fca5a5; border: 1px solid rgba(239, 68, 68, 0.2); }
 
-        /* ปุ่มเลื่อนขึ้นด้านบนสุด */
         .scroll-top-btn {
             display: none;
             position: fixed;
@@ -336,35 +336,60 @@
             position: fixed;
             z-index: 999;
             top: 0; left: 0; width: 100%; height: 100%;
-            background-color: rgba(18, 22, 30, 0.85);
+            background-color: rgba(18, 22, 30, 0.9);
             justify-content: center;
             align-items: center;
             flex-direction: column;
         }
 
+        .modal-top-bar {
+            position: absolute;
+            top: 15px;
+            left: 20px;
+            right: 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            z-index: 1000;
+        }
+
+        .btn-modal-download {
+            background-color: #047857;
+            color: #fff;
+            padding: 0.4rem 0.9rem;
+            border-radius: 8px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            border: none;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.4rem;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+        }
+        .btn-modal-download:hover { background-color: #059669; }
+
         .modal-content-wrapper {
             position: relative;
             max-width: 90%;
-            max-height: 80vh;
+            max-height: 75vh;
             display: flex;
             justify-content: center;
             align-items: center;
+            margin-top: 2rem;
         }
 
         .modal-content {
             max-width: 100%;
-            max-height: 80vh;
+            max-height: 75vh;
             border-radius: 8px;
             object-fit: contain;
             user-select: none;
         }
 
         .modal-close {
-            position: absolute;
-            top: 15px; right: 20px;
-            color: #fff; font-size: 2rem; font-weight: 300;
+            color: #fff; font-size: 2.2rem; font-weight: 300;
             cursor: pointer;
-            z-index: 1000;
             background: none;
             border: none;
         }
@@ -470,7 +495,6 @@
             </div>
         </div>
 
-        <!-- แถบควบคุมหลัก ล็อคติดด้านบน -->
         <div class="sticky-nav-area">
             <div class="top-action-bar">
                 <div class="section-title" id="sectionTitle">
@@ -482,7 +506,6 @@
                 </div>
             </div>
 
-            <!-- แถบกรองข้อมูล (แสดงเฉพาะเมื่ออยู่ในหน้าอัลบั้ม) -->
             <div id="stackControlsWrapper" class="stack-controls-wrapper" style="display: none;">
                 <div class="stack-row-item">
                     <span class="filter-label">หมวด:</span>
@@ -506,12 +529,14 @@
         </div>
     </div>
 
-    <!-- ปุ่มเลื่อนขึ้นด้านบนสุด -->
     <button id="scrollTopBtn" class="scroll-top-btn" onclick="scrollToTop()" title="เลื่อนขึ้นด้านบน">&#8593;</button>
 
-    <!-- Modal ดูรูปภาพ -->
+    <!-- Modal ดูรูปภาพ พร้อมปุ่มดาวน์โหลดรูปเดี่ยว -->
     <div id="imageModal" class="modal" style="z-index: 999;">
-        <button class="modal-close" onclick="closeModal()">&times;</button>
+        <div class="modal-top-bar">
+            <button class="btn-modal-download" onclick="downloadCurrentModalImage()">⬇️ ดาวน์โหลดรูปนี้</button>
+            <button class="modal-close" onclick="closeModal()">&times;</button>
+        </div>
         <button class="modal-nav-btn nav-prev" onclick="prevImage()">&#10094;</button>
         <div class="modal-content-wrapper" id="modalWrapper">
             <img class="modal-content" id="modalImg">
@@ -545,12 +570,12 @@
         </div>
     </div>
 
-    <!-- Modal แสดงสถานะกำลังบันทึก -->
+    <!-- Modal แสดงสถานะกำลังบันทึก / ดาวน์โหลด ZIP -->
     <div id="loadingModal" class="modal" style="z-index: 1010;">
         <div class="dialog-box">
             <div class="loading-spinner"></div>
             <h3 id="loadingTitle" style="color: #38bdf8; margin-bottom: 0.2rem; font-size: 1rem;">กำลังประมวลผล...</h3>
-            <p id="loadingDesc" style="font-size: 0.78rem; color: #94a3b8;">ระบบกำลังอัปเดตข้อมูล</p>
+            <p id="loadingDesc" style="font-size: 0.78rem; color: #94a3b8;">ระบบกำลังดำเนินการ</p>
         </div>
     </div>
 
@@ -576,7 +601,7 @@
         const categorySelect = document.getElementById('categorySelect');
 
         let allAlbumsData = [];
-        let navigationLevel = 'years'; // 'years', 'months', 'albums'
+        let navigationLevel = 'years'; 
         let currentSelectedYear = null;
         let currentSelectedMonth = null;
 
@@ -640,7 +665,6 @@
             }
         }
 
-        // ระบบ Auto-Refresh ทุกๆ 5 วินาที เพื่อดึงข้อมูลใหม่จากเครื่องอื่นอัตโนมัติ
         setInterval(() => {
             fetchAlbums(true);
         }, 5000);
@@ -857,7 +881,8 @@
                             รูปภาพ: <span style="color: #38bdf8; font-weight: 700;">${item.images.length} รูป</span>
                         </div>
                         <div class="action-btns">
-                            <button class="btn-action btn-add-img" onclick="promptAddImages('${item.category}', '${item.folderName}')">➕ เพิ่มรูป</button>
+                            <button class="btn-action btn-download-album" onclick='downloadAlbumZip(${JSON.stringify(item.images)}, "${item.folderName}")'>📥 โหลดทั้งหมด</button>
+                            <button class="btn-action btn-add-img" onclick="promptAddImages('${item.category}', '${item.folderName}')">➕ เพิ่ม</button>
                             <button class="btn-action btn-del-album" onclick="promptDeleteAlbum('${item.category}', '${item.folderName}')">🗑️ ลบ</button>
                         </div>
                     </div>
@@ -866,6 +891,55 @@
             });
 
             mainContainer.appendChild(grid);
+        }
+
+        // ฟังก์ชันดาวน์โหลดรูปภาพทั้งหมดในอัลบั้มเป็นไฟล์ ZIP
+        async function downloadAlbumZip(images, folderName) {
+            if (!images || images.length === 0) {
+                showAlert("แจ้งเตือน", "ไม่มีรูปภาพในอัลบั้มนี้", false);
+                return;
+            }
+
+            document.getElementById('loadingTitle').innerText = "กำลังเตรียมไฟล์ ZIP...";
+            document.getElementById('loadingDesc').innerText = `กำลังดาวน์โหลด ${images.length} รูปภาพ กรุณารอสักครู่`;
+            document.getElementById('loadingModal').style.display = 'flex';
+
+            const zip = new JSZip();
+            const folder = zip.folder(`Album_${folderName}`);
+
+            try {
+                for (let i = 0; i < images.length; i++) {
+                    const imgUrl = images[i].url;
+                    // ดึงไฟล์ผ่าน Fetch (รองรับ CORS URL จาก Google Drive)
+                    const response = await fetch(imgUrl);
+                    const blob = await response.blob();
+                    folder.file(`photo_${i + 1}.jpg`, blob);
+                }
+
+                const content = await zip.generateAsync({ type: "blob" });
+                const link = document.createElement('a');
+                link.href = URL.createObjectURL(content);
+                link.download = `SmartMonitoring_${folderName}.zip`;
+                link.click();
+
+                document.getElementById('loadingModal').style.display = 'none';
+            } catch (error) {
+                document.getElementById('loadingModal').style.display = 'none';
+                showAlert("เกิดข้อผิดพลาด", "ไม่สามารถดาวน์โหลดไฟล์ ZIP ได้เนื่องจากข้อจำกัดความปลอดภัยของเบราว์เซอร์หรือเครือข่าย", true);
+            }
+        }
+
+        // ฟังก์ชันดาวน์โหลดรูปเดี่ยวขณะกดดูใน Modal
+        function downloadCurrentModalImage() {
+            const currentImgUrl = currentAlbumImages[currentIndex];
+            const link = document.createElement('a');
+            link.href = currentImgUrl;
+            link.target = "_blank";
+            link.download = `Image_${currentIndex + 1}.jpg`;
+            // สำหรับบางเบราว์เซอร์มือถือ บังคับเปิดลิงก์ดาวน์โหลดตรงๆ
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
         }
 
         function promptDeleteAlbum(category, folderName) {
