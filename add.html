@@ -4,8 +4,10 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>เพิ่มอัลบั้มภาพถ่ายใหม่ - Smart Monitoring Box</title>
-    <!-- โหลดไลบรารี Exif-js สำหรับอ่านวันที่ถ่ายจริงจากรูปภาพ -->
+    <!-- โหลดไลบรารี Exif-js สำหรับอ่านวันที่ถ่ายจริง -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/exif-js/2.3.0/exif.js"></script>
+    <!-- โหลดไลบรารี Tesseract.js สำหรับสแกนตัวหนังสือจากรูปภาพ (OCR) -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/tesseract.js/4.0.2/tesseract.min.js"></script>
     <style>
         * { box-sizing: border-box; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; margin: 0; padding: 0; }
         
@@ -290,15 +292,15 @@
             </div>
 
             <div class="form-group">
-                <label class="form-label">ชื่อหัวข้ออัลบั้ม:</label>
-                <input type="text" id="folderNameInput" class="form-input" placeholder="เช่น SOD123456 S/N6312345 TR100" required>
+                <label class="form-label">ชื่อหัวข้ออัลบั้ม (สแกนอัตโนมัติจาก 2 รูปแรก):</label>
+                <input type="text" id="folderNameInput" class="form-input" placeholder="ระบบจะเติมให้อัตโนมัติ หรือพิมพ์แก้ได้" required>
             </div>
 
             <div class="form-group">
                 <label class="form-label">เลือกรูปภาพ:</label>
                 <div class="file-upload-box" onclick="document.getElementById('fileInput').click()">
                     <span style="font-size: 1.2rem;">📁</span>
-                    <span id="fileCountLabel" style="font-size: 0.85rem; color: #38bdf8; font-weight: 600; display: block; margin-top: 0.2rem;">คลิกเพื่อเลือกรูปภาพ</span>
+                    <span id="fileCountLabel" style="font-size: 0.85rem; color: #38bdf8; font-weight: 600; display: block; margin-top: 0.2rem;">คลิกเพื่อเลือกรูปภาพ (รูปที่ 1: ซิม, รูปที่ 2: เนมเพลท)</span>
                 </div>
                 <input type="file" id="fileInput" multiple accept="image/*" style="display: none;" onchange="handleFileSelect(this)">
                 
@@ -319,11 +321,11 @@
         <div id="modalDateInfo" class="modal-date-info"></div>
     </div>
 
-    <!-- Modal กำลังโหลด -->
-    <div id="loadingModal" class="loading-modal">
+    <!-- Modal กำลังโหลด / สแกนรูป -->
+    <div id="loadingModal" class="loading-modal" style="display: flex;">
         <div class="loading-spinner"></div>
-        <h3 id="loadingTitle" style="color: #38bdf8; margin-bottom: 0.3rem; font-size: 1.1rem;">กำลังบันทึกข้อมูล</h3>
-        <p id="loadingDesc" style="font-size: 0.8rem; color: #94a3b8;">กรุณารอสักครู่ ระบบกำลังอัปโหลดรูปภาพ...</p>
+        <h3 id="loadingTitle" style="color: #38bdf8; margin-bottom: 0.3rem; font-size: 1.1rem;">พร้อมใช้งาน</h3>
+        <p id="loadingDesc" style="font-size: 0.8rem; color: #94a3b8;">กรุณาเลือกรูปภาพเพื่อเริ่มใช้งานระบบ</p>
     </div>
 
     <script>
@@ -332,12 +334,10 @@
         let selectedCategory = "Smart";
         let selectedFiles = [];
 
-        // ตั้งค่าวันที่ปัจจุบันเป็นค่าเริ่มต้นชั่วคราวก่อนเลือกรูป
-        const today = new Date();
-        const dd = String(today.getDate()).padStart(2, '0');
-        const mm = String(today.getMonth() + 1).padStart(2, '0');
-        const yyyy = today.getFullYear();
-        document.getElementById('dateInput').value = `${dd}/${mm}/${yyyy}`;
+        // ปิด Modal โหลดเริ่มต้นเมื่อเปิดหน้าเว็บ
+        window.onload = function() {
+            document.getElementById('loadingModal').style.display = 'none';
+        };
 
         function setCategory(cat) {
             selectedCategory = cat;
@@ -372,38 +372,89 @@
             };
         }
 
-        function handleFileSelect(input) {
+        async function handleFileSelect(input) {
             if (!input.files || input.files.length === 0) return;
             
             const filesArray = Array.from(input.files);
-            let processedCount = 0;
+            
+            document.getElementById('loadingTitle').innerText = "กำลังประมวลผลรูปภาพ";
+            document.getElementById('loadingDesc').innerText = "กำลังอ่านวันที่และสแกนข้อความจากรูปภาพ...";
+            document.getElementById('loadingModal').style.display = 'flex';
 
-            filesArray.forEach((file, index) => {
-                EXIF.getData(file, function() {
-                    const exifDateTime = EXIF.getTag(this, "DateTimeOriginal") || EXIF.getTag(this, "DateTime");
-                    let shootDate = parseExifDate(exifDateTime);
+            let scannedSim = "";
+            let scannedTr = "";
+            let scannedSn = "";
 
-                    if (!shootDate || isNaN(shootDate.getTime())) {
-                        shootDate = file.lastModified ? new Date(file.lastModified) : new Date();
-                    }
+            for (let i = 0; i < filesArray.length; i++) {
+                let file = filesArray[i];
 
-                    const formatted = formatDateTime(shootDate);
-                    file.formattedDate = formatted ? formatted.full : "ไม่ทราบเวลาถ่าย";
-                    file.dateOnly = formatted ? formatted.dateOnly : null;
-
-                    selectedFiles.push(file);
-                    processedCount++;
-
-                    if (processedCount === filesArray.length) {
-                        // อัปเดตช่องวันที่หลักตามรูปแรกที่เลือก
-                        if (selectedFiles.length > 0 && selectedFiles[0].dateOnly) {
-                            document.getElementById('dateInput').value = selectedFiles[0].dateOnly;
+                // 1. อ่าน Exif วันที่
+                await new Promise((resolve) => {
+                    EXIF.getData(file, function() {
+                        const exifDateTime = EXIF.getTag(this, "DateTimeOriginal") || EXIF.getTag(this, "DateTime");
+                        let shootDate = parseExifDate(exifDateTime);
+                        if (!shootDate || isNaN(shootDate.getTime())) {
+                            shootDate = file.lastModified ? new Date(file.lastModified) : new Date();
                         }
-                        renderPreview();
-                    }
+                        const formatted = formatDateTime(shootDate);
+                        file.formattedDate = formatted ? formatted.full : "ไม่ทราบเวลาถ่าย";
+                        file.dateOnly = formatted ? formatted.dateOnly : null;
+                        resolve();
+                    });
                 });
-            });
 
+                // 2. สแกน OCR เฉพาะ 2 รูปแรก
+                if (i === 0 || i === 1) {
+                    try {
+                        const worker = await Tesseract.createWorker('eng');
+                        const ret = await worker.recognize(file);
+                        const text = ret.data.text;
+                        await worker.terminate();
+
+                        if (i === 0) {
+                            // รูปแรก: หา SOD/SOF ตามด้วย - และตัวเลข 6 หลัก (ขึ้นต้นด้วย 25 ขึ้นไป)
+                            const simMatch = text.match(/(SOD|SOF)-\d{6}/i);
+                            if (simMatch) scannedSim = simMatch[0].toUpperCase();
+
+                            // รูปแรก: หา TR. ตามด้วยตัวเลขหลักร้อยถึงพัน
+                            const trMatch = text.match(/TR\.?\s*\d{3,4}/i);
+                            if (trMatch) scannedTr = trMatch[0].toUpperCase().replace(/\s+/, '');
+                        } else if (i === 1) {
+                            // รูปที่สอง: หา Serial No. ตามด้วยตัวเลข 8 หลัก (ขึ้นต้นด้วย 6)
+                            const snMatch = text.match(/Serial\s*No\.?\s*([6]\d{7})/i);
+                            if (snMatch && snMatch[1]) {
+                                scannedSn = "S/N" + snMatch[1];
+                            } else {
+                                // สำรองเผื่อจับรูปแบบตัวเลข 8 หลักที่ขึ้นต้นด้วย 6 ตรงๆ
+                                const altSn = text.match(/\b6\d{7}\b/);
+                                if (altSn) scannedSn = "S/N" + altSn[0];
+                            }
+                        }
+                    } catch (err) {
+                        console.error("OCR Error on image", i, err);
+                    }
+                }
+
+                selectedFiles.push(file);
+            }
+
+            // ตั้งค่าวันที่จากรูปแรก
+            if (selectedFiles.length > 0 && selectedFiles[0].dateOnly) {
+                document.getElementById('dateInput').value = selectedFiles[0].dateOnly;
+            }
+
+            // ประกอบร่างชื่อหัวข้ออัลบั้มอัตโนมัติ
+            let finalFolderNameParts = [];
+            if (scannedSim) finalFolderNameParts.push(scannedSim);
+            if (scannedTr) finalFolderNameParts.push(scannedTr);
+            if (scannedSn) finalFolderNameParts.push(scannedSn);
+
+            if (finalFolderNameParts.length > 0) {
+                document.getElementById('folderNameInput').value = finalFolderNameParts.join(" ");
+            }
+
+            document.getElementById('loadingModal').style.display = 'none';
+            renderPreview();
             input.value = '';
         }
 
@@ -414,12 +465,12 @@
 
             if (selectedFiles.length === 0) {
                 grid.style.display = 'none';
-                label.innerText = "คลิกเพื่อเลือกรูปภาพ";
+                label.innerText = "คลิกเพื่อเลือกรูปภาพ (รูปที่ 1: ซิม, รูปที่ 2: เนมเพลท)";
                 return;
             }
 
             grid.style.display = 'grid';
-            label.innerText = `เลือกแล้ว ${selectedFiles.length} รูป (รูปแรกกำหนดวันที่อัตโนมัติ)`;
+            label.innerText = `เลือกแล้ว ${selectedFiles.length} รูป (สแกนชื่ออัลบั้มอัตโนมัติเรียบร้อย)`;
 
             selectedFiles.forEach((file, index) => {
                 const reader = new FileReader();
@@ -439,7 +490,6 @@
 
         function removeFile(index) {
             selectedFiles.splice(index, 1);
-            // หากลบรูปแรกออก ให้ขยับเอาวันที่ของรูปถัดไปมาตั้งเป็นวันที่หลักแทน
             if (index === 0 && selectedFiles.length > 0 && selectedFiles[0].dateOnly) {
                 document.getElementById('dateInput').value = selectedFiles[0].dateOnly;
             }
@@ -466,12 +516,13 @@
 
             const folderName = document.getElementById('folderNameInput').value.trim();
             if (!folderName) {
-                alert("กรุณากรอกชื่อหัวข้ออัลบั้ม");
+                alert("กรุณากรอกหรือตรวจสอบชื่อหัวข้ออัลบั้ม");
                 return;
             }
 
-            document.getElementById('loadingModal').style.display = 'flex';
+            document.getElementById('loadingTitle').innerText = "กำลังบันทึกข้อมูล";
             document.getElementById('loadingDesc').innerText = `กำลังบีบอัดและอัปโหลดรูปภาพ (${selectedFiles.length} รูป)...`;
+            document.getElementById('loadingModal').style.display = 'flex';
 
             try {
                 let base64Images = [];
