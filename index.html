@@ -120,7 +120,7 @@
             border-radius: 16px;
             box-shadow: 0 4px 15px rgba(0,0,0,0.2);
             flex: 1;
-            min-width: 250px;
+            min-width: 200px;
         }
 
         .search-container {
@@ -133,7 +133,7 @@
             border-radius: 16px;
             box-shadow: 0 4px 15px rgba(0,0,0,0.2);
             flex: 2;
-            min-width: 280px;
+            min-width: 260px;
         }
 
         .filter-label {
@@ -157,6 +157,18 @@
         }
         .filter-select:focus, .search-input:focus { border-color: #38bdf8; }
         .search-input::placeholder { color: #64748b; font-weight: 400; }
+
+        .month-group-title {
+            font-size: 1.15rem;
+            color: #fbbf24;
+            font-weight: 700;
+            margin: 1.8rem 0 0.8rem 0;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            border-bottom: 2px solid #3d4a61;
+            padding-bottom: 0.4rem;
+        }
 
         .album-grid {
             display: grid;
@@ -389,25 +401,32 @@
             <a href="add.html" class="btn-add">➕ เพิ่มอัลบั้มใหม่</a>
         </div>
 
-        <!-- แถบกรองหมวดหมู่และช่องค้นหาชื่อหัวข้ออัลบั้ม -->
+        <!-- แถบกรองปี, หมวดหมู่ และช่องค้นหา -->
         <div class="controls-wrapper">
             <div class="filter-container">
-                <span class="filter-label">🔍 หมวดหมู่:</span>
-                <select id="categorySelect" class="filter-select" onchange="filterCategory(this.value)">
-                    <option value="all"> ทั้งหมด</option>
-                    <option value="Smart"> Smart</option>
-                    <option value="Smartแถม"> Smart (แถม)</option>
+                <span class="filter-label">📅 ปี:</span>
+                <select id="yearSelect" class="filter-select" onchange="applyFilters()">
+                    <option value="all">ทั้งหมด</option>
+                </select>
+            </div>
+
+            <div class="filter-container">
+                <span class="filter-label">🔍 หมวด:</span>
+                <select id="categorySelect" class="filter-select" onchange="applyFilters()">
+                    <option value="all">ทั้งหมด</option>
+                    <option value="Smart">Smart</option>
+                    <option value="Smartแถม">Smart (แถม)</option>
                 </select>
             </div>
 
             <div class="search-container">
                 <span class="filter-label">🔎 ค้นหา:</span>
-                <input type="text" id="searchInput" class="search-input" placeholder="พิมพ์ชื่อหัวข้ออัลบั้ม..." oninput="filterCategory(document.getElementById('categorySelect').value)">
+                <input type="text" id="searchInput" class="search-input" placeholder="พิมพ์ชื่อหัวข้ออัลบั้ม..." oninput="applyFilters()">
             </div>
         </div>
         
         <div id="loadingView" class="loading-view">⏳ กำลังโหลดอัลบั้ม...</div>
-        <div class="album-grid" id="albumContainer"></div>
+        <div id="albumContainer"></div>
 
         <div class="footer">
             ระบบบันทึกข้อมูลอัตโนมัติ • QTC Energy PCL.
@@ -475,7 +494,6 @@
         const albumContainer = document.getElementById('albumContainer');
 
         let allAlbumsData = [];
-        let currentFilter = 'all';
         let currentAlbumImages = [];
         let currentIndex = 0;
 
@@ -503,6 +521,7 @@
                 allAlbumsData = await response.json();
                 
                 loadingView.style.display = 'none';
+                populateYearDropdown();
                 renderAlbums();
 
             } catch (error) {
@@ -510,18 +529,51 @@
             }
         }
 
+        function populateYearDropdown() {
+            const yearSelect = document.getElementById('yearSelect');
+            const years = new Set();
+
+            allAlbumsData.forEach(item => {
+                if (item.month) {
+                    const year = item.month.split('-')[0]; // ดึงปีจาก YYYY-MM
+                    if (year) years.add(year);
+                }
+            });
+
+            // เรียงปีจากล่าสุดไปเก่าสุด
+            const sortedYears = Array.from(years).sort().reverse();
+            
+            // คงตัวเลือก "ทั้งหมด" ไว้ แล้วเพิ่มปีเข้าไป
+            yearSelect.innerHTML = '<option value="all">ทั้งหมด</option>';
+            sortedYears.forEach(year => {
+                yearSelect.innerHTML += `<option value="${year}">${year}</option>`;
+            });
+        }
+
+        function applyFilters() {
+            renderAlbums();
+        }
+
         function renderAlbums() {
             albumContainer.innerHTML = '';
 
+            const selectedYear = document.getElementById('yearSelect').value;
+            const selectedCategory = document.getElementById('categorySelect').value;
+            const searchKeyword = document.getElementById('searchInput').value.trim().toLowerCase();
+
             let filteredAlbums = allAlbumsData;
             
-            // กรองตามหมวดหมู่
-            if (currentFilter !== 'all') {
-                filteredAlbums = filteredAlbums.filter(item => item.category === currentFilter);
+            // กรองตามปี
+            if (selectedYear !== 'all') {
+                filteredAlbums = filteredAlbums.filter(item => item.month && item.month.startsWith(selectedYear));
             }
 
-            // กรองตามชื่อหัวข้ออัลบั้มจากช่องค้นหา
-            const searchKeyword = document.getElementById('searchInput').value.trim().toLowerCase();
+            // กรองตามหมวดหมู่
+            if (selectedCategory !== 'all') {
+                filteredAlbums = filteredAlbums.filter(item => item.category === selectedCategory);
+            }
+
+            // กรองตามคำค้นหาชื่ออัลบั้ม
             if (searchKeyword !== '') {
                 filteredAlbums = filteredAlbums.filter(item => item.folderName.toLowerCase().includes(searchKeyword));
             }
@@ -531,47 +583,69 @@
                 return;
             }
 
+            // จัดกลุ่มข้อมูลตามเดือน (item.month)
+            const groupedByMonth = {};
             filteredAlbums.forEach(item => {
-                const card = document.createElement('div');
-                card.className = 'album-card';
-
-                const isFree = item.category === "Smartแถม";
-                const badgeText = isFree ? "Smart (แถม)" : "Smart";
-                const badgeClass = isFree ? "badge-free" : "badge-smart";
-
-                let imagesHtml = '';
-                if (item.images && item.images.length > 0) {
-                    imagesHtml = `<div class="album-images-container">`;
-                    const rawUrls = item.images.map(img => img.url);
-                    rawUrls.forEach((imgSrc, imgIndex) => {
-                        imagesHtml += `<img src="${imgSrc}" class="thumb-img" onclick='openModal(${JSON.stringify(rawUrls)}, ${imgIndex})' alt="Work Photo">`;
-                    });
-                    imagesHtml += `</div>`;
+                const monthKey = item.month || "อื่นๆ";
+                if (!groupedByMonth[monthKey]) {
+                    groupedByMonth[monthKey] = [];
                 }
-
-                card.innerHTML = `
-                    <div class="album-header-bar">
-                        <span>📅 ${item.folderName}</span>
-                        <span class="badge-tag ${badgeClass}">${badgeText}</span>
-                    </div>
-                    ${imagesHtml}
-                    <div class="album-action-bar">
-                        <div class="album-footer-info">
-                            รูปภาพ: <span style="color: #38bdf8; font-weight: 700;">${item.images.length} รูป</span>
-                        </div>
-                        <div class="action-btns">
-                            <button class="btn-action btn-add-img" onclick="promptAddImages('${item.category}', '${item.folderName}')">➕ เพิ่มรูป</button>
-                            <button class="btn-action btn-del-album" onclick="promptDeleteAlbum('${item.category}', '${item.folderName}')">🗑️ ลบอัลบั้ม</button>
-                        </div>
-                    </div>
-                `;
-                albumContainer.appendChild(card);
+                groupedByMonth[monthKey].push(item);
             });
-        }
 
-        function filterCategory(category) {
-            currentFilter = category;
-            renderAlbums();
+            // เรียงลำดับเดือนจากล่าสุดไปเก่าสุด
+            const sortedMonths = Object.keys(groupedByMonth).sort().reverse();
+
+            sortedMonths.forEach(month => {
+                // สร้างหัวข้อกลุ่มเดือน
+                const monthTitle = document.createElement('div');
+                monthTitle.className = 'month-group-title';
+                monthTitle.innerHTML = `📁 ประจำเดือน: ${month}`;
+                albumContainer.appendChild(monthTitle);
+
+                // สร้าง Grid สำหรับอัลบั้มในเดือนนั้น
+                const grid = document.createElement('div');
+                grid.className = 'album-grid';
+
+                groupedByMonth[month].forEach(item => {
+                    const card = document.createElement('div');
+                    card.className = 'album-card';
+
+                    const isFree = item.category === "Smartแถม";
+                    const badgeText = isFree ? "Smart (แถม)" : "Smart";
+                    const badgeClass = isFree ? "badge-free" : "badge-smart";
+
+                    let imagesHtml = '';
+                    if (item.images && item.images.length > 0) {
+                        imagesHtml = `<div class="album-images-container">`;
+                        const rawUrls = item.images.map(img => img.url);
+                        rawUrls.forEach((imgSrc, imgIndex) => {
+                            imagesHtml += `<img src="${imgSrc}" class="thumb-img" onclick='openModal(${JSON.stringify(rawUrls)}, ${imgIndex})' alt="Work Photo">`;
+                        });
+                        imagesHtml += `</div>`;
+                    }
+
+                    card.innerHTML = `
+                        <div class="album-header-bar">
+                            <span>📅 ${item.folderName}</span>
+                            <span class="badge-tag ${badgeClass}">${badgeText}</span>
+                        </div>
+                        ${imagesHtml}
+                        <div class="album-action-bar">
+                            <div class="album-footer-info">
+                                รูปภาพ: <span style="color: #38bdf8; font-weight: 700;">${item.images.length} รูป</span>
+                            </div>
+                            <div class="action-btns">
+                                <button class="btn-action btn-add-img" onclick="promptAddImages('${item.category}', '${item.folderName}')">➕ เพิ่มรูป</button>
+                                <button class="btn-action btn-del-album" onclick="promptDeleteAlbum('${item.category}', '${item.folderName}')">🗑️ ลบอัลบั้ม</button>
+                            </div>
+                        </div>
+                    `;
+                    grid.appendChild(card);
+                });
+
+                albumContainer.appendChild(grid);
+            });
         }
 
         function promptDeleteAlbum(category, folderName) {
