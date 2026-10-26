@@ -136,7 +136,7 @@
         }
         .btn-add:hover { background-color: #115e59; transform: translateY(-1px); }
 
-        /* หน้าแรก: แสดงตัวเลือกปีเดี่ยวๆ */
+        /* หน้าแรก: ตัวเลือกปี (80%) และ ค้นหา (20%) */
         .controls-wrapper {
             display: flex;
             gap: 0.8rem;
@@ -162,7 +162,7 @@
             flex: 0 0 20%;
         }
 
-        /* หน้าอัลบั้ม: รวม วัน/เดือน, หมวดหมู่ และ ค้นหา ให้อยู่ในบรรทัดเดียวกัน */
+        /* หน้าอัลบั้ม: รวม วัน/เดือน, หมวดหมู่ และ ช่องค้นหา ให้อยู่ในบรรทัดเดียวกัน */
         .combined-controls-wrapper {
             display: flex;
             gap: 0.8rem;
@@ -335,28 +335,27 @@
         .btn-add-img { background-color: #0369a1; color: #e0f2fe; box-shadow: 0 2px 6px rgba(3, 105, 161, 0.2); }
         .btn-del-album { background-color: rgba(239, 68, 68, 0.1); color: #fca5a5; border: 1px solid rgba(239, 68, 68, 0.2); }
 
-        /* ปุ่มเลื่อนขึ้นด้านบนสุด */
+        /* ปุ่มเลื่อนขึ้นด้านบนสุด (ปรับเป็นลูกศรสีขาว ไม่มีกรอบพื้นหลัง) */
         .scroll-top-btn {
             display: none;
             position: fixed;
             bottom: 25px;
             right: 25px;
             z-index: 950;
-            background-color: #0284c7;
-            color: #fff;
+            background: none;
+            color: #ffffff;
             border: none;
             outline: none;
             width: 48px;
             height: 48px;
-            border-radius: 50%;
-            font-size: 1.4rem;
+            font-size: 2rem;
             cursor: pointer;
-            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.4);
             align-items: center;
             justify-content: center;
-            transition: background-color 0.2s, transform 0.2s;
+            transition: transform 0.2s, color 0.2s;
+            text-shadow: 0 2px 8px rgba(0, 0, 0, 0.6);
         }
-        .scroll-top-btn:hover { background-color: #0ea5e9; transform: translateY(-3px); }
+        .scroll-top-btn:hover { color: #38bdf8; transform: translateY(-3px); }
 
         .modal {
             display: none;
@@ -553,8 +552,8 @@
         </div>
     </div>
 
-    <!-- ปุ่มเลื่อนขึ้นด้านบนสุด -->
-    <button id="scrollTopBtn" class="scroll-top-btn" onclick="scrollToTop()" title="เลื่อนขึ้นด้านบน">⬆️</button>
+    <!-- ปุ่มเลื่อนขึ้นด้านบนสุด (ปรับเป็นสัญลักษณ์ลูกศรสีขาว ไม่มีกรอบ) -->
+    <button id="scrollTopBtn" class="scroll-top-btn" onclick="scrollToTop()" title="เลื่อนขึ้นด้านบน">&#8593;</button>
 
     <!-- Modal ดูรูปภาพ -->
     <div id="imageModal" class="modal" style="z-index: 999;">
