@@ -1195,14 +1195,30 @@
             updateTransform();
         });
 
-        function downloadCurrentModalImage() {
+        // ดาวน์โหลดรูปภาพเดี่ยวจาก Modal ทันทีแบบ Blob
+        async function downloadCurrentModalImage() {
             let imgUrl = activeModalImages[activeModalIndex];
-            let a = document.createElement('a');
-            a.href = imgUrl;
-            a.download = `Photo_${activeModalIndex + 1}.jpg`;
-            document.body.appendChild(a);
-            a.click();
-            document.body.removeChild(a);
+            try {
+                let response = await fetch(imgUrl);
+                let blob = await response.blob();
+                let blobUrl = window.URL.createObjectURL(blob);
+                let a = document.createElement('a');
+                a.href = blobUrl;
+                a.download = `Photo_${activeModalIndex + 1}.jpg`;
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+                window.URL.revokeObjectURL(blobUrl);
+            } catch (err) {
+                // กรณีติดข้อจำกัด CORS ให้เปิดดาวน์โหลดทางตรงแทน
+                let a = document.createElement('a');
+                a.href = imgUrl;
+                a.target = '_blank';
+                a.download = `Photo_${activeModalIndex + 1}.jpg`;
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+            }
         }
 
         // ระบบดาวน์โหลด ZIP
@@ -1300,7 +1316,8 @@
                         body: JSON.stringify({
                             action: 'delete',
                             folderName: pendingAction.folderName,
-                            optionType: pendingAction.optionType
+                            optionType: pendingAction.optionType,
+                            password: "6004"
                         })
                     });
                     let result = await response.json();
@@ -1327,7 +1344,8 @@
                         body: JSON.stringify({
                             action: 'deleteMonth',
                             year: pendingAction.year,
-                            month: pendingAction.monthNum
+                            month: pendingAction.monthNum,
+                            password: "6004"
                         })
                     });
                     let result = await response.json();
@@ -1365,7 +1383,7 @@
                 let response = await fetch(SCRIPT_URL, {
                     method: 'POST',
                     body: JSON.stringify({
-                        action: 'addImages',
+                        action: 'add_images',
                         folderName: selectedFolderName,
                         images: base64Images
                     })
