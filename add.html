@@ -170,12 +170,12 @@
     <div class="container">
         <div class="card">
             <div class="header-title">➕ เพิ่มอัลบั้มภาพใหม่</div>
-            <div class="header-desc">อัปโหลดรูปภาพ ระบบจะดึงวันที่จากรูปภาพมาตั้งเป็นหัวข้อให้อัตโนมัติ</div>
+            <div class="header-desc">อัปโหลดรูปภาพ ระบบจะดึงวันที่จากรูปภาพมาตั้งเป็นหัวข้อให้อัตโนมัติ (สามารถพิมพ์แก้หรือพิมพ์เพิ่มเติมได้)</div>
 
             <form id="uploadForm" onsubmit="handleUpload(event)">
                 <div class="form-group">
-                    <label class="form-label">📁 หัวข้ออัลบั้มงาน (ดึงจากวันที่รูปภาพอัตโนมัติ)</label>
-                    <input type="text" id="folderNameInput" class="form-input" placeholder="เลือกรูปภาพก่อน..." required readonly style="background-color: #1e242d; color: #38bdf8; font-weight: 700;">
+                    <label class="form-label">📁 หัวข้ออัลบั้มงาน (แก้ไขหรือพิมพ์เพิ่มได้)</label>
+                    <input type="text" id="folderNameInput" class="form-input" placeholder="เลือกรูปภาพก่อน..." required style="color: #38bdf8; font-weight: 700;">
                 </div>
 
                 <div class="form-group">
@@ -265,8 +265,8 @@
             // รูปแบบเดือนสำหรับบันทึกระบบ (DD/MM/YYYY)
             extractedMonthStr = `${day}/${month}/${year}`;
             
-            // ตั้งชื่อหัวข้อและชื่ออัลบั้มอัตโนมัติตามวันที่ของรูป
-            folderNameInput.value = `งานปฏิบัติการ วันที่ ${extractedMonthStr}`;
+            // ตั้งชื่อหัวข้ออัตโนมัติ และปล่อยให้ผู้ใช้พิมพ์ต่อได้
+            folderNameInput.value = `งานปฏิบัติการ วันที่ ${extractedMonthStr} `;
 
             // แสดงตัวอย่างรูปภาพ
             for (let file of files) {
