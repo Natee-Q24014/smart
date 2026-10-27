@@ -1355,33 +1355,56 @@
             loadingModal.style.display = 'flex';
 
             try {
-                let base64Images = [];
-                for (let file of input.files) {
-                    let b64 = await fileToBase64(file, 1200);
-                    base64Images.push(b64);
-                }
+        // 1. แสดงกล่องแจ้งเตือนกำลังลบ (ใช้ Toast)
+        showAutoToast("⏳ กำลังลบอัลบั้ม...");
 
-                let response = await fetch(SCRIPT_URL, {
-                    method: 'POST',
-                    body: JSON.stringify({
-                        action: 'add_images',
-                        folderName: selectedFolderName,
-                        images: base64Images
-                    })
-                });
-                let result = await response.json();
-                loadingModal.style.display = 'none';
+        let response = await fetch(SCRIPT_URL, {
+            method: 'POST',
+            body: JSON.stringify({
+                action: 'delete',
+                folderName: pendingAction.folderName,
+                optionType: pendingAction.optionType,
+                password: "6004"
+            })
+        });
+        let result = await response.json();
 
-                if (result.status === "success") {
-                    alert("เพิ่มรูปภาพสำเร็จ!");
-                    fetchAllAlbums();
-                } else {
-                    alert("ผิดพลาด: " + result.message);
-                }
-            } catch (err) {
-                loadingModal.style.display = 'none';
-                alert("เชื่อมต่อเซิร์ฟเวอร์ไม่สำเร็จ");
-            }
+        if (result.status === "success") {
+            // 2. ลบสำเร็จ แสดงข้อความและตั้งเวลา 2 วินาทีให้หายไปเองโดยไม่ต้องกดตกลง
+            showAutoToast("✅ ลบอัลบั้มสำเร็จ!");
+            setTimeout(() => {
+                hideAutoToast();
+                location.reload(); // โหลดหน้าเว็บใหม่เพื่ออัปเดตรายการ
+            }, 2000);
+        } else {
+            showAutoToast("❌ " + (result.message || "ลบไม่สำเร็จ"), true);
+            setTimeout(() => { hideAutoToast(); }, 3000);
+        }
+    } catch (err) {
+        showAutoToast("❌ เกิดข้อผิดพลาดในการเชื่อมต่อเซิร์ฟเวอร์", true);
+        setTimeout(() => { hideAutoToast(); }, 3000);
+    }
+    pendingAction = null;
+}
+
+// ฟังก์ชันเสริมสำหรับจัดการ Toast แบบ Auto-dismiss
+function showAutoToast(message, isError = false) {
+    let toast = document.getElementById('customToast');
+    if (!toast) {
+        toast = document.createElement('div');
+        toast.id = 'customToast';
+        toast.style.cssText = "display: none; position: fixed; z-index: 3000; top: 20px; left: 50%; transform: translateX(-50%); background-color: #323b4d; border: 1px solid #38bdf8; color: #f8fafc; padding: 0.9rem 1.5rem; border-radius: 12px; box-shadow: 0 10px 25px rgba(0,0,0,0.5); font-weight: 600; font-size: 0.95rem; align-items: center; gap: 0.6rem;";
+        toast.innerHTML = `<span id="toastMessage"></span>`;
+        document.body.appendChild(toast);
+    }
+    document.getElementById('toastMessage').innerText = message;
+    toast.style.borderColor = isError ? '#f87171' : '#38bdf8';
+    toast.style.display = 'flex';
+}
+
+function hideAutoToast() {
+    let toast = document.getElementById('customToast');
+    if (toast) toast.style.display = 'none';
         }
 
         function fileToBase64(file, maxDim) {
