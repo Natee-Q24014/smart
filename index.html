@@ -97,7 +97,6 @@
         .status-orange { background: rgba(245, 158, 11, 0.1); color: #fbbf24; border: 1px solid rgba(245, 158, 11, 0.2); }
         .status-red { background: rgba(239, 68, 68, 0.1); color: #f87171; border: 1px solid rgba(239, 68, 68, 0.2); }
 
-        /* ไอคอนกระดิ่งแจ้งเตือน */
         .bell-wrapper {
             position: relative;
             cursor: pointer;
@@ -133,7 +132,6 @@
             100% { transform: translateY(-2px); }
         }
 
-        /* Modal แจ้งเตือนอัลบั้มใหม่เมื่อกดกระดิ่ง */
         .notification-modal {
             display: none;
             position: fixed;
@@ -185,7 +183,6 @@
             gap: 0.4rem;
         }
 
-        /* ตารางภาพรวมดั้งเดิม */
         .stats-table-wrapper {
             background-color: #323b4d;
             border: 1px solid #434e63;
@@ -340,14 +337,12 @@
                     </div>
                 </div>
             </div>
-            <!-- ปุ่มไอคอนกระดิ่งแจ้งเตือน -->
             <div class="bell-wrapper" onclick="openNotificationModal()" title="ดูรายการอัลบั้มใหม่">
                 🔔
                 <div id="notificationBadge" class="notification-badge">0</div>
             </div>
         </div>
 
-        <!-- Modal แสดงรายการแจ้งเตือนอัลบั้มใหม่ -->
         <div id="notificationModal" class="notification-modal" onclick="closeNotificationModal()">
             <div class="notification-dialog" onclick="event.stopPropagation()">
                 <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #434e63; padding-bottom: 0.5rem;">
@@ -436,10 +431,11 @@
         <div id="modalCounter" class="modal-counter">1 / 1</div>
     </div>
 
+    <!-- Modal รหัสผ่าน -->
     <div id="passwordModal" class="modal" style="z-index: 1005;">
         <div class="loading-dialog-box" style="max-width: 300px; text-align: center;">
             <h3 id="dialogTitle" style="color: #f8fafc; font-size: 1rem; margin-bottom: 0.3rem;">🔒 ใส่รหัสผ่าน 4 หลัก</h3>
-            <p style="font-size: 0.75rem; color: #94a3b8; margin-bottom: 0.5rem;">กรอกรหัสผ่านเพื่อดำเนินการต่อ</p>
+            <p id="passwordSubText" style="font-size: 0.75rem; color: #94a3b8; margin-bottom: 0.5rem;">กรอกรหัสผ่านเพื่อดำเนินการต่อ</p>
             <input type="password" id="adminPasswordInput" maxlength="4" placeholder="••••" oninput="checkPasswordLength(this)" style="width: 100%; padding: 0.5rem; border-radius: 8px; border: 1px solid #4d5b73; background: #262c38; color: #fff; margin-bottom: 0.8rem; text-align: center; font-size: 1.1rem; letter-spacing: 5px; outline: none;">
             <div style="display: flex; gap: 0.5rem; justify-content: center;">
                 <button class="btn-nav-action" style="flex: 1; padding: 0.45rem;" onclick="closePasswordModal()">ยกเลิก</button>
@@ -447,6 +443,7 @@
         </div>
     </div>
 
+    <!-- Modal เพิ่มรูปในอัลบั้ม -->
     <div id="addImagesModal" class="modal" style="z-index: 1005;">
         <div class="loading-dialog-box" style="max-width: 320px; text-align: center;">
             <h3 style="color: #f8fafc; font-size: 1rem; margin-bottom: 0.3rem;">📷 เพิ่มรูปภาพในอัลบั้ม</h3>
@@ -521,7 +518,6 @@
 
         function markAllAsRead() {
             recentNewAlbums = [];
-            // บันทึกรายการล่าสุดทั้งหมดลง localStorage เพื่อไม่ให้แจ้งเตือนซ้ำของเดิม
             let currentNames = allAlbumsData.map(a => a.folderName);
             localStorage.setItem('seen_albums', JSON.stringify(currentNames));
             updateNotificationUI();
@@ -639,7 +635,6 @@
             let seenAlbums = JSON.parse(localStorage.getItem('seen_albums') || '[]');
             
             if (seenAlbums.length === 0 && allAlbumsData.length === 0) {
-                // ครั้งแรกสุดที่เปิดเว็บ ให้จำชื่อทั้งหมดไว้ก่อนเพื่อไม่ให้เด้งแจ้งเตือนย้อนหลังทั้งหมด
                 let allNames = newData.map(a => a.folderName);
                 localStorage.setItem('seen_albums', JSON.stringify(allNames));
                 return;
@@ -656,14 +651,12 @@
             });
 
             if (detectedNew.length > 0) {
-                // เพิ่มเข้าในรายการแจ้งเตือนใหม่
                 detectedNew.forEach(item => {
                     if (!recentNewAlbums.some(n => n.folderName === item.folderName)) {
                         recentNewAlbums.push(item);
                     }
                 });
                 
-                // อัปเดตรายการที่เห็นแล้วเก็บลง localStorage
                 let updatedNames = Array.from(seenSet);
                 localStorage.setItem('seen_albums', JSON.stringify(updatedNames));
                 updateNotificationUI();
@@ -965,6 +958,7 @@
         function promptDeleteAlbum(folderName, optionType) {
             pendingAction = { type: 'deleteAlbum', folderName: folderName, optionType: optionType };
             document.getElementById('dialogTitle').innerText = "🔒 ใส่รหัสผ่านเพื่อลบ";
+            document.getElementById('passwordSubText').innerText = "กรอกรหัสผ่านเพื่อดำเนินการต่อ";
             document.getElementById('adminPasswordInput').value = '';
             document.getElementById('passwordModal').style.display = 'flex';
             document.getElementById('adminPasswordInput').focus();
@@ -997,13 +991,18 @@
         function checkPasswordLength(input) {
             if (input.value.length === 4) {
                 let pwd = input.value;
-                closePasswordModal();
                 if (pwd === "6004") {
+                    closePasswordModal();
+                    input.value = '';
                     executePendingAction();
                 } else {
-                    alert("รหัสผ่านไม่ถูกต้อง");
+                    // เปลี่ยนข้อความเป็นเตือนรหัสผ่านผิดแบบสวยงามภายใน Modal แทนการใช้ alert ดั้งเดิม
+                    const subText = document.getElementById('passwordSubText');
+                    subText.innerText = "❌ รหัสผ่านไม่ถูกต้อง กรุณาลองใหม่อีกครั้ง";
+                    subText.style.color = "#f87171";
+                    input.value = '';
+                    input.focus();
                 }
-                input.value = '';
             }
         }
 
