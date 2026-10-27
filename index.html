@@ -5,7 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Smart Monitoring Box - Work Archives</title>
     
-    <!-- แท็กสำหรับ PWA และการรองรับบน iOS / Android -->
     <link rel="manifest" href="manifest.json">
     <meta name="theme-color" content="#323b4d">
     <meta name="mobile-web-app-capable" content="yes">
@@ -14,7 +13,6 @@
     <meta name="apple-mobile-web-app-title" content="MonitoringBox">
     <link rel="apple-touch-icon" href="icon-192.png">
 
-    <!-- โหลดไลบรารี JSZip สำหรับรวมรูปดาวน์โหลดเป็นไฟล์ ZIP -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
     <style>
         * { box-sizing: border-box; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; margin: 0; padding: 0; }
@@ -326,17 +324,17 @@
             justify-content: space-between;
             box-shadow: 0 4px 15px rgba(0,0,0,0.2);
             transition: all 0.2s;
+            cursor: pointer;
         }
         @media(min-width: 768px) { .folder-card { border-radius: 14px; padding: 1.2rem; } }
+        .folder-card:hover h3 { color: #38bdf8; }
         
         .folder-card-main {
             display: flex;
             align-items: center;
             gap: 1rem;
-            cursor: pointer;
             flex: 1;
         }
-        .folder-card-main:hover .folder-info h3 { color: #38bdf8; }
 
         .folder-icon { font-size: 2.2rem; }
         @media(min-width: 768px) { .folder-icon { font-size: 2.5rem; } }
@@ -356,20 +354,6 @@
             font-weight: 500;
         }
         @media(min-width: 768px) { .folder-info p { font-size: 0.85rem; } }
-
-        .btn-del-month {
-            background-color: rgba(239, 68, 68, 0.1);
-            color: #fca5a5;
-            border: 1px solid rgba(239, 68, 68, 0.2);
-            padding: 0.4rem 0.6rem;
-            border-radius: 8px;
-            font-size: 0.78rem;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.2s;
-            margin-left: 0.5rem;
-        }
-        .btn-del-month:hover { background-color: rgba(239, 68, 68, 0.25); color: #fff; }
 
         .album-grid {
             display: grid;
@@ -663,7 +647,6 @@
 <body>
 
     <div class="container">
-        <!-- ส่วนหัว (Header) พร้อมป้ายสถานะซ้ายและเวลาขวา -->
         <div class="header-card">
             <div class="header-left" style="width: 100%;">
                 <img src="big.jpeg" alt="Smart Monitoring Box Mascot" class="character-img" style="object-fit: cover; object-position: center;">
@@ -685,7 +668,6 @@
             </div>
         </div>
 
-        <!-- หัวข้อและตารางสถิติภาพรวม -->
         <div class="block-title">📊 ภาพรวม</div>
         <div class="stats-table-wrapper">
             <table class="stats-table">
@@ -714,7 +696,6 @@
                     <span>📁 เลือกปีประจำระบบ</span>
                 </div>
                 <div style="display: flex; gap: 0.5rem; align-items: center;">
-                    <!-- ปุ่มสำหรับกดติดตั้งแอป PWA -->
                     <button id="installAppBtn" class="btn-install-pwa" onclick="installPWA()">📲 ติดตั้งแอป</button>
                     
                     <div id="navButtonsGroup" class="nav-buttons-group" style="display: none;">
@@ -749,7 +730,6 @@
 
     <button id="scrollTopBtn" class="scroll-top-btn" onclick="scrollToTop()" title="เลื่อนขึ้นด้านบน">&#8593;</button>
 
-    <!-- Modal ดูรูปภาพ -->
     <div id="imageModal" class="modal">
         <div class="modal-top-bar">
             <button class="btn-modal-download" onclick="downloadCurrentModalImage()">⬇️ ดาวน์โหลดรูปนี้</button>
@@ -763,7 +743,6 @@
         <div id="modalCounter" class="modal-counter">1 / 1</div>
     </div>
 
-    <!-- Modal ใส่รหัสผ่าน (ทำงานทันทีเมื่อครบ 4 หลัก) -->
     <div id="passwordModal" class="modal" style="z-index: 1005;">
         <div class="dialog-box">
             <h3 id="dialogTitle">🔒 ใส่รหัสผ่าน 4 หลัก</h3>
@@ -775,7 +754,6 @@
         </div>
     </div>
 
-    <!-- Modal เลือกรูปเพิ่ม -->
     <div id="addImagesModal" class="modal" style="z-index: 1005;">
         <div class="dialog-box">
             <h3>📷 เพิ่มรูปภาพในอัลบั้ม</h3>
@@ -788,7 +766,6 @@
         </div>
     </div>
 
-    <!-- Modal แสดงสถานะกำลังดำเนินการ -->
     <div id="loadingModal" class="modal" style="z-index: 1010; display: flex;">
         <div class="dialog-box">
             <div class="loading-spinner"></div>
@@ -797,7 +774,6 @@
         </div>
     </div>
 
-    <!-- Custom Alert Popup -->
     <div id="customAlertModal" class="modal" style="z-index: 1020;">
         <div class="dialog-box">
             <h3 id="alertTitle" style="color: #fca5a5; margin-bottom: 0.3rem;">รหัสผ่านผิด</h3>
@@ -1027,15 +1003,14 @@
             sortedMonths.forEach(m => {
                 let mName = monthNames[m] || `เดือน ${m}`;
                 html += `
-                    <div class="folder-card">
-                        <div class="folder-card-main" onclick="selectMonth('${m}')">
+                    <div class="folder-card" onclick="selectMonth('${m}')">
+                        <div class="folder-card-main">
                             <div class="folder-icon">📂</div>
                             <div class="folder-info">
                                 <h3>${mName} (${m})</h3>
                                 <p>${monthsMap[m].count} อัลบั้ม (${monthsMap[m].images} รูป)</p>
                             </div>
                         </div>
-                        <button class="btn-del-month" onclick="event.stopPropagation(); promptDeleteMonth('${m}', '${mName}')" title="ลบทั้งเดือน">🗑️ ลบเดือน</button>
                     </div>
                 `;
             });
@@ -1128,7 +1103,6 @@
             }
         }
 
-        // Modal รูปภาพ (รองรับทั้ง Zoom และ Swipe ซ้าย/ขวาบนมือถือ)
         let activeModalImages = [];
         let activeModalIndex = 0;
         let scale = 1, panning = false, pointX = 0, pointY = 0, startX = 0, startY = 0;
@@ -1175,7 +1149,6 @@
 
         const modalWrapper = document.getElementById('modalWrapper');
         
-        // --- รองรับ Desktop (Mouse Wheel & Drag) ---
         modalWrapper.addEventListener('wheel', (e) => {
             e.preventDefault();
             if (e.deltaY < 0) { scale *= 1.2; } else { scale /= 1.2; }
@@ -1197,7 +1170,6 @@
             updateTransform();
         });
 
-        // --- รองรับ Mobile (Touch Pinch Zoom, Pan & Swipe ซ้าย/ขวา) ---
         modalWrapper.addEventListener('touchstart', (e) => {
             if (e.touches.length === 1) {
                 touchStartX = e.touches[0].clientX;
@@ -1215,7 +1187,7 @@
 
         modalWrapper.addEventListener('touchmove', (e) => {
             if (e.touches.length === 1 && panning) {
-                if (scale === 1) return; // ปล่อยให้ swipe ทำงานถ้าไม่ได้ซูม
+                if (scale === 1) return;
                 e.preventDefault();
                 pointX = e.touches[0].clientX - startX;
                 pointY = e.touches[0].clientY - startY;
@@ -1234,26 +1206,17 @@
         }, { passive: false });
 
         modalWrapper.addEventListener('touchend', (e) => {
-            if (e.touches.length < 2) {
-                initialPinchDistance = null;
-            }
+            if (e.touches.length < 2) { initialPinchDistance = null; }
             if (e.touches.length === 0 && scale === 1) {
                 let touchEndX = e.changedTouches[0].clientX;
                 let diffX = touchEndX - touchStartX;
                 if (Math.abs(diffX) > 50) {
-                    if (diffX > 0) {
-                        prevImage(); // ปัดขวา -> รูปก่อนหน้า
-                    } else {
-                        nextImage(); // ปัดซ้าย -> รูปถัดไป
-                    }
+                    if (diffX > 0) { prevImage(); } else { nextImage(); }
                 }
             }
-            if (e.touches.length === 0) {
-                panning = false;
-            }
+            if (e.touches.length === 0) { panning = false; }
         });
 
-        // ดาวน์โหลดรูปภาพเดี่ยวจาก Modal ทันทีแบบ Blob
         async function downloadCurrentModalImage() {
             let imgUrl = activeModalImages[activeModalIndex];
             try {
@@ -1278,7 +1241,6 @@
             }
         }
 
-        // ระบบดาวน์โหลด ZIP
         async function downloadAlbumZip(folderNameEncoded, imagesJson) {
             let folderName = decodeURIComponent(folderNameEncoded);
             let imgs = JSON.parse(decodeURIComponent(imagesJson));
@@ -1311,18 +1273,9 @@
             }
         }
 
-        // ระบบรหัสผ่านและการจัดการแอดมิน (ลบอัลบั้ม / ลบทั้งเดือน / เพิ่มรูป)
         function promptDeleteAlbum(folderName, optionType) {
             pendingAction = { type: 'deleteAlbum', folderName: folderName, optionType: optionType };
             document.getElementById('dialogTitle').innerText = "🔒 ใส่รหัสผ่านเพื่อลบอัลบั้ม";
-            document.getElementById('adminPasswordInput').value = '';
-            document.getElementById('passwordModal').style.display = 'flex';
-            document.getElementById('adminPasswordInput').focus();
-        }
-
-        function promptDeleteMonth(monthNum, monthName) {
-            pendingAction = { type: 'deleteMonth', monthNum: monthNum, monthName: monthName, year: currentSelectedYear };
-            document.getElementById('dialogTitle').innerText = `🔒 ลบเดือน ${monthName} (${monthNum}/${currentSelectedYear})`;
             document.getElementById('adminPasswordInput').value = '';
             document.getElementById('passwordModal').style.display = 'flex';
             document.getElementById('adminPasswordInput').focus();
@@ -1340,7 +1293,6 @@
             pendingAction = null;
         }
 
-        // ตรวจสอบรหัสผ่านทันทีเมื่อพิมพ์ครบ 4 หลัก
         function checkPasswordLength(input) {
             if (input.value.length === 4) {
                 let pwd = input.value;
@@ -1381,34 +1333,6 @@
                     loadingModal.style.display = 'none';
                     if (result.status === "success") {
                         alert("ลบอัลบั้มสำเร็จ!");
-                        fetchAllAlbums();
-                    } else {
-                        alert("ผิดพลาด: " + result.message);
-                    }
-                } catch (err) {
-                    loadingModal.style.display = 'none';
-                    alert("เชื่อมต่อเซิร์ฟเวอร์ไม่สำเร็จ");
-                }
-            } 
-            else if (pendingAction.type === 'deleteMonth') {
-                document.getElementById('loadingTitle').innerText = "กำลังลบข้อมูลทั้งเดือน";
-                document.getElementById('loadingDesc').innerText = `กำลังลบอัลบั้มทั้งหมดในเดือน ${pendingAction.monthName} ${pendingAction.year}...`;
-                loadingModal.style.display = 'flex';
-
-                try {
-                    let response = await fetch(SCRIPT_URL, {
-                        method: 'POST',
-                        body: JSON.stringify({
-                            action: 'deleteMonth',
-                            year: pendingAction.year,
-                            month: pendingAction.monthNum,
-                            password: "6004"
-                        })
-                    });
-                    let result = await response.json();
-                    loadingModal.style.display = 'none';
-                    if (result.status === "success") {
-                        alert("ลบข้อมูลทั้งเดือนสำเร็จ!");
                         fetchAllAlbums();
                     } else {
                         alert("ผิดพลาด: " + result.message);
