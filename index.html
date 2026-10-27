@@ -654,15 +654,18 @@
         .btn-cancel { background-color: #3e495e; color: #cbd5e1; }
         .btn-cancel:hover { background-color: #4d5b73; color: #fff; }
 
-        .loading-spinner {
-            width: 38px;
-            height: 38px;
-            border: 3px solid #434e63;
-            border-top: 3px solid #38bdf8;
-            border-radius: 50%;
-            animation: spin 1s linear infinite;
-            margin: 0 auto 0.8rem auto;
+        .loading-modal { display: none; position: fixed; z-index: 1010; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(18, 22, 30, 0.85); justify-content: center; align-items: center; flex-direction: column; padding: 1rem; }
+        .loading-dialog-box {
+            background-color: #323b4d;
+            border: 1px solid #434e63;
+            padding: 1.5rem 1.2rem;
+            border-radius: 14px;
+            width: 92%;
+            max-width: 380px;
+            text-align: center;
+            box-shadow: 0 12px 30px rgba(0,0,0,0.4);
         }
+        .loading-spinner { width: 38px; height: 38px; border: 3px solid #434e63; border-top: 3px solid #38bdf8; border-radius: 50%; animation: spin 1s linear infinite; margin: 0 auto 0.8rem auto; }
 
         @keyframes spin {
             0% { transform: rotate(0deg); }
@@ -799,11 +802,11 @@
         </div>
     </div>
 
-    <div id="loadingModal" class="modal" style="z-index: 1010; display: flex;">
-        <div class="dialog-box">
+    <div id="loadingModal" class="loading-modal" style="display: flex;">
+        <div class="loading-dialog-box">
             <div class="loading-spinner"></div>
-            <h3 id="loadingTitle" style="color: #38bdf8; margin-bottom: 0.2rem; font-size: 1rem;">กรุณารอสักครู่</h3>
-            <p id="loadingDesc" style="font-size: 0.78rem; color: #94a3b8;">กำลังโหลดข้อมูล...</p>
+            <h3 id="loadingTitle" style="color: #38bdf8; margin-bottom: 0.3rem; font-size: 1.1rem; white-space: nowrap;">กรุณารอสักครู่</h3>
+            <p id="loadingDesc" style="font-size: 0.8rem; color: #94a3b8; white-space: nowrap;">กำลังโหลดข้อมูล...</p>
         </div>
     </div>
 
@@ -895,7 +898,6 @@
         window.onload = function() {
             fetchAllAlbums();
 
-            // ระบบดึงข้อมูลอัตโนมัติทุกๆ 3 วินาที เพื่อให้อัปเดตข้อมูลจากเครื่องอื่นทันทีแบบเรียลไทม์
             setInterval(() => {
                 backgroundSyncAlbums();
             }, 3000);
@@ -922,9 +924,7 @@
             }
         }
 
-        // ฟังก์ชันซิงค์ข้อมูลเบื้องหลังอัตโนมัติทุก 3 วินาที
         async function backgroundSyncAlbums() {
-            // ป้องกันการรีเฟรชทับระหว่างที่ผู้ใช้กำลังเปิดโมเดลรหัสผ่าน หรืออัปโหลดรูป
             if (document.getElementById('passwordModal').style.display === 'flex' || 
                 document.getElementById('addImagesModal').style.display === 'flex' || 
                 document.getElementById('loadingModal').style.display === 'flex') {
@@ -942,9 +942,7 @@
                         renderCurrentLevel();
                     }
                 }
-            } catch (err) {
-                // ข้ามเงียบๆ หากจังหวะนั้นเน็ตหลุดชั่วคราว
-            }
+            } catch (err) {}
         }
 
         function updateStats() {
@@ -1304,6 +1302,7 @@
             }
         }
 
+        // ปรับแก้ฟังก์ชันดาวน์โหลด ZIP ให้นำภาพใส่ลงใน root ของ ZIP โดยตรง (โฟลเดอร์มีแค่ชื่ออัลบั้มเดียว)
         async function downloadAlbumZip(folderNameEncoded, imagesJson) {
             let folderName = decodeURIComponent(folderNameEncoded);
             let imgs = JSON.parse(decodeURIComponent(imagesJson));
@@ -1314,12 +1313,11 @@
 
             try {
                 const zip = new JSZip();
-                let imgFolder = zip.folder(folderName);
 
                 for (let i = 0; i < imgs.length; i++) {
                     let response = await fetch(imgs[i]);
                     let blob = await response.blob();
-                    imgFolder.file(`Photo_${i + 1}.jpg`, blob);
+                    zip.file(`Photo_${i + 1}.jpg`, blob); // วางไฟล์รูปไว้ใน root ของ ZIP ทันที
                 }
 
                 let content = await zip.generateAsync({ type: "blob" });
