@@ -32,6 +32,65 @@
             flex-direction: column;
         }
         
+        /* --- สไตล์สำหรับ Splash Screen ตอนเปิดแอป --- */
+        #app-splash-screen {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: #1a1f2c;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 99999;
+            transition: opacity 0.5s ease, visibility 0.5s ease;
+        }
+
+        .splash-mascot {
+            width: 110px;
+            height: 110px;
+            object-fit: cover;
+            border-radius: 20px;
+            border: 3px solid #38bdf8;
+            box-shadow: 0 8px 25px rgba(56, 189, 248, 0.3);
+            margin-bottom: 20px;
+            animation: pulse-mascot 1.5s infinite ease-in-out;
+        }
+
+        .splash-app-title {
+            font-size: 1.3rem;
+            color: #f8fafc;
+            font-weight: 700;
+            margin-bottom: 8px;
+            letter-spacing: 0.5px;
+        }
+
+        .splash-loading-text {
+            font-size: 0.9rem;
+            color: #38bdf8;
+            font-weight: 600;
+        }
+
+        .loading-dots::after {
+            content: '';
+            animation: dots-anim 1.5s steps(4, end) infinite;
+        }
+
+        @keyframes dots-anim {
+            0% { content: ''; }
+            25% { content: '.'; }
+            50% { content: '..'; }
+            75% { content: '...'; }
+        }
+
+        @keyframes pulse-mascot {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+        }
+        /* ------------------------------------------- */
+
         .container { 
             max-width: 1400px; 
             margin: 0 auto; 
@@ -348,6 +407,13 @@
 </head>
 <body>
 
+    <!-- === หน้าจอ Splash Screen เปิดแอป (พร้อมจุด 3 จุดเคลื่อนไหว) === -->
+    <div id="app-splash-screen">
+        <img src="smart-v2-192.png" alt="Smart Monitoring Mascot" class="splash-mascot">
+        <div class="splash-app-title">Smart Monitoring Box</div>
+        <div class="splash-loading-text">กำลังโหลดข้อมูลระบบ<span class="loading-dots"></span></div>
+    </div>
+
     <div class="container">
         <div class="header-card">
             <div class="header-left">
@@ -484,7 +550,7 @@
         </div>
     </div>
 
-    <div id="loadingModal" class="loading-modal" style="display: flex;">
+    <div id="loadingModal" class="loading-modal">
         <div class="loading-dialog-box">
             <div class="loading-spinner"></div>
             <h3 id="loadingTitle" style="color: #38bdf8; margin-bottom: 0.2rem; font-size: 1rem; white-space: nowrap;">กรุณารอสักครู่</h3>
@@ -607,15 +673,47 @@
             window.scrollTo({ top: 0, behavior: 'smooth' });
         }
 
+        // --- ควบคุมการทำงานเมื่อโหลดหน้าเว็บครั้งแรก ---
         window.onload = function() {
-            fetchAllAlbums();
+            initializeAppWithSplash();
             setInterval(() => {
                 backgroundSyncAlbums();
             }, 3000);
         };
 
-        async function fetchAllAlbums() {
+        // ฟังก์ชันจัดการซ่อน Splash Screen เมื่อข้อมูลพร้อมแล้ว
+        async function initializeAppWithSplash() {
             setSystemStatus('orange', 'กำลังซิงค์...');
+            try {
+                const response = await fetch(SCRIPT_URL + "?action=getAlbums");
+                const result = await response.json();
+                
+                if (result.status === "success") {
+                    let newData = result.data || [];
+                    processNewAlbumsDetection(newData);
+                    allAlbumsData = newData;
+                    updateStats();
+                    renderCurrentLevel();
+                    setSystemStatus('green', 'พร้อมใช้งาน');
+                } else {
+                    setSystemStatus('red', 'โหลดไม่สำเร็จ');
+                }
+            } catch (err) {
+                setSystemStatus('red', 'เชื่อมต่อล้มเหลว');
+            } finally {
+                // ซ่อน Splash Screen ออกอย่างนุ่มนวล
+                const splash = document.getElementById('app-splash-screen');
+                if (splash) {
+                    splash.style.opacity = '0';
+                    splash.style.visibility = 'hidden';
+                    setTimeout(() => {
+                        splash.style.display = 'none';
+                    }, 500);
+                }
+            }
+        }
+
+        async function fetchAllAlbums() {
             try {
                 const response = await fetch(SCRIPT_URL + "?action=getAlbums");
                 const result = await response.json();
