@@ -1304,6 +1304,7 @@
                     document.getElementById('alertDesc').innerText = "กรุณากรอกรหัสผ่าน 4 หลักใหม่อีกครั้ง";
                     document.getElementById('customAlertModal').style.display = 'flex';
                 }
+                input.value = '';
             }
         }
 
@@ -1334,7 +1335,7 @@
                         showAutoToast("✅ ลบอัลบั้มสำเร็จ!");
                         setTimeout(() => {
                             hideAutoToast();
-                            fetchAllAlbums();
+                            location.reload();
                         }, 2000);
                     } else {
                         showAutoToast("❌ " + (result.message || "ลบไม่สำเร็จ"), true);
