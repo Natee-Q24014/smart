@@ -27,7 +27,7 @@
             background-size: 100% 100%, 100% 100%, 40px 40px, 40px 40px;
             color: #e2e8f0; 
             min-height: 100vh; 
-            padding: 0.8rem; 
+            padding: 0.5rem; 
         }
         
         .container { max-width: 1400px; margin: 0 auto; }
@@ -35,667 +35,329 @@
         .header-card {
             background-color: #323b4d;
             border: 1px solid #434e63;
-            padding: 1rem 1.2rem;
-            border-radius: 14px;
-            text-align: center;
-            box-shadow: 0 8px 20px rgba(0,0,0,0.3);
-            margin-bottom: 0.8rem;
+            padding: 0.6rem 1rem;
+            border-radius: 12px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+            margin-bottom: 0.5rem;
             display: flex;
-            flex-direction: column;
+            justify-content: space-between;
             align-items: center;
-            gap: 0.8rem;
-        }
-
-        @media(min-width: 768px) {
-            .header-card { 
-                flex-direction: row; 
-                text-align: left; 
-                justify-content: space-between; 
-                padding: 1.8rem 2.5rem; 
-                margin-bottom: 1.2rem;
-            }
         }
 
         .header-left {
             display: flex;
             align-items: center;
-            gap: 1rem;
-            flex-direction: column;
-        }
-        @media(min-width: 768px) {
-            .header-left { flex-direction: row; gap: 1.5rem; }
+            gap: 0.8rem;
+            flex: 1;
         }
 
         .character-img {
-            width: 75px;
-            height: 75px;
+            width: 55px;
+            height: 55px;
             object-fit: cover;
-            border-radius: 12px;
+            border-radius: 10px;
             border: 2px solid #38bdf8;
-            box-shadow: 0 4px 12px rgba(56, 189, 248, 0.25);
         }
         @media(min-width: 768px) {
-            .character-img { width: 120px; height: 120px; border-radius: 16px; }
+            .character-img { width: 70px; height: 70px; border-radius: 12px; }
         }
 
         .header-info .company-tag {
-            font-size: 0.7rem;
+            font-size: 0.65rem;
             color: #38bdf8;
             font-weight: 700;
-            letter-spacing: 1.5px;
+            letter-spacing: 1.2px;
             text-transform: uppercase;
-            margin-bottom: 0.2rem;
+            margin-bottom: 0.1rem;
         }
 
-        .header-info h1 { font-size: 1.2rem; color: #f8fafc; margin-bottom: 0.1rem; font-weight: 700; }
-        @media(min-width: 768px) { .header-info h1 { font-size: 1.8rem; } }
+        .header-info h1 { font-size: 1.1rem; color: #f8fafc; margin-bottom: 0.1rem; font-weight: 700; }
+        @media(min-width: 768px) { .header-info h1 { font-size: 1.4rem; } }
         
-        .header-info .creator-text { font-size: 0.82rem; color: #94a3b8; font-weight: 600; margin-bottom: 0.2rem; }
-        .header-info p { font-size: 0.78rem; color: #9ca3af; margin-bottom: 0.5rem; }
+        .header-info .creator-text { font-size: 0.75rem; color: #94a3b8; font-weight: 600; margin-bottom: 0.1rem; }
 
         .header-sub-bar {
             display: flex;
-            justify-content: space-between;
+            gap: 0.8rem;
             align-items: center;
-            width: 100%;
-            border-top: 1px solid rgba(255, 255, 255, 0.08);
-            padding-top: 0.5rem;
-            margin-top: 0.2rem;
-            font-size: 0.73rem;
+            font-size: 0.7rem;
             color: #94a3b8;
             font-weight: 600;
-        }
-        @media(min-width: 768px) {
-            .header-sub-bar { font-size: 0.82rem; }
+            margin-top: 0.2rem;
         }
 
         .status-badge {
             display: inline-flex;
             align-items: center;
             gap: 0.3rem;
-            padding: 0.2rem 0.6rem;
+            padding: 0.15rem 0.5rem;
             border-radius: 6px;
-            border: 1px solid transparent;
-            transition: all 0.3s ease;
         }
+        .status-green { background: rgba(16, 185, 129, 0.1); color: #34d399; border: 1px solid rgba(16, 185, 129, 0.2); }
+        .status-orange { background: rgba(245, 158, 11, 0.1); color: #fbbf24; border: 1px solid rgba(245, 158, 11, 0.2); }
+        .status-red { background: rgba(239, 68, 68, 0.1); color: #f87171; border: 1px solid rgba(239, 68, 68, 0.2); }
+
+        /* ไอคอนกระดิ่งแจ้งเตือน */
+        .bell-wrapper {
+            position: relative;
+            cursor: pointer;
+            background-color: #262c38;
+            border: 1px solid #4d5b73;
+            width: 42px;
+            height: 42px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.2rem;
+            transition: all 0.2s;
+        }
+        .bell-wrapper:hover { background-color: #3e495e; border-color: #38bdf8; }
         
-        .status-green { background: rgba(16, 185, 129, 0.1); color: #34d399; border-color: rgba(16, 185, 129, 0.2); }
-        .status-orange { background: rgba(245, 158, 11, 0.1); color: #fbbf24; border-color: rgba(245, 158, 11, 0.2); }
-        .status-red { background: rgba(239, 68, 68, 0.1); color: #f87171; border-color: rgba(239, 68, 68, 0.2); }
+        .notification-badge {
+            position: absolute;
+            top: -3px;
+            right: -3px;
+            background-color: #ef4444;
+            color: white;
+            font-size: 0.65rem;
+            font-weight: 700;
+            padding: 2px 6px;
+            border-radius: 10px;
+            display: none;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.3);
+            animation: bounce 0.5s ease infinite alternate;
+        }
+        @keyframes bounce {
+            0% { transform: translateY(0); }
+            100% { transform: translateY(-2px); }
+        }
+
+        /* Modal แจ้งเตือนอัลบั้มใหม่เมื่อกดกระดิ่ง */
+        .notification-modal {
+            display: none;
+            position: fixed;
+            z-index: 1020;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background-color: rgba(18, 22, 30, 0.85);
+            justify-content: center;
+            align-items: center;
+            padding: 1rem;
+        }
+        .notification-dialog {
+            background-color: #323b4d;
+            border: 1px solid #434e63;
+            padding: 1.2rem;
+            border-radius: 14px;
+            width: 100%;
+            max-width: 380px;
+            box-shadow: 0 12px 30px rgba(0,0,0,0.4);
+            max-height: 80vh;
+            display: flex;
+            flex-direction: column;
+        }
+        .notification-list {
+            overflow-y: auto;
+            max-height: 250px;
+            margin-top: 0.8rem;
+            margin-bottom: 0.8rem;
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+        .notification-item {
+            background-color: #262c38;
+            border: 1px solid #4d5b73;
+            padding: 0.6rem 0.8rem;
+            border-radius: 8px;
+            font-size: 0.8rem;
+        }
+        .notification-item .title { color: #38bdf8; font-weight: 700; margin-bottom: 0.1rem; }
+        .notification-item .date { color: #94a3b8; font-size: 0.7rem; }
 
         .block-title {
-            font-size: 0.95rem;
+            font-size: 0.85rem;
             color: #38bdf8;
             font-weight: 700;
-            margin-bottom: 0.4rem;
+            margin-bottom: 0.3rem;
             display: flex;
             align-items: center;
             gap: 0.4rem;
         }
-        @media(min-width: 768px) {
-            .block-title { font-size: 1.05rem; margin-bottom: 0.6rem; }
-        }
 
+        /* ตารางภาพรวมดั้งเดิม */
         .stats-table-wrapper {
             background-color: #323b4d;
             border: 1px solid #434e63;
-            border-radius: 12px;
+            border-radius: 10px;
             overflow: hidden;
-            margin-bottom: 1rem;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+            margin-bottom: 0.6rem;
+            box-shadow: 0 3px 10px rgba(0,0,0,0.2);
         }
-        @media(min-width: 768px) {
-            .stats-table-wrapper { border-radius: 14px; margin-bottom: 1.5rem; }
-        }
-
-        .stats-table {
-            width: 100%;
-            border-collapse: collapse;
-            text-align: center;
-        }
-
+        .stats-table { width: 100%; border-collapse: collapse; text-align: center; }
         .stats-table th {
-            background-color: #262c38;
-            color: #38bdf8;
-            font-size: 0.72rem;
-            font-weight: 700;
-            padding: 0.5rem 0.3rem;
-            border-bottom: 1px solid #434e63;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
+            background-color: #262c38; color: #38bdf8; font-size: 0.68rem; font-weight: 700;
+            padding: 0.35rem 0.2rem; border-bottom: 1px solid #434e63; text-transform: uppercase;
         }
-        @media(min-width: 768px) {
-            .stats-table th { font-size: 0.82rem; padding: 0.7rem 0.5rem; }
-        }
-
+        @media(min-width: 768px) { .stats-table th { font-size: 0.75rem; padding: 0.45rem 0.3rem; } }
         .stats-table td {
-            color: #f8fafc;
-            font-size: 0.95rem;
-            font-weight: 700;
-            padding: 0.6rem 0.3rem;
+            color: #f8fafc; font-size: 0.85rem; font-weight: 700; padding: 0.4rem 0.2rem;
             border-right: 1px solid rgba(255, 255, 255, 0.05);
         }
         .stats-table td:last-child { border-right: none; }
-        @media(min-width: 768px) {
-            .stats-table td { font-size: 1.3rem; padding: 0.9rem 0.5rem; }
-        }
+        @media(min-width: 768px) { .stats-table td { font-size: 1.1rem; padding: 0.5rem 0.3rem; } }
 
         .sticky-nav-area {
-            position: sticky;
-            top: 0;
-            z-index: 900;
-            background-color: rgba(38, 44, 56, 0.95);
-            backdrop-filter: blur(10px);
-            padding-top: 0.4rem;
-            padding-bottom: 0.8rem;
-            margin-bottom: 0.8rem;
+            position: sticky; top: 0; z-index: 900;
+            background-color: rgba(38, 44, 56, 0.95); backdrop-filter: blur(10px);
+            padding-top: 0.3rem; padding-bottom: 0.5rem; margin-bottom: 0.5rem;
         }
 
         .top-action-bar {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 0.6rem;
-            flex-wrap: wrap;
-            gap: 0.6rem;
+            display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.4rem; flex-wrap: wrap; gap: 0.4rem;
         }
 
         .section-title {
-            font-size: 1rem;
-            color: #38bdf8;
-            font-weight: 700;
-            border-left: 4px solid #38bdf8;
-            padding-left: 0.6rem;
-            display: flex;
-            align-items: center;
-            gap: 0.4rem;
+            font-size: 0.9rem; color: #38bdf8; font-weight: 700; border-left: 3px solid #38bdf8; padding-left: 0.5rem;
+            display: flex; align-items: center; gap: 0.3rem;
         }
-        @media(min-width: 768px) { .section-title { font-size: 1.1rem; } }
 
-        .nav-buttons-group {
-            display: flex;
-            gap: 0.5rem;
-            align-items: center;
-        }
+        .nav-buttons-group { display: flex; gap: 0.4rem; align-items: center; }
 
         .btn-nav-action {
-            background-color: #3e495e;
-            color: #e2e8f0;
-            padding: 0.4rem 0.8rem;
-            border-radius: 8px;
-            font-size: 0.8rem;
-            font-weight: 600;
-            border: 1px solid #4d5b73;
-            cursor: pointer;
-            display: inline-flex;
-            align-items: center;
-            gap: 0.3rem;
-            transition: all 0.2s;
+            background-color: #3e495e; color: #e2e8f0; padding: 0.3rem 0.6rem; border-radius: 6px;
+            font-size: 0.75rem; font-weight: 600; border: 1px solid #4d5b73; cursor: pointer;
         }
         .btn-nav-action:hover { background-color: #4d5b73; color: #fff; }
 
         .btn-add {
-            background-color: #0f766e;
-            color: #e2e8f0;
-            padding: 0.5rem 1rem;
-            border-radius: 10px;
-            font-size: 0.85rem;
-            font-weight: 600;
-            text-decoration: none;
-            display: inline-flex;
-            align-items: center;
-            gap: 0.3rem;
-            box-shadow: 0 3px 10px rgba(15, 118, 110, 0.25);
-            transition: all 0.2s;
+            background-color: #0f766e; color: #e2e8f0; padding: 0.35rem 0.8rem; border-radius: 8px;
+            font-size: 0.78rem; font-weight: 600; text-decoration: none; display: inline-flex; align-items: center; gap: 0.3rem;
         }
-        .btn-add:hover { background-color: #115e59; transform: translateY(-1px); }
+        .btn-add:hover { background-color: #115e59; }
 
         .btn-install-pwa {
-            background-color: #0284c7;
-            color: #ffffff;
-            padding: 0.4rem 0.8rem;
-            border-radius: 8px;
-            font-size: 0.8rem;
-            font-weight: 600;
-            border: 1px solid #38bdf8;
-            cursor: pointer;
-            display: none;
-            align-items: center;
-            gap: 0.3rem;
-            box-shadow: 0 3px 10px rgba(2, 132, 199, 0.3);
-            transition: all 0.2s;
+            background-color: #0284c7; color: #ffffff; padding: 0.3rem 0.6rem; border-radius: 6px;
+            font-size: 0.75rem; font-weight: 600; border: 1px solid #38bdf8; cursor: pointer; display: none; align-items: center; gap: 0.3rem;
         }
-        .btn-install-pwa:hover { background-color: #0369a1; }
 
         .stack-controls-wrapper {
-            display: flex;
-            flex-direction: column;
-            gap: 0.6rem;
-            background-color: #323b4d;
-            border: 1px solid #434e63;
-            padding: 0.8rem 1rem;
-            border-radius: 12px;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+            display: flex; flex-direction: row; gap: 0.5rem; background-color: #323b4d; border: 1px solid #434e63;
+            padding: 0.5rem 0.8rem; border-radius: 10px; box-shadow: 0 3px 10px rgba(0,0,0,0.2); align-items: center;
         }
-
-        .stack-row-item {
-            display: flex;
-            gap: 0.6rem;
-            align-items: center;
-            width: 100%;
-        }
-
-        .filter-label {
-            font-size: 0.85rem;
-            color: #94a3b8;
-            font-weight: 600;
-            white-space: nowrap;
-        }
-
+        .stack-row-item { display: flex; gap: 0.4rem; align-items: center; flex: 1; }
+        .filter-label { font-size: 0.78rem; color: #94a3b8; font-weight: 600; white-space: nowrap; }
         .filter-select, .search-input {
-            flex: 1;
-            background-color: #262c38;
-            color: #f8fafc;
-            border: 1px solid #4d5b73;
-            padding: 0.55rem 0.9rem;
-            border-radius: 8px;
-            font-size: 0.9rem;
-            font-weight: 600;
-            outline: none;
-            transition: border-color 0.2s;
-            width: 100%;
-        }
-        .filter-select:focus, .search-input:focus { border-color: #38bdf8; }
-        .search-input::placeholder { color: #64748b; font-weight: 400; }
-
-        .folder-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
-            gap: 1rem;
+            flex: 1; background-color: #262c38; color: #f8fafc; border: 1px solid #4d5b73;
+            padding: 0.4rem 0.7rem; border-radius: 6px; font-size: 0.82rem; font-weight: 600; outline: none; width: 100%;
         }
 
+        .folder-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 0.8rem; }
         .folder-card {
-            background-color: #323b4d;
-            border: 1px solid #434e63;
-            border-radius: 12px;
-            padding: 1rem 1.2rem;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
-            transition: all 0.2s;
-            cursor: pointer;
+            background-color: #323b4d; border: 1px solid #434e63; border-radius: 10px; padding: 0.8rem 1rem;
+            display: flex; align-items: center; justify-content: space-between; box-shadow: 0 3px 10px rgba(0,0,0,0.2); cursor: pointer;
         }
-        @media(min-width: 768px) { .folder-card { border-radius: 14px; padding: 1.2rem; } }
         .folder-card:hover h3 { color: #38bdf8; }
-        
-        .folder-card-main {
-            display: flex;
-            align-items: center;
-            gap: 1rem;
-            flex: 1;
-        }
+        .folder-card-main { display: flex; align-items: center; gap: 0.8rem; flex: 1; }
+        .folder-icon { font-size: 1.8rem; }
+        .folder-info h3 { color: #f8fafc; font-size: 0.95rem; margin-bottom: 0.1rem; font-weight: 700; }
+        .folder-info p { color: #94a3b8; font-size: 0.75rem; font-weight: 500; }
 
-        .folder-icon { font-size: 2.2rem; }
-        @media(min-width: 768px) { .folder-icon { font-size: 2.5rem; } }
-
-        .folder-info h3 {
-            color: #f8fafc;
-            font-size: 1.05rem;
-            margin-bottom: 0.2rem;
-            font-weight: 700;
-            transition: color 0.2s;
-        }
-        @media(min-width: 768px) { .folder-info h3 { font-size: 1.15rem; } }
-
-        .folder-info p {
-            color: #94a3b8;
-            font-size: 0.8rem;
-            font-weight: 500;
-        }
-        @media(min-width: 768px) { .folder-info p { font-size: 0.85rem; } }
-
-        .album-grid {
-            display: grid;
-            grid-template-columns: 1fr;
-            gap: 0.8rem;
-        }
-        @media(min-width: 768px) { .album-grid { grid-template-columns: repeat(2, 1fr); gap: 1rem; } }
+        .album-grid { display: grid; grid-template-columns: 1fr; gap: 0.7rem; }
+        @media(min-width: 768px) { .album-grid { grid-template-columns: repeat(2, 1fr); gap: 0.8rem; } }
         @media(min-width: 1150px) { .album-grid { grid-template-columns: repeat(3, 1fr); } }
 
         .album-card {
-            background-color: #323b4d;
-            border: 1px solid #434e63;
-            border-radius: 12px;
-            overflow: hidden;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
-            display: flex;
-            flex-direction: column;
+            background-color: #323b4d; border: 1px solid #434e63; border-radius: 10px; overflow: hidden;
+            box-shadow: 0 3px 10px rgba(0,0,0,0.2); display: flex; flex-direction: column;
         }
-        @media(min-width: 768px) { .album-card { border-radius: 14px; } }
-
         .album-header-bar {
-            background-color: #262c38;
-            padding: 0.6rem 0.8rem;
-            font-size: 0.82rem;
-            color: #f8fafc;
-            font-weight: 700;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            border-bottom: 1px solid #434e63;
-            word-break: break-all;
+            background-color: #262c38; padding: 0.45rem 0.7rem; font-size: 0.78rem; color: #f8fafc; font-weight: 700;
+            display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #434e63; word-break: break-all;
         }
-        @media(min-width: 768px) { .album-header-bar { padding: 0.7rem 1rem; font-size: 0.88rem; } }
-
-        .badge-tag { font-size: 0.68rem; padding: 0.15rem 0.5rem; border-radius: 5px; font-weight: 700; }
-        @media(min-width: 768px) { .badge-tag { font-size: 0.72rem; padding: 0.2rem 0.6rem; border-radius: 6px; } }
+        .badge-tag { font-size: 0.65rem; padding: 0.1rem 0.4rem; border-radius: 4px; font-weight: 700; }
         .badge-smart { background-color: rgba(56, 189, 248, 0.12); color: #38bdf8; border: 1px solid rgba(56, 189, 248, 0.2); }
         .badge-free { background-color: rgba(251, 191, 36, 0.12); color: #fbbf24; border: 1px solid rgba(251, 191, 36, 0.2); }
 
-        .album-images-container {
-            padding: 0.6rem;
-            display: grid;
-            grid-template-columns: repeat(4, 1fr);
-            gap: 0.5rem;
-            background-color: #323b4d;
-        }
-        @media(min-width: 768px) { .album-images-container { padding: 0.8rem; gap: 0.6rem; } }
-
-        .thumb-img {
-            width: 100%;
-            height: 75px;
-            object-fit: cover;
-            border-radius: 6px;
-            border: 1px solid #4d5b73;
-            cursor: pointer;
-            transition: transform 0.2s, border-color 0.2s;
-        }
-        @media(min-width: 768px) { .thumb-img { height: 80px; border-radius: 8px; } }
-        .thumb-img:hover { transform: scale(1.03); border-color: #38bdf8; }
-
+        .album-images-container { padding: 0.5rem; display: grid; grid-template-columns: repeat(4, 1fr); gap: 0.4rem; background-color: #323b4d; }
+        .thumb-img { width: 100%; height: 65px; object-fit: cover; border-radius: 5px; border: 1px solid #4d5b73; cursor: pointer; }
+        .thumb-img:hover { border-color: #38bdf8; }
         .more-images-box {
-            width: 100%;
-            height: 75px;
-            background-color: #262c38;
-            border: 2px dashed #4d5b73;
-            border-radius: 6px;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-            cursor: pointer;
-            transition: all 0.2s;
-            color: #38bdf8;
-            font-weight: 700;
-            font-size: 0.85rem;
+            width: 100%; height: 65px; background-color: #262c38; border: 2px dashed #4d5b73; border-radius: 5px;
+            display: flex; flex-direction: column; justify-content: center; align-items: center; cursor: pointer; color: #38bdf8; font-weight: 700; font-size: 0.8rem;
         }
-        @media(min-width: 768px) { .more-images-box { height: 80px; border-radius: 8px; } }
-        .more-images-box:hover { background-color: #384357; border-color: #38bdf8; }
-
         .album-action-bar {
-            padding: 0.6rem 0.8rem;
-            background-color: #262c38;
-            border-top: 1px solid #434e63;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
+            padding: 0.45rem 0.7rem; background-color: #262c38; border-top: 1px solid #434e63;
+            display: flex; justify-content: space-between; align-items: center;
         }
-        @media(min-width: 768px) { .album-action-bar { padding: 0.7rem 1rem; } }
-
-        .album-footer-info { font-size: 0.75rem; color: #94a3b8; font-weight: 500; }
-        @media(min-width: 768px) { .album-footer-info { font-size: 0.8rem; } }
-        .action-btns { display: flex; gap: 0.4rem; }
-        @media(min-width: 768px) { .action-btns { gap: 0.5rem; } }
-
-        .btn-action {
-            padding: 0.35rem 0.6rem;
-            border-radius: 6px;
-            font-size: 0.73rem;
-            font-weight: 600;
-            cursor: pointer;
-            border: none;
-            transition: all 0.2s;
-        }
-        @media(min-width: 768px) { .btn-action { padding: 0.4rem 0.7rem; font-size: 0.78rem; } }
-        .btn-action:hover { opacity: 0.9; transform: translateY(-1px); }
-        .btn-download-album { background-color: #047857; color: #ecfdf5; box-shadow: 0 2px 5px rgba(4, 120, 87, 0.2); }
-        .btn-add-img { background-color: #0369a1; color: #e0f2fe; box-shadow: 0 2px 5px rgba(3, 105, 161, 0.2); }
+        .album-footer-info { font-size: 0.7rem; color: #94a3b8; font-weight: 500; }
+        .action-btns { display: flex; gap: 0.35rem; }
+        .btn-action { padding: 0.3rem 0.5rem; border-radius: 5px; font-size: 0.7rem; font-weight: 600; cursor: pointer; border: none; }
+        .btn-download-album { background-color: #047857; color: #ecfdf5; }
+        .btn-add-img { background-color: #0369a1; color: #e0f2fe; }
         .btn-del-album { background-color: rgba(239, 68, 68, 0.1); color: #fca5a5; border: 1px solid rgba(239, 68, 68, 0.2); }
 
         .scroll-top-btn {
-            display: none;
-            position: fixed;
-            bottom: 20px;
-            right: 20px;
-            z-index: 950;
-            background: none;
-            color: #ffffff;
-            border: none;
-            outline: none;
-            width: 42px;
-            height: 42px;
-            font-size: 1.8rem;
-            cursor: pointer;
-            align-items: center;
-            justify-content: center;
-            transition: transform 0.2s, color 0.2s;
-            text-shadow: 0 2px 8px rgba(0, 0, 0, 0.6);
+            display: none; position: fixed; bottom: 15px; right: 15px; z-index: 950; background: none; color: #ffffff;
+            border: none; width: 38px; height: 38px; font-size: 1.5rem; cursor: pointer; align-items: center; justify-content: center;
         }
-        .scroll-top-btn:hover { color: #38bdf8; transform: translateY(-3px); }
+        .scroll-top-btn:hover { color: #38bdf8; }
 
         .modal {
-            display: none;
-            position: fixed;
-            z-index: 999;
-            top: 0; left: 0; width: 100%; height: 100%;
-            background-color: rgba(18, 22, 30, 0.95);
-            justify-content: center;
-            align-items: center;
-            flex-direction: column;
-            overflow: hidden;
+            display: none; position: fixed; z-index: 999; top: 0; left: 0; width: 100%; height: 100%;
+            background-color: rgba(18, 22, 30, 0.95); justify-content: center; align-items: center; flex-direction: column;
         }
+        .modal-top-bar { position: absolute; top: 15px; left: 20px; right: 20px; display: flex; justify-content: space-between; align-items: center; z-index: 1000; }
+        .btn-modal-download { background-color: #047857; color: #fff; padding: 0.4rem 0.9rem; border-radius: 8px; font-size: 0.85rem; font-weight: 600; border: none; cursor: pointer; }
+        .modal-content-wrapper { position: relative; width: 100%; height: 100%; display: flex; justify-content: center; align-items: center; }
+        .modal-content { max-width: 90%; max-height: 80vh; border-radius: 8px; object-fit: contain; }
+        .modal-close { color: #fff; font-size: 2.2rem; cursor: pointer; background: none; border: none; }
+        .modal-nav-btn { position: absolute; top: 50%; transform: translateY(-50%); background: none; border: none; color: rgba(255, 255, 255, 0.8); font-size: 2.5rem; cursor: pointer; padding: 0.8rem; z-index: 1000; }
+        .nav-prev { left: 5px; } .nav-next { right: 5px; }
+        .modal-counter { position: absolute; bottom: 20px; color: #94a3b8; font-size: 0.85rem; font-weight: 600; z-index: 1000; }
 
-        .modal-top-bar {
-            position: absolute;
-            top: 15px;
-            left: 20px;
-            right: 20px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            z-index: 1000;
-        }
+        .loading-modal { display: none; position: fixed; z-index: 1010; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(18, 22, 30, 0.85); justify-content: center; align-items: center; flex-direction: column; }
+        .loading-dialog-box { background-color: #323b4d; border: 1px solid #434e63; padding: 1.2rem; border-radius: 12px; width: 92%; max-width: 320px; text-align: center; }
+        .loading-spinner { width: 32px; height: 32px; border: 3px solid #434e63; border-top: 3px solid #38bdf8; border-radius: 50%; animation: spin 1s linear infinite; margin: 0 auto 0.6rem auto; }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
 
-        .btn-modal-download {
-            background-color: #047857;
-            color: #fff;
-            padding: 0.4rem 0.9rem;
-            border-radius: 8px;
-            font-size: 0.85rem;
-            font-weight: 600;
-            border: none;
-            cursor: pointer;
-            display: inline-flex;
-            align-items: center;
-            gap: 0.4rem;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.3);
-        }
-        .btn-modal-download:hover { background-color: #059669; }
-
-        .modal-content-wrapper {
-            position: relative;
-            width: 100%;
-            height: 100%;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            overflow: hidden;
-            touch-action: none;
-        }
-
-        .modal-content {
-            max-width: 90%;
-            max-height: 80vh;
-            border-radius: 8px;
-            object-fit: contain;
-            user-select: none;
-            transition: transform 0.05s ease-out;
-            cursor: grab;
-        }
-        .modal-content:active { cursor: grabbing; }
-
-        .modal-close {
-            color: #fff; font-size: 2.2rem; font-weight: 300;
-            cursor: pointer;
-            background: none;
-            border: none;
-        }
-        .modal-close:hover { color: #38bdf8; }
-
-        .modal-nav-btn {
-            position: absolute;
-            top: 50%;
-            transform: translateY(-50%);
-            background: none;
-            border: none;
-            color: rgba(255, 255, 255, 0.8);
-            font-size: 2.5rem;
-            cursor: pointer;
-            padding: 0.8rem;
-            z-index: 1000;
-        }
-        .modal-nav-btn:hover { color: #38bdf8; }
-        .nav-prev { left: 5px; }
-        .nav-next { right: 5px; }
-
-        .modal-counter { 
-            position: absolute;
-            bottom: 20px;
-            color: #94a3b8; 
-            font-size: 0.85rem; 
-            font-weight: 600; 
-            z-index: 1000;
-        }
-
-        .dialog-box {
-            background-color: #323b4d;
-            border: 1px solid #434e63;
-            padding: 1.5rem;
-            border-radius: 14px;
-            width: 90%;
-            max-width: 300px;
-            text-align: center;
-            box-shadow: 0 12px 30px rgba(0,0,0,0.4);
-            animation: popIn 0.2s ease-out;
-        }
-
-        @keyframes popIn {
-            0% { transform: scale(0.95); opacity: 0; }
-            100% { transform: scale(1); opacity: 1; }
-        }
-
-        .dialog-box h3 { color: #f8fafc; margin-bottom: 0.4rem; font-size: 1.1rem; font-weight: 700; }
-        
-        .dialog-box input[type="password"] {
-            width: 100%;
-            padding: 0.6rem;
-            border-radius: 8px;
-            border: 1px solid #4d5b73;
-            background: #262c38;
-            color: #fff;
-            margin-bottom: 1rem;
-            text-align: center;
-            font-size: 1.1rem;
-            letter-spacing: 5px;
-        }
-
-        .file-upload-wrapper {
-            position: relative;
-            width: 100%;
-            margin-bottom: 1rem;
-            text-align: center;
-        }
-        .file-upload-wrapper input[type="file"] {
-            display: none;
-        }
-        .custom-file-btn {
-            display: block;
-            width: 100%;
-            background-color: #262c38;
-            color: #38bdf8;
-            border: 1px dashed #38bdf8;
-            padding: 0.7rem;
-            border-radius: 8px;
-            font-size: 0.85rem;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.2s;
-            overflow: hidden;
-            text-overflow: ellipsis;
-            white-space: nowrap;
-        }
-        .custom-file-btn:hover {
-            background-color: #384357;
-        }
-
-        .dialog-btns { display: flex; gap: 0.6rem; justify-content: center; }
-        .dialog-btns button {
-            flex: 1;
-            padding: 0.5rem;
-            border-radius: 8px;
-            font-weight: 600;
-            cursor: pointer;
-            border: none;
-            font-size: 0.85rem;
-        }
-        .btn-confirm { background-color: #0369a1; color: #e0f2fe; box-shadow: 0 2px 6px rgba(3, 105, 161, 0.2); }
-        .btn-confirm:hover { background-color: #0284c7; }
-        .btn-cancel { background-color: #3e495e; color: #cbd5e1; }
-        .btn-cancel:hover { background-color: #4d5b73; color: #fff; }
-
-        .loading-modal { display: none; position: fixed; z-index: 1010; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(18, 22, 30, 0.85); justify-content: center; align-items: center; flex-direction: column; padding: 1rem; }
-        .loading-dialog-box {
-            background-color: #323b4d;
-            border: 1px solid #434e63;
-            padding: 1.5rem 1.2rem;
-            border-radius: 14px;
-            width: 92%;
-            max-width: 380px;
-            text-align: center;
-            box-shadow: 0 12px 30px rgba(0,0,0,0.4);
-        }
-        .loading-spinner { width: 38px; height: 38px; border: 3px solid #434e63; border-top: 3px solid #38bdf8; border-radius: 50%; animation: spin 1s linear infinite; margin: 0 auto 0.8rem auto; }
-
-        @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
-        }
-
-        .footer { text-align: center; margin-top: 2rem; font-size: 0.75rem; color: #6b7280; font-weight: 500; }
+        .footer { text-align: center; margin-top: 1.5rem; font-size: 0.7rem; color: #6b7280; font-weight: 500; }
     </style>
 </head>
 <body>
 
     <div class="container">
         <div class="header-card">
-            <div class="header-left" style="width: 100%;">
-                <img src="big.jpeg" alt="Smart Monitoring Box Mascot" class="character-img" style="object-fit: cover; object-position: center;">
-                <div class="header-info" style="flex: 1;">
+            <div class="header-left">
+                <img src="big.jpeg" alt="Smart Monitoring Box Mascot" class="character-img">
+                <div class="header-info">
                     <div class="company-tag">QTC Energy PCL. • Rayong</div>
                     <h1>Smart Monitoring Box</h1>
                     <div class="creator-text">By: Natee Intharam</div>
-                    <p>คลังจัดเก็บอัลบั้มภาพถ่ายสำหรับตรวจสอบการปฏิบัติงาน</p>
-                    
                     <div class="header-sub-bar">
-                        <div id="systemStatusBadge" class="status-badge status-green">
-                            <span>🟢</span> พร้อมใช้งาน
-                        </div>
-                        <div id="liveClockDisplay" style="color: #ffffff; font-weight: 700;">
-                            --/--/---- --:--:--
-                        </div>
+                        <div id="systemStatusBadge" class="status-badge status-green"><span>🟢</span> พร้อมใช้งาน</div>
+                        <div id="liveClockDisplay" style="color: #cbd5e1; font-weight: 600;">--/--/---- --:--:--</div>
                     </div>
                 </div>
+            </div>
+            <!-- ปุ่มไอคอนกระดิ่งแจ้งเตือน -->
+            <div class="bell-wrapper" onclick="openNotificationModal()" title="ดูรายการอัลบั้มใหม่">
+                🔔
+                <div id="notificationBadge" class="notification-badge">0</div>
+            </div>
+        </div>
+
+        <!-- Modal แสดงรายการแจ้งเตือนอัลบั้มใหม่ -->
+        <div id="notificationModal" class="notification-modal" onclick="closeNotificationModal()">
+            <div class="notification-dialog" onclick="event.stopPropagation()">
+                <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #434e63; padding-bottom: 0.5rem;">
+                    <h3 style="color: #38bdf8; font-size: 1rem;">🔔 อัลบั้มอัปโหลดใหม่ล่าสุด</h3>
+                    <button class="modal-close" style="font-size: 1.5rem;" onclick="closeNotificationModal()">&times;</button>
+                </div>
+                <div id="notificationList" class="notification-list">
+                    <div style="text-align: center; color: #94a3b8; padding: 1.5rem; font-size: 0.8rem;">ยังไม่มีอัลบั้มใหม่</div>
+                </div>
+                <button class="btn-nav-action" style="width: 100%; padding: 0.5rem; justify-content: center;" onclick="markAllAsRead()">ล้างการแจ้งเตือน</button>
             </div>
         </div>
 
@@ -726,7 +388,7 @@
                 <div class="section-title" id="sectionTitle">
                     <span>📁 เลือกปีประจำระบบ</span>
                 </div>
-                <div style="display: flex; gap: 0.5rem; align-items: center;">
+                <div style="display: flex; gap: 0.4rem; align-items: center;">
                     <button id="installAppBtn" class="btn-install-pwa" onclick="installPWA()">📲 ติดตั้งแอป</button>
                     
                     <div id="navButtonsGroup" class="nav-buttons-group" style="display: none;">
@@ -746,7 +408,7 @@
                         <option value="Smartแถม">Smart (แถม)</option>
                     </select>
                 </div>
-                <div class="stack-row-item">
+                <div class="stack-row-item" style="flex: 2;">
                     <input type="text" id="searchCombinedInput" class="search-input" placeholder="ค้นหา..." oninput="applyFilters()">
                 </div>
             </div>
@@ -775,29 +437,29 @@
     </div>
 
     <div id="passwordModal" class="modal" style="z-index: 1005;">
-        <div class="dialog-box">
-            <h3 id="dialogTitle">🔒 ใส่รหัสผ่าน 4 หลัก</h3>
-            <p style="font-size: 0.78rem; color: #94a3b8; margin-bottom: 0.6rem;">กรอกรหัสผ่านเพื่อดำเนินการต่อ</p>
-            <input type="password" id="adminPasswordInput" maxlength="4" placeholder="••••" oninput="checkPasswordLength(this)">
-            <div class="dialog-btns">
-                <button class="btn-cancel" onclick="closePasswordModal()">ยกเลิก</button>
+        <div class="loading-dialog-box" style="max-width: 300px; text-align: center;">
+            <h3 id="dialogTitle" style="color: #f8fafc; font-size: 1rem; margin-bottom: 0.3rem;">🔒 ใส่รหัสผ่าน 4 หลัก</h3>
+            <p style="font-size: 0.75rem; color: #94a3b8; margin-bottom: 0.5rem;">กรอกรหัสผ่านเพื่อดำเนินการต่อ</p>
+            <input type="password" id="adminPasswordInput" maxlength="4" placeholder="••••" oninput="checkPasswordLength(this)" style="width: 100%; padding: 0.5rem; border-radius: 8px; border: 1px solid #4d5b73; background: #262c38; color: #fff; margin-bottom: 0.8rem; text-align: center; font-size: 1.1rem; letter-spacing: 5px; outline: none;">
+            <div style="display: flex; gap: 0.5rem; justify-content: center;">
+                <button class="btn-nav-action" style="flex: 1; padding: 0.45rem;" onclick="closePasswordModal()">ยกเลิก</button>
             </div>
         </div>
     </div>
 
     <div id="addImagesModal" class="modal" style="z-index: 1005;">
-        <div class="dialog-box">
-            <h3>📷 เพิ่มรูปภาพในอัลบั้ม</h3>
-            <p id="targetAlbumLabel" style="font-size: 0.78rem; color: #38bdf8; margin-bottom: 0.6rem; word-break: break-all; font-weight: 600;"></p>
+        <div class="loading-dialog-box" style="max-width: 320px; text-align: center;">
+            <h3 style="color: #f8fafc; font-size: 1rem; margin-bottom: 0.3rem;">📷 เพิ่มรูปภาพในอัลบั้ม</h3>
+            <p id="targetAlbumLabel" style="font-size: 0.75rem; color: #38bdf8; margin-bottom: 0.5rem; word-break: break-all; font-weight: 600;"></p>
             
-            <div class="file-upload-wrapper">
-                <input type="file" id="additionalImagesInput" multiple accept="image/*" onchange="updateFileNameLabel(this)">
-                <label for="additionalImagesInput" id="fileUploadLabel" class="custom-file-btn">📁 เลือกรูปภาพ (ยังไม่ได้เลือกไฟล์)</label>
+            <div style="position: relative; width: 100%; margin-bottom: 0.8rem; text-align: center;">
+                <input type="file" id="additionalImagesInput" multiple accept="image/*" onchange="updateFileNameLabel(this)" style="display:none;">
+                <label for="additionalImagesInput" id="fileUploadLabel" style="display: block; width: 100%; background-color: #262c38; color: #38bdf8; border: 1px dashed #38bdf8; padding: 0.6rem; border-radius: 8px; font-size: 0.8rem; font-weight: 600; cursor: pointer; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">📁 เลือกรูปภาพ (ยังไม่ได้เลือกไฟล์)</label>
             </div>
 
-            <div class="dialog-btns">
-                <button class="btn-cancel" onclick="document.getElementById('addImagesModal').style.display='none'">ยกเลิก</button>
-                <button class="btn-confirm" onclick="uploadAdditionalImages()">อัปโหลด</button>
+            <div style="display: flex; gap: 0.5rem; justify-content: center;">
+                <button class="btn-nav-action" style="flex: 1; padding: 0.45rem;" onclick="document.getElementById('addImagesModal').style.display='none'">ยกเลิก</button>
+                <button class="btn-nav-action" style="flex: 1; padding: 0.45rem; background-color: #0369a1; color: #e0f2fe; border: none;" onclick="uploadAdditionalImages()">อัปโหลด</button>
             </div>
         </div>
     </div>
@@ -805,16 +467,8 @@
     <div id="loadingModal" class="loading-modal" style="display: flex;">
         <div class="loading-dialog-box">
             <div class="loading-spinner"></div>
-            <h3 id="loadingTitle" style="color: #38bdf8; margin-bottom: 0.3rem; font-size: 1.1rem; white-space: nowrap;">กรุณารอสักครู่</h3>
-            <p id="loadingDesc" style="font-size: 0.8rem; color: #94a3b8; white-space: nowrap;">กำลังโหลดข้อมูล...</p>
-        </div>
-    </div>
-
-    <div id="customAlertModal" class="modal" style="z-index: 1020;">
-        <div class="dialog-box">
-            <h3 id="alertTitle" style="color: #fca5a5; margin-bottom: 0.3rem;">รหัสผ่านผิด</h3>
-            <p id="alertDesc" style="font-size: 0.8rem; color: #94a3b8; margin-bottom: 1rem; line-height: 1.4;">กรุณากรอกรหัสผ่านให้ถูกต้องใหม่อีกครั้ง</p>
-            <button class="btn-confirm" style="width: 100%; padding: 0.5rem;" onclick="closeCustomAlert()">ตกลง</button>
+            <h3 id="loadingTitle" style="color: #38bdf8; margin-bottom: 0.2rem; font-size: 1rem; white-space: nowrap;">กรุณารอสักครู่</h3>
+            <p id="loadingDesc" style="font-size: 0.75rem; color: #94a3b8; white-space: nowrap;">กำลังโหลดข้อมูล...</p>
         </div>
     </div>
 
@@ -836,14 +490,7 @@
         let navigationLevel = 'years'; 
         let currentSelectedYear = null;
         let currentSelectedMonth = null;
-
-        let currentAlbumImages = [];
-        let currentIndex = 0;
-
-        let pendingAction = null;
-        let selectedCategory = '';
-        let selectedFolderName = '';
-        let selectedTargetMonth = '';
+        let recentNewAlbums = [];
 
         let deferredPrompt;
 
@@ -861,6 +508,44 @@
                     installAppBtn.style.display = 'none';
                 }
                 deferredPrompt = null;
+            }
+        }
+
+        function openNotificationModal() {
+            document.getElementById('notificationModal').style.display = 'flex';
+        }
+
+        function closeNotificationModal() {
+            document.getElementById('notificationModal').style.display = 'none';
+        }
+
+        function markAllAsRead() {
+            recentNewAlbums = [];
+            updateNotificationUI();
+            closeNotificationModal();
+        }
+
+        function updateNotificationUI() {
+            const badge = document.getElementById('notificationBadge');
+            const list = document.getElementById('notificationList');
+            
+            if (recentNewAlbums.length > 0) {
+                badge.innerText = recentNewAlbums.length;
+                badge.style.display = 'block';
+                
+                let html = '';
+                recentNewAlbums.forEach(item => {
+                    html += `
+                        <div class="notification-item">
+                            <div class="title">📁 [${item.optionType}] ${item.folderName}</div>
+                            <div class="date">📅 วันที่: ${item.month} (${item.images ? item.images.length : 0} รูป)</div>
+                        </div>
+                    `;
+                });
+                list.innerHTML = html;
+            } else {
+                badge.style.display = 'none';
+                list.innerHTML = '<div style="text-align: center; color: #94a3b8; padding: 1.5rem; font-size: 0.8rem;">ยังไม่มีอัลบั้มใหม่</div>';
             }
         }
 
@@ -884,7 +569,7 @@
         updateLiveClock();
 
         window.addEventListener('scroll', () => {
-            if (window.scrollY > 300) {
+            if (window.scrollY > 200) {
                 scrollTopBtn.style.display = 'flex';
             } else {
                 scrollTopBtn.style.display = 'none';
@@ -896,29 +581,40 @@
         }
 
         window.onload = function() {
-            fetchAllAlbums();
-
+            fetchAllAlbums(true);
             setInterval(() => {
                 backgroundSyncAlbums();
             }, 3000);
         };
 
-        async function fetchAllAlbums() {
-            setSystemStatus('orange', 'กำลังซิงค์ข้อมูล...');
+        async function fetchAllAlbums(isInitial = false) {
+            setSystemStatus('orange', 'กำลังซิงค์...');
             try {
                 const response = await fetch(SCRIPT_URL + "?action=getAlbums");
                 const result = await response.json();
                 if (result.status === "success") {
-                    allAlbumsData = result.data || [];
+                    let newData = result.data || [];
+                    
+                    if (!isInitial && allAlbumsData.length > 0) {
+                        // ตรวจสอบอัลบั้มใหม่ที่เพิ่มเข้ามา
+                        let existingNames = new Set(allAlbumsData.map(a => a.folderName));
+                        newData.forEach(album => {
+                            if (!existingNames.has(album.folderName)) {
+                                recentNewAlbums.push(album);
+                            }
+                        });
+                        updateNotificationUI();
+                    }
+
+                    allAlbumsData = newData;
                     updateStats();
                     renderCurrentLevel();
                     setSystemStatus('green', 'พร้อมใช้งาน');
                 } else {
-                    setSystemStatus('red', 'โหลดข้อมูลไม่สำเร็จ');
+                    setSystemStatus('red', 'โหลดไม่สำเร็จ');
                 }
             } catch (err) {
-                console.error(err);
-                setSystemStatus('red', 'เชื่อมต่อเซิร์ฟเวอร์ล้มเหลว');
+                setSystemStatus('red', 'เชื่อมต่อล้มเหลว');
             } finally {
                 loadingModal.style.display = 'none';
             }
@@ -937,6 +633,14 @@
                 if (result.status === "success") {
                     let newData = result.data || [];
                     if (JSON.stringify(newData) !== JSON.stringify(allAlbumsData)) {
+                        let existingNames = new Set(allAlbumsData.map(a => a.folderName));
+                        newData.forEach(album => {
+                            if (!existingNames.has(album.folderName)) {
+                                recentNewAlbums.push(album);
+                            }
+                        });
+                        updateNotificationUI();
+
                         allAlbumsData = newData;
                         updateStats();
                         renderCurrentLevel();
@@ -981,7 +685,7 @@
                 renderMonthsView();
             } else if (navigationLevel === 'albums') {
                 navButtonsGroup.style.display = 'flex';
-                sectionTitle.innerHTML = `<span>📁 ปี ${currentSelectedYear} / เดือน ${currentSelectedMonth} • อัลบั้มงาน</span>`;
+                sectionTitle.innerHTML = `<span>📁 ปี ${currentSelectedYear} / เดือน ${currentSelectedMonth}</span>`;
                 stackControlsWrapper.style.display = 'flex';
                 renderAlbumsView();
             }
@@ -1019,8 +723,8 @@
             let html = '<div class="folder-grid">';
             sortedYears.forEach(year => {
                 html += `
-                    <div class="folder-card">
-                        <div class="folder-card-main" onclick="selectYear('${year}')">
+                    <div class="folder-card" onclick="selectYear('${year}')">
+                        <div class="folder-card-main">
                             <div class="folder-icon">📁</div>
                             <div class="folder-info">
                                 <h3>ปี ${year}</h3>
@@ -1104,7 +808,7 @@
             }
 
             if (filtered.length === 0) {
-                mainContainer.innerHTML = '<div style="text-align: center; color: #94a3b8; padding: 3rem;">ไม่พบอัลบั้มภาพในเงื่อนไขนี้</div>';
+                mainContainer.innerHTML = '<div style="text-align: center; color: #94a3b8; padding: 2rem;">ไม่พบอัลบั้มภาพในเงื่อนไขนี้</div>';
                 return;
             }
 
@@ -1132,12 +836,12 @@
                     html += `
                         <div class="more-images-box" onclick="openModal('${encodeURIComponent(JSON.stringify(imgs))}', 3)">
                             <span>+${imgs.length - 3}</span>
-                            <span style="font-size: 0.65rem;">ดูทั้งหมด</span>
+                            <span style="font-size: 0.6rem;">ดูทั้งหมด</span>
                         </div>
                     `;
                 } else if (imgs.length < 4) {
                     for (let i = imgs.length; i < 4; i++) {
-                        html += `<div style="background: rgba(255,255,255,0.02); border-radius: 6px; height: 75px;"></div>`;
+                        html += `<div style="background: rgba(255,255,255,0.02); border-radius: 5px; height: 65px;"></div>`;
                     }
                 }
 
@@ -1146,8 +850,8 @@
                         <div class="album-action-bar">
                             <span class="album-footer-info">📅 ${album.month} (${imgs.length} รูป)</span>
                             <div class="action-btns">
-                                <button class="btn-action btn-download-album" onclick="downloadAlbumZip('${encodeURIComponent(album.folderName)}', '${encodeURIComponent(JSON.stringify(imgs))}')">⬇️ โหลด ZIP</button>
-                                <button class="btn-action btn-add-img" onclick="promptAddImages('${album.folderName}')">➕ เพิ่มรูป</button>
+                                <button class="btn-action btn-download-album" onclick="downloadAlbumZip('${encodeURIComponent(album.folderName)}', '${encodeURIComponent(JSON.stringify(imgs))}')">⬇️ ZIP</button>
+                                <button class="btn-action btn-add-img" onclick="promptAddImages('${album.folderName}')">➕ เพิ่ม</button>
                                 <button class="btn-action btn-del-album" onclick="promptDeleteAlbum('${album.folderName}', '${album.optionType}')">🗑️ ลบ</button>
                             </div>
                         </div>
@@ -1166,9 +870,6 @@
 
         let activeModalImages = [];
         let activeModalIndex = 0;
-        let scale = 1, panning = false, pointX = 0, pointY = 0, startX = 0, startY = 0;
-        let initialPinchDistance = null;
-        let touchStartX = 0;
 
         function openModal(imagesJson, index) {
             activeModalImages = JSON.parse(decodeURIComponent(imagesJson));
@@ -1185,7 +886,6 @@
             const img = document.getElementById('modalImg');
             img.src = activeModalImages[activeModalIndex];
             document.getElementById('modalCounter').innerText = `${activeModalIndex + 1} / ${activeModalImages.length}`;
-            resetTransform();
         }
 
         function nextImage() {
@@ -1198,86 +898,6 @@
             showImageInModal();
         }
 
-        function resetTransform() {
-            scale = 1; pointX = 0; pointY = 0;
-            updateTransform();
-        }
-
-        function updateTransform() {
-            const img = document.getElementById('modalImg');
-            img.style.transform = `translate(${pointX}px, ${pointY}px) scale(${scale})`;
-        }
-
-        const modalWrapper = document.getElementById('modalWrapper');
-        
-        modalWrapper.addEventListener('wheel', (e) => {
-            e.preventDefault();
-            if (e.deltaY < 0) { scale *= 1.2; } else { scale /= 1.2; }
-            scale = Math.max(1, Math.min(scale, 5));
-            updateTransform();
-        });
-
-        modalWrapper.addEventListener('mousedown', (e) => {
-            e.preventDefault();
-            startX = e.clientX - pointX; startY = e.clientY - pointY;
-            panning = true;
-        });
-
-        window.addEventListener('mouseup', () => { panning = false; });
-        modalWrapper.addEventListener('mousemove', (e) => {
-            if (!panning) return;
-            e.preventDefault();
-            pointX = e.clientX - startX; pointY = e.clientY - startY;
-            updateTransform();
-        });
-
-        modalWrapper.addEventListener('touchstart', (e) => {
-            if (e.touches.length === 1) {
-                touchStartX = e.touches[0].clientX;
-                panning = true;
-                startX = e.touches[0].clientX - pointX;
-                startY = e.touches[0].clientY - pointY;
-            } else if (e.touches.length === 2) {
-                panning = false;
-                initialPinchDistance = Math.hypot(
-                    e.touches[0].clientX - e.touches[1].clientX,
-                    e.touches[0].clientY - e.touches[1].clientY
-                );
-            }
-        }, { passive: false });
-
-        modalWrapper.addEventListener('touchmove', (e) => {
-            if (e.touches.length === 1 && panning) {
-                if (scale === 1) return;
-                e.preventDefault();
-                pointX = e.touches[0].clientX - startX;
-                pointY = e.touches[0].clientY - startY;
-                updateTransform();
-            } else if (e.touches.length === 2 && initialPinchDistance !== null) {
-                e.preventDefault();
-                let currentDistance = Math.hypot(
-                    e.touches[0].clientX - e.touches[1].clientX,
-                    e.touches[0].clientY - e.touches[1].clientY
-                );
-                let factor = currentDistance / initialPinchDistance;
-                scale = Math.max(1, Math.min(scale * factor, 5));
-                initialPinchDistance = currentDistance;
-                updateTransform();
-            }
-        }, { passive: false });
-
-        modalWrapper.addEventListener('touchend', (e) => {
-            if (e.touches.length < 2) { initialPinchDistance = null; }
-            if (e.touches.length === 0 && scale === 1) {
-                let touchEndX = e.changedTouches[0].clientX;
-                let diffX = touchEndX - touchStartX;
-                if (Math.abs(diffX) > 50) {
-                    if (diffX > 0) { prevImage(); } else { nextImage(); }
-                }
-            }
-            if (e.touches.length === 0) { panning = false; }
-        });
-
         async function downloadCurrentModalImage() {
             let imgUrl = activeModalImages[activeModalIndex];
             try {
@@ -1285,24 +905,16 @@
                 let blob = await response.blob();
                 let blobUrl = window.URL.createObjectURL(blob);
                 let a = document.createElement('a');
-                a.href = blobUrl;
-                a.download = `Photo_${activeModalIndex + 1}.jpg`;
-                document.body.appendChild(a);
-                a.click();
-                document.body.removeChild(a);
+                a.href = blobUrl; a.download = `Photo_${activeModalIndex + 1}.jpg`;
+                document.body.appendChild(a); a.click(); document.body.removeChild(a);
                 window.URL.revokeObjectURL(blobUrl);
             } catch (err) {
                 let a = document.createElement('a');
-                a.href = imgUrl;
-                a.target = '_blank';
-                a.download = `Photo_${activeModalIndex + 1}.jpg`;
-                document.body.appendChild(a);
-                a.click();
-                document.body.removeChild(a);
+                a.href = imgUrl; a.target = '_blank'; a.download = `Photo_${activeModalIndex + 1}.jpg`;
+                document.body.appendChild(a); a.click(); document.body.removeChild(a);
             }
         }
 
-        // ปรับแก้ฟังก์ชันดาวน์โหลด ZIP ให้นำภาพใส่ลงใน root ของ ZIP โดยตรง (โฟลเดอร์มีแค่ชื่ออัลบั้มเดียว)
         async function downloadAlbumZip(folderNameEncoded, imagesJson) {
             let folderName = decodeURIComponent(folderNameEncoded);
             let imgs = JSON.parse(decodeURIComponent(imagesJson));
@@ -1313,20 +925,15 @@
 
             try {
                 const zip = new JSZip();
-
                 for (let i = 0; i < imgs.length; i++) {
                     let response = await fetch(imgs[i]);
                     let blob = await response.blob();
-                    zip.file(`Photo_${i + 1}.jpg`, blob); // วางไฟล์รูปไว้ใน root ของ ZIP ทันที
+                    zip.file(`Photo_${i + 1}.jpg`, blob);
                 }
-
                 let content = await zip.generateAsync({ type: "blob" });
                 let a = document.createElement('a');
-                a.href = URL.createObjectURL(content);
-                a.download = `${folderName}.zip`;
-                document.body.appendChild(a);
-                a.click();
-                document.body.removeChild(a);
+                a.href = URL.createObjectURL(content); a.download = `${folderName}.zip`;
+                document.body.appendChild(a); a.click(); document.body.removeChild(a);
                 loadingModal.style.display = 'none';
             } catch (err) {
                 loadingModal.style.display = 'none';
@@ -1336,7 +943,7 @@
 
         function promptDeleteAlbum(folderName, optionType) {
             pendingAction = { type: 'deleteAlbum', folderName: folderName, optionType: optionType };
-            document.getElementById('dialogTitle').innerText = "🔒 ใส่รหัสผ่านเพื่อลบอัลบั้ม";
+            document.getElementById('dialogTitle').innerText = "🔒 ใส่รหัสผ่านเพื่อลบ";
             document.getElementById('adminPasswordInput').value = '';
             document.getElementById('passwordModal').style.display = 'flex';
             document.getElementById('adminPasswordInput').focus();
@@ -1353,11 +960,7 @@
         function updateFileNameLabel(input) {
             const label = document.getElementById('fileUploadLabel');
             if (input.files && input.files.length > 0) {
-                if (input.files.length === 1) {
-                    label.innerText = `📁 เลือกแล้ว: ${input.files[0].name}`;
-                } else {
-                    label.innerText = `📁 เลือกแล้ว: ${input.files.length} ไฟล์`;
-                }
+                label.innerText = input.files.length === 1 ? `📁 เลือกแล้ว: ${input.files[0].name}` : `📁 เลือกแล้ว: ${input.files.length} ไฟล์`;
             } else {
                 label.innerText = "📁 เลือกรูปภาพ (ยังไม่ได้เลือกไฟล์)";
             }
@@ -1367,6 +970,9 @@
             document.getElementById('passwordModal').style.display = 'none';
         }
 
+        let pendingAction = null;
+        let selectedFolderName = '';
+
         function checkPasswordLength(input) {
             if (input.value.length === 4) {
                 let pwd = input.value;
@@ -1374,21 +980,14 @@
                 if (pwd === "6004") {
                     executePendingAction();
                 } else {
-                    document.getElementById('alertTitle').innerText = "รหัสผ่านไม่ถูกต้อง";
-                    document.getElementById('alertDesc').innerText = "กรุณากรอกรหัสผ่าน 4 หลักใหม่อีกครั้ง";
-                    document.getElementById('customAlertModal').style.display = 'flex';
+                    alert("รหัสผ่านไม่ถูกต้อง");
                 }
                 input.value = '';
             }
         }
 
-        function closeCustomAlert() {
-            document.getElementById('customAlertModal').style.display = 'none';
-        }
-
         async function executePendingAction() {
             if (!pendingAction) return;
-
             if (pendingAction.type === 'deleteAlbum') {
                 document.getElementById('loadingTitle').innerText = "กำลังลบอัลบั้ม";
                 document.getElementById('loadingDesc').innerText = "โปรดรอสักครู่...";
@@ -1409,43 +1008,24 @@
                     if (result.status === "success") {
                         document.getElementById('loadingTitle').innerText = "ลบอัลบั้มสำเร็จ!";
                         document.getElementById('loadingDesc').innerText = "กำลังอัปเดตหน้าจอ...";
-                        
                         const spinner = document.querySelector('.loading-spinner');
                         if (spinner) spinner.style.display = 'none';
 
                         setTimeout(() => {
                             loadingModal.style.display = 'none';
                             if (spinner) spinner.style.display = 'block';
-                            fetchAllAlbums();
-                        }, 2000);
+                            fetchAllAlbums(true);
+                        }, 1500);
                     } else {
                         loadingModal.style.display = 'none';
-                        showAutoToast("❌ " + (result.message || "ลบไม่สำเร็จ"), true);
+                        alert("ลบไม่สำเร็จ: " + (result.message || ""));
                     }
                 } catch (err) {
                     loadingModal.style.display = 'none';
-                    showAutoToast("❌ เกิดข้อผิดพลาดในการเชื่อมต่อเซิร์ฟเวอร์", true);
+                    alert("เกิดข้อผิดพลาดในการเชื่อมต่อเซิร์ฟเวอร์");
                 }
             }
             pendingAction = null;
-        }
-
-        function showAutoToast(message, isError = false) {
-            let toast = document.getElementById('customToast');
-            if (!toast) {
-                toast = document.createElement('div');
-                toast.id = 'customToast';
-                toast.style.cssText = "display: none; position: fixed; z-index: 3000; top: 20px; left: 50%; transform: translateX(-50%); background-color: #323b4d; border: 1px solid #38bdf8; color: #f8fafc; padding: 0.9rem 1.5rem; border-radius: 12px; box-shadow: 0 10px 25px rgba(0,0,0,0.5); font-weight: 600; font-size: 0.95rem; align-items: center; gap: 0.6rem;";
-                toast.innerHTML = `<span id="toastMessage"></span>`;
-                document.body.appendChild(toast);
-            }
-            document.getElementById('toastMessage').innerText = message;
-            toast.style.borderColor = isError ? '#f87171' : '#38bdf8';
-            toast.style.display = 'flex';
-            
-            setTimeout(() => {
-                toast.style.display = 'none';
-            }, 3000);
         }
 
         async function uploadAdditionalImages() {
@@ -1453,7 +1033,7 @@
             if (!input.files || input.files.length === 0) return alert("กรุณาเลือกรูปภาพ");
 
             document.getElementById('addImagesModal').style.display = 'none';
-            document.getElementById('loadingTitle').innerText = "กำลังอัปโหลดรูปภาพเพิ่ม";
+            document.getElementById('loadingTitle').innerText = "กำลังอัปโหลดรูปเพิ่ม";
             document.getElementById('loadingDesc').innerText = "กำลังประมวลผลและบันทึก...";
             loadingModal.style.display = 'flex';
 
@@ -1476,7 +1056,7 @@
                 let result = await response.json();
                 
                 if (result.status === "success") {
-                    document.getElementById('loadingTitle').innerText = "เพิ่มรูปภาพสำเร็จ!";
+                    document.getElementById('loadingTitle').innerText = "เพิ่มรูปสำเร็จ!";
                     document.getElementById('loadingDesc').innerText = "กำลังรีเฟรชหน้าจอ...";
                     const spinner = document.querySelector('.loading-spinner');
                     if (spinner) spinner.style.display = 'none';
@@ -1484,8 +1064,8 @@
                     setTimeout(() => {
                         loadingModal.style.display = 'none';
                         if (spinner) spinner.style.display = 'block';
-                        fetchAllAlbums();
-                    }, 2000);
+                        fetchAllAlbums(true);
+                    }, 1500);
                 } else {
                     loadingModal.style.display = 'none';
                     alert("ผิดพลาด: " + result.message);
