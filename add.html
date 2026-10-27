@@ -276,6 +276,20 @@
             toast.style.display = 'flex';
         }
 
+        // ฟังก์ชันดึงยอดรูปภาพทั้งหมดปัจจุบันจากระบบ
+        async function fetchTotalImageCount() {
+            try {
+                let res = await fetch(SCRIPT_URL + "?action=getAlbums");
+                let data = await res.json();
+                if (data.status === "success") {
+                    let total = 0;
+                    (data.data || []).forEach(a => { total += (a.images ? a.images.length : 0); });
+                    return total;
+                }
+            } catch (err) {}
+            return null;
+        }
+
         async function handleFormSubmit(e) {
             e.preventDefault();
             if (selectedFiles.length === 0) return alert("กรุณาเลือกรูปภาพ");
@@ -288,20 +302,22 @@
             document.getElementById('loadingTitle').innerText = "กำลังอัปโหลด";
             document.getElementById('spinnerBox').style.display = 'block';
             document.getElementById('loadingModal').style.display = 'flex';
+            document.getElementById('loadingDesc').innerText = `0/${totalFiles}`;
 
             try {
+                // 1. ดึงยอดรูปภาพตั้งต้นก่อนอัปโหลด
+                let initialTotalImages = await fetchTotalImageCount();
+
+                // 2. แปลงไฟล์ทั้งหมดเป็น Base64
                 let base64Images = [];
                 for (let i = 0; i < selectedFiles.length; i++) {
-                    document.getElementById('loadingTitle').innerText = "กำลังอัปโหลด";
-                    document.getElementById('loadingDesc').innerText = `${i + 1}/${totalFiles}`;
                     base64Images.push(await fileToBase64(selectedFiles[i], 1200));
                 }
 
-                // คงตัวเลขรูปสุดท้ายค้างไว้ และอัปเดตหัวข้อเป็นกำลังส่งข้อมูลเข้าเว็บ เพื่อให้ผู้ใช้เห็นความต่อเนื่องจนกว่าจะเสร็จจริง
-                document.getElementById('loadingTitle').innerText = "กำลังอัปโหลด";
-                document.getElementById('loadingDesc').innerText = `${totalFiles}/${totalFiles} (กำลังบันทึกเข้าสู่ระบบ...)`;
+                document.getElementById('loadingDesc').innerText = `กำลังส่งข้อมูล... (0/${totalFiles})`;
 
-                const response = await fetch(SCRIPT_URL, {
+                // 3. ส่งข้อมูลชุดใหญ่ไปบันทึกที่เซิร์ฟเวอร์
+                let responsePromise = fetch(SCRIPT_URL, {
                     method: 'POST',
                     body: JSON.stringify({
                         action: 'create',
@@ -311,14 +327,37 @@
                         images: base64Images
                     })
                 });
-                const result = await response.json();
+
+                // 4. วนลูปเช็คยอดรูปภาพรวมในระบบ ถ้าเพิ่มขึ้นทีละ 1 หน่วย ให้ขยับตัวเลขความคืบหน้าทันที
+                let uploadedCount = 0;
+                let checkInterval = setInterval(async () => {
+                    if (initialTotalImages !== null) {
+                        let currentTotalImages = await fetchTotalImageCount();
+                        if (currentTotalImages !== null) {
+                            let diff = currentTotalImages - initialTotalImages;
+                            if (diff > uploadedCount && diff <= totalFiles) {
+                                uploadedCount = diff;
+                                document.getElementById('loadingDesc').innerText = `${uploadedCount}/${totalFiles}`;
+                            }
+                        }
+                    }
+                }, 2000);
+
+                let response = await responsePromise;
+                let result = await response.json();
+                
+                clearInterval(checkInterval);
                 document.getElementById('loadingModal').style.display = 'none';
 
                 if (result.status === "success") {
+                    // เติมตัวเลขให้ครบ 100% ตอนเสร็จสมบูรณ์
+                    document.getElementById('loadingTitle').innerText = "กำลังอัปโหลด";
+                    document.getElementById('loadingDesc').innerText = `${totalFiles}/${totalFiles}`;
+                    
                     showToast("บันทึกสำเร็จ! กำลังกลับหน้าหลัก...");
                     setTimeout(() => {
                         window.location.href = "index.html";
-                    }, 2000);
+                    }, 1500);
                 } else {
                     showToast("ผิดพลาด: " + result.message, true);
                 }
