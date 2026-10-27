@@ -27,24 +27,23 @@
             background-size: 100% 100%, 100% 100%, 40px 40px, 40px 40px;
             color: #e2e8f0; 
             min-height: 100vh; 
-            padding: 0.5rem; 
+            padding: 0.8rem; 
         }
         
         .container { max-width: 1400px; margin: 0 auto; }
 
-        /* ปรับ Header ให้บางและกะทัดรัดขึ้น */
         .header-card {
             background-color: #323b4d;
             border: 1px solid #434e63;
-            padding: 0.6rem 1rem;
-            border-radius: 12px;
+            padding: 1rem 1.2rem;
+            border-radius: 14px;
             text-align: center;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.3);
-            margin-bottom: 0.5rem;
+            box-shadow: 0 8px 20px rgba(0,0,0,0.3);
+            margin-bottom: 0.8rem;
             display: flex;
             flex-direction: column;
             align-items: center;
-            gap: 0.5rem;
+            gap: 0.8rem;
         }
 
         @media(min-width: 768px) {
@@ -52,48 +51,47 @@
                 flex-direction: row; 
                 text-align: left; 
                 justify-content: space-between; 
-                padding: 0.8rem 1.5rem; 
-                margin-bottom: 0.6rem;
+                padding: 1.8rem 2.5rem; 
+                margin-bottom: 1.2rem;
             }
         }
 
         .header-left {
             display: flex;
             align-items: center;
-            gap: 0.8rem;
+            gap: 1rem;
             flex-direction: column;
         }
         @media(min-width: 768px) {
-            .header-left { flex-direction: row; gap: 1rem; }
+            .header-left { flex-direction: row; gap: 1.5rem; }
         }
 
         .character-img {
-            width: 55px;
-            height: 55px;
+            width: 75px;
+            height: 75px;
             object-fit: cover;
-            border-radius: 10px;
+            border-radius: 12px;
             border: 2px solid #38bdf8;
-            box-shadow: 0 3px 10px rgba(56, 189, 248, 0.25);
+            box-shadow: 0 4px 12px rgba(56, 189, 248, 0.25);
         }
         @media(min-width: 768px) {
-            .character-img { width: 70px; height: 70px; border-radius: 12px; }
+            .character-img { width: 120px; height: 120px; border-radius: 16px; }
         }
 
         .header-info .company-tag {
-            font-size: 0.65rem;
+            font-size: 0.7rem;
             color: #38bdf8;
             font-weight: 700;
-            letter-spacing: 1.2px;
+            letter-spacing: 1.5px;
             text-transform: uppercase;
-            margin-bottom: 0.1rem;
+            margin-bottom: 0.2rem;
         }
 
-        .header-info h1 { font-size: 1.1rem; color: #f8fafc; margin-bottom: 0.1rem; font-weight: 700; }
-        @media(min-width: 768px) { .header-info h1 { font-size: 1.4rem; } }
+        .header-info h1 { font-size: 1.2rem; color: #f8fafc; margin-bottom: 0.1rem; font-weight: 700; }
+        @media(min-width: 768px) { .header-info h1 { font-size: 1.8rem; } }
         
-        .header-info .creator-text { font-size: 0.75rem; color: #94a3b8; font-weight: 600; margin-bottom: 0.1rem; }
-        .header-info p { font-size: 0.72rem; color: #9ca3af; margin-bottom: 0.3rem; display: none; }
-        @media(min-width: 768px) { .header-info p { display: block; } }
+        .header-info .creator-text { font-size: 0.82rem; color: #94a3b8; font-weight: 600; margin-bottom: 0.2rem; }
+        .header-info p { font-size: 0.78rem; color: #9ca3af; margin-bottom: 0.5rem; }
 
         .header-sub-bar {
             display: flex;
@@ -101,23 +99,24 @@
             align-items: center;
             width: 100%;
             border-top: 1px solid rgba(255, 255, 255, 0.08);
-            padding-top: 0.3rem;
+            padding-top: 0.5rem;
             margin-top: 0.2rem;
-            font-size: 0.7rem;
+            font-size: 0.73rem;
             color: #94a3b8;
             font-weight: 600;
         }
         @media(min-width: 768px) {
-            .header-sub-bar { font-size: 0.78rem; }
+            .header-sub-bar { font-size: 0.82rem; }
         }
 
         .status-badge {
             display: inline-flex;
             align-items: center;
             gap: 0.3rem;
-            padding: 0.15rem 0.5rem;
+            padding: 0.2rem 0.6rem;
             border-radius: 6px;
             border: 1px solid transparent;
+            transition: all 0.3s ease;
         }
         
         .status-green { background: rgba(16, 185, 129, 0.1); color: #34d399; border-color: rgba(16, 185, 129, 0.2); }
@@ -125,26 +124,28 @@
         .status-red { background: rgba(239, 68, 68, 0.1); color: #f87171; border-color: rgba(239, 68, 68, 0.2); }
 
         .block-title {
-            font-size: 0.85rem;
+            font-size: 0.95rem;
             color: #38bdf8;
             font-weight: 700;
-            margin-bottom: 0.3rem;
+            margin-bottom: 0.4rem;
             display: flex;
             align-items: center;
             gap: 0.4rem;
         }
         @media(min-width: 768px) {
-            .block-title { font-size: 0.95rem; margin-bottom: 0.4rem; }
+            .block-title { font-size: 1.05rem; margin-bottom: 0.6rem; }
         }
 
-        /* ปรับตารางภาพรวมให้บางลง ไม่เปลืองพื้นที่ */
         .stats-table-wrapper {
             background-color: #323b4d;
             border: 1px solid #434e63;
-            border-radius: 10px;
+            border-radius: 12px;
             overflow: hidden;
-            margin-bottom: 0.6rem;
-            box-shadow: 0 3px 10px rgba(0,0,0,0.2);
+            margin-bottom: 1rem;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+        }
+        @media(min-width: 768px) {
+            .stats-table-wrapper { border-radius: 14px; margin-bottom: 1.5rem; }
         }
 
         .stats-table {
@@ -156,26 +157,27 @@
         .stats-table th {
             background-color: #262c38;
             color: #38bdf8;
-            font-size: 0.68rem;
+            font-size: 0.72rem;
             font-weight: 700;
-            padding: 0.35rem 0.2rem;
+            padding: 0.5rem 0.3rem;
             border-bottom: 1px solid #434e63;
             text-transform: uppercase;
+            letter-spacing: 0.5px;
         }
         @media(min-width: 768px) {
-            .stats-table th { font-size: 0.75rem; padding: 0.45rem 0.3rem; }
+            .stats-table th { font-size: 0.82rem; padding: 0.7rem 0.5rem; }
         }
 
         .stats-table td {
             color: #f8fafc;
-            font-size: 0.85rem;
+            font-size: 0.95rem;
             font-weight: 700;
-            padding: 0.4rem 0.2rem;
+            padding: 0.6rem 0.3rem;
             border-right: 1px solid rgba(255, 255, 255, 0.05);
         }
         .stats-table td:last-child { border-right: none; }
         @media(min-width: 768px) {
-            .stats-table td { font-size: 1.1rem; padding: 0.5rem 0.3rem; }
+            .stats-table td { font-size: 1.3rem; padding: 0.9rem 0.5rem; }
         }
 
         .sticky-nav-area {
@@ -184,103 +186,107 @@
             z-index: 900;
             background-color: rgba(38, 44, 56, 0.95);
             backdrop-filter: blur(10px);
-            padding-top: 0.3rem;
-            padding-bottom: 0.5rem;
-            margin-bottom: 0.5rem;
+            padding-top: 0.4rem;
+            padding-bottom: 0.8rem;
+            margin-bottom: 0.8rem;
         }
 
         .top-action-bar {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            margin-bottom: 0.4rem;
+            margin-bottom: 0.6rem;
             flex-wrap: wrap;
-            gap: 0.4rem;
+            gap: 0.6rem;
         }
 
         .section-title {
-            font-size: 0.9rem;
+            font-size: 1rem;
             color: #38bdf8;
             font-weight: 700;
-            border-left: 3px solid #38bdf8;
-            padding-left: 0.5rem;
+            border-left: 4px solid #38bdf8;
+            padding-left: 0.6rem;
             display: flex;
             align-items: center;
-            gap: 0.3rem;
+            gap: 0.4rem;
         }
-        @media(min-width: 768px) { .section-title { font-size: 1rem; } }
+        @media(min-width: 768px) { .section-title { font-size: 1.1rem; } }
 
         .nav-buttons-group {
             display: flex;
-            gap: 0.4rem;
+            gap: 0.5rem;
             align-items: center;
         }
 
         .btn-nav-action {
             background-color: #3e495e;
             color: #e2e8f0;
-            padding: 0.3rem 0.6rem;
-            border-radius: 6px;
-            font-size: 0.75rem;
+            padding: 0.4rem 0.8rem;
+            border-radius: 8px;
+            font-size: 0.8rem;
             font-weight: 600;
             border: 1px solid #4d5b73;
             cursor: pointer;
             display: inline-flex;
             align-items: center;
             gap: 0.3rem;
+            transition: all 0.2s;
         }
         .btn-nav-action:hover { background-color: #4d5b73; color: #fff; }
 
         .btn-add {
             background-color: #0f766e;
             color: #e2e8f0;
-            padding: 0.35rem 0.8rem;
-            border-radius: 8px;
-            font-size: 0.78rem;
+            padding: 0.5rem 1rem;
+            border-radius: 10px;
+            font-size: 0.85rem;
             font-weight: 600;
             text-decoration: none;
             display: inline-flex;
             align-items: center;
             gap: 0.3rem;
-            box-shadow: 0 2px 8px rgba(15, 118, 110, 0.25);
+            box-shadow: 0 3px 10px rgba(15, 118, 110, 0.25);
+            transition: all 0.2s;
         }
-        .btn-add:hover { background-color: #115e59; }
+        .btn-add:hover { background-color: #115e59; transform: translateY(-1px); }
 
         .btn-install-pwa {
             background-color: #0284c7;
             color: #ffffff;
-            padding: 0.3rem 0.6rem;
-            border-radius: 6px;
-            font-size: 0.75rem;
+            padding: 0.4rem 0.8rem;
+            border-radius: 8px;
+            font-size: 0.8rem;
             font-weight: 600;
             border: 1px solid #38bdf8;
             cursor: pointer;
             display: none;
             align-items: center;
             gap: 0.3rem;
+            box-shadow: 0 3px 10px rgba(2, 132, 199, 0.3);
+            transition: all 0.2s;
         }
+        .btn-install-pwa:hover { background-color: #0369a1; }
 
         .stack-controls-wrapper {
             display: flex;
-            flex-direction: row;
-            gap: 0.5rem;
+            flex-direction: column;
+            gap: 0.6rem;
             background-color: #323b4d;
             border: 1px solid #434e63;
-            padding: 0.5rem 0.8rem;
-            border-radius: 10px;
-            box-shadow: 0 3px 10px rgba(0,0,0,0.2);
-            align-items: center;
+            padding: 0.8rem 1rem;
+            border-radius: 12px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.2);
         }
 
         .stack-row-item {
             display: flex;
-            gap: 0.4rem;
+            gap: 0.6rem;
             align-items: center;
-            flex: 1;
+            width: 100%;
         }
 
         .filter-label {
-            font-size: 0.78rem;
+            font-size: 0.85rem;
             color: #94a3b8;
             font-weight: 600;
             white-space: nowrap;
@@ -291,11 +297,12 @@
             background-color: #262c38;
             color: #f8fafc;
             border: 1px solid #4d5b73;
-            padding: 0.4rem 0.7rem;
-            border-radius: 6px;
-            font-size: 0.82rem;
+            padding: 0.55rem 0.9rem;
+            border-radius: 8px;
+            font-size: 0.9rem;
             font-weight: 600;
             outline: none;
+            transition: border-color 0.2s;
             width: 100%;
         }
         .filter-select:focus, .search-input:focus { border-color: #38bdf8; }
@@ -303,68 +310,74 @@
 
         .folder-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
-            gap: 0.8rem;
+            grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+            gap: 1rem;
         }
 
         .folder-card {
             background-color: #323b4d;
             border: 1px solid #434e63;
-            border-radius: 10px;
-            padding: 0.8rem 1rem;
+            border-radius: 12px;
+            padding: 1rem 1.2rem;
             display: flex;
             align-items: center;
             justify-content: space-between;
-            box-shadow: 0 3px 10px rgba(0,0,0,0.2);
-            cursor: pointer;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
             transition: all 0.2s;
+            cursor: pointer;
         }
+        @media(min-width: 768px) { .folder-card { border-radius: 14px; padding: 1.2rem; } }
         .folder-card:hover h3 { color: #38bdf8; }
         
         .folder-card-main {
             display: flex;
             align-items: center;
-            gap: 0.8rem;
+            gap: 1rem;
             flex: 1;
         }
 
-        .folder-icon { font-size: 1.8rem; }
+        .folder-icon { font-size: 2.2rem; }
+        @media(min-width: 768px) { .folder-icon { font-size: 2.5rem; } }
 
         .folder-info h3 {
             color: #f8fafc;
-            font-size: 0.95rem;
-            margin-bottom: 0.1rem;
+            font-size: 1.05rem;
+            margin-bottom: 0.2rem;
             font-weight: 700;
+            transition: color 0.2s;
         }
+        @media(min-width: 768px) { .folder-info h3 { font-size: 1.15rem; } }
 
         .folder-info p {
             color: #94a3b8;
-            font-size: 0.75rem;
+            font-size: 0.8rem;
             font-weight: 500;
         }
+        @media(min-width: 768px) { .folder-info p { font-size: 0.85rem; } }
 
         .album-grid {
             display: grid;
             grid-template-columns: 1fr;
-            gap: 0.7rem;
+            gap: 0.8rem;
         }
-        @media(min-width: 768px) { .album-grid { grid-template-columns: repeat(2, 1fr); gap: 0.8rem; } }
+        @media(min-width: 768px) { .album-grid { grid-template-columns: repeat(2, 1fr); gap: 1rem; } }
         @media(min-width: 1150px) { .album-grid { grid-template-columns: repeat(3, 1fr); } }
 
         .album-card {
             background-color: #323b4d;
             border: 1px solid #434e63;
-            border-radius: 10px;
+            border-radius: 12px;
             overflow: hidden;
-            box-shadow: 0 3px 10px rgba(0,0,0,0.2);
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
             display: flex;
             flex-direction: column;
         }
+        @media(min-width: 768px) { .album-card { border-radius: 14px; } }
 
         .album-header-bar {
             background-color: #262c38;
-            padding: 0.45rem 0.7rem;
-            font-size: 0.78rem;
+            padding: 0.6rem 0.8rem;
+            font-size: 0.82rem;
             color: #f8fafc;
             font-weight: 700;
             display: flex;
@@ -373,92 +386,103 @@
             border-bottom: 1px solid #434e63;
             word-break: break-all;
         }
+        @media(min-width: 768px) { .album-header-bar { padding: 0.7rem 1rem; font-size: 0.88rem; } }
 
-        .badge-tag { font-size: 0.65rem; padding: 0.1rem 0.4rem; border-radius: 4px; font-weight: 700; }
+        .badge-tag { font-size: 0.68rem; padding: 0.15rem 0.5rem; border-radius: 5px; font-weight: 700; }
+        @media(min-width: 768px) { .badge-tag { font-size: 0.72rem; padding: 0.2rem 0.6rem; border-radius: 6px; } }
         .badge-smart { background-color: rgba(56, 189, 248, 0.12); color: #38bdf8; border: 1px solid rgba(56, 189, 248, 0.2); }
         .badge-free { background-color: rgba(251, 191, 36, 0.12); color: #fbbf24; border: 1px solid rgba(251, 191, 36, 0.2); }
 
         .album-images-container {
-            padding: 0.5rem;
+            padding: 0.6rem;
             display: grid;
             grid-template-columns: repeat(4, 1fr);
-            gap: 0.4rem;
+            gap: 0.5rem;
             background-color: #323b4d;
         }
+        @media(min-width: 768px) { .album-images-container { padding: 0.8rem; gap: 0.6rem; } }
 
         .thumb-img {
             width: 100%;
-            height: 65px;
+            height: 75px;
             object-fit: cover;
-            border-radius: 5px;
+            border-radius: 6px;
             border: 1px solid #4d5b73;
             cursor: pointer;
             transition: transform 0.2s, border-color 0.2s;
         }
+        @media(min-width: 768px) { .thumb-img { height: 80px; border-radius: 8px; } }
         .thumb-img:hover { transform: scale(1.03); border-color: #38bdf8; }
 
         .more-images-box {
             width: 100%;
-            height: 65px;
+            height: 75px;
             background-color: #262c38;
             border: 2px dashed #4d5b73;
-            border-radius: 5px;
+            border-radius: 6px;
             display: flex;
             flex-direction: column;
             justify-content: center;
             align-items: center;
             cursor: pointer;
+            transition: all 0.2s;
             color: #38bdf8;
             font-weight: 700;
-            font-size: 0.8rem;
+            font-size: 0.85rem;
         }
+        @media(min-width: 768px) { .more-images-box { height: 80px; border-radius: 8px; } }
         .more-images-box:hover { background-color: #384357; border-color: #38bdf8; }
 
         .album-action-bar {
-            padding: 0.45rem 0.7rem;
+            padding: 0.6rem 0.8rem;
             background-color: #262c38;
             border-top: 1px solid #434e63;
             display: flex;
             justify-content: space-between;
             align-items: center;
         }
+        @media(min-width: 768px) { .album-action-bar { padding: 0.7rem 1rem; } }
 
-        .album-footer-info { font-size: 0.7rem; color: #94a3b8; font-weight: 500; }
-        .action-btns { display: flex; gap: 0.35rem; }
+        .album-footer-info { font-size: 0.75rem; color: #94a3b8; font-weight: 500; }
+        @media(min-width: 768px) { .album-footer-info { font-size: 0.8rem; } }
+        .action-btns { display: flex; gap: 0.4rem; }
+        @media(min-width: 768px) { .action-btns { gap: 0.5rem; } }
 
         .btn-action {
-            padding: 0.3rem 0.5rem;
-            border-radius: 5px;
-            font-size: 0.7rem;
+            padding: 0.35rem 0.6rem;
+            border-radius: 6px;
+            font-size: 0.73rem;
             font-weight: 600;
             cursor: pointer;
             border: none;
             transition: all 0.2s;
         }
-        .btn-action:hover { opacity: 0.9; }
-        .btn-download-album { background-color: #047857; color: #ecfdf5; }
-        .btn-add-img { background-color: #0369a1; color: #e0f2fe; }
+        @media(min-width: 768px) { .btn-action { padding: 0.4rem 0.7rem; font-size: 0.78rem; } }
+        .btn-action:hover { opacity: 0.9; transform: translateY(-1px); }
+        .btn-download-album { background-color: #047857; color: #ecfdf5; box-shadow: 0 2px 5px rgba(4, 120, 87, 0.2); }
+        .btn-add-img { background-color: #0369a1; color: #e0f2fe; box-shadow: 0 2px 5px rgba(3, 105, 161, 0.2); }
         .btn-del-album { background-color: rgba(239, 68, 68, 0.1); color: #fca5a5; border: 1px solid rgba(239, 68, 68, 0.2); }
 
         .scroll-top-btn {
             display: none;
             position: fixed;
-            bottom: 15px;
-            right: 15px;
+            bottom: 20px;
+            right: 20px;
             z-index: 950;
             background: none;
             color: #ffffff;
             border: none;
             outline: none;
-            width: 38px;
-            height: 38px;
-            font-size: 1.5rem;
+            width: 42px;
+            height: 42px;
+            font-size: 1.8rem;
             cursor: pointer;
             align-items: center;
             justify-content: center;
+            transition: transform 0.2s, color 0.2s;
             text-shadow: 0 2px 8px rgba(0, 0, 0, 0.6);
         }
-        .scroll-top-btn:hover { color: #38bdf8; }
+        .scroll-top-btn:hover { color: #38bdf8; transform: translateY(-3px); }
 
         .modal {
             display: none;
@@ -495,7 +519,9 @@
             display: inline-flex;
             align-items: center;
             gap: 0.4rem;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.3);
         }
+        .btn-modal-download:hover { background-color: #059669; }
 
         .modal-content-wrapper {
             position: relative;
@@ -517,10 +543,13 @@
             transition: transform 0.05s ease-out;
             cursor: grab;
         }
+        .modal-content:active { cursor: grabbing; }
 
         .modal-close {
             color: #fff; font-size: 2.2rem; font-weight: 300;
-            cursor: pointer; background: none; border: none;
+            cursor: pointer;
+            background: none;
+            border: none;
         }
         .modal-close:hover { color: #38bdf8; }
 
@@ -528,60 +557,122 @@
             position: absolute;
             top: 50%;
             transform: translateY(-50%);
-            background: none; border: none;
+            background: none;
+            border: none;
             color: rgba(255, 255, 255, 0.8);
-            font-size: 2.5rem; cursor: pointer; padding: 0.8rem; z-index: 1000;
+            font-size: 2.5rem;
+            cursor: pointer;
+            padding: 0.8rem;
+            z-index: 1000;
         }
         .modal-nav-btn:hover { color: #38bdf8; }
         .nav-prev { left: 5px; }
         .nav-next { right: 5px; }
 
         .modal-counter { 
-            position: absolute; bottom: 20px; color: #94a3b8; font-size: 0.85rem; font-weight: 600; z-index: 1000;
+            position: absolute;
+            bottom: 20px;
+            color: #94a3b8; 
+            font-size: 0.85rem; 
+            font-weight: 600; 
+            z-index: 1000;
         }
 
         .dialog-box {
             background-color: #323b4d;
             border: 1px solid #434e63;
-            padding: 1.2rem;
-            border-radius: 12px;
+            padding: 1.5rem;
+            border-radius: 14px;
             width: 90%;
-            max-width: 320px;
+            max-width: 300px;
             text-align: center;
-            box-shadow: 0 10px 25px rgba(0,0,0,0.4);
+            box-shadow: 0 12px 30px rgba(0,0,0,0.4);
+            animation: popIn 0.2s ease-out;
         }
 
-        .dialog-box h3 { color: #f8fafc; margin-bottom: 0.3rem; font-size: 1rem; font-weight: 700; }
+        @keyframes popIn {
+            0% { transform: scale(0.95); opacity: 0; }
+            100% { transform: scale(1); opacity: 1; }
+        }
+
+        .dialog-box h3 { color: #f8fafc; margin-bottom: 0.4rem; font-size: 1.1rem; font-weight: 700; }
         
         .dialog-box input[type="password"] {
-            width: 100%; padding: 0.5rem; border-radius: 8px; border: 1px solid #4d5b73;
-            background: #262c38; color: #fff; margin-bottom: 0.8rem; text-align: center; font-size: 1.1rem; letter-spacing: 5px;
+            width: 100%;
+            padding: 0.6rem;
+            border-radius: 8px;
+            border: 1px solid #4d5b73;
+            background: #262c38;
+            color: #fff;
+            margin-bottom: 1rem;
+            text-align: center;
+            font-size: 1.1rem;
+            letter-spacing: 5px;
         }
 
-        .file-upload-wrapper { position: relative; width: 100%; margin-bottom: 0.8rem; text-align: center; }
-        .file-upload-wrapper input[type="file"] { display: none; }
+        .file-upload-wrapper {
+            position: relative;
+            width: 100%;
+            margin-bottom: 1rem;
+            text-align: center;
+        }
+        .file-upload-wrapper input[type="file"] {
+            display: none;
+        }
         .custom-file-btn {
-            display: block; width: 100%; background-color: #262c38; color: #38bdf8; border: 1px dashed #38bdf8;
-            padding: 0.6rem; border-radius: 8px; font-size: 0.8rem; font-weight: 600; cursor: pointer;
-            overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+            display: block;
+            width: 100%;
+            background-color: #262c38;
+            color: #38bdf8;
+            border: 1px dashed #38bdf8;
+            padding: 0.7rem;
+            border-radius: 8px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+        .custom-file-btn:hover {
+            background-color: #384357;
         }
 
-        .dialog-btns { display: flex; gap: 0.5rem; justify-content: center; }
+        .dialog-btns { display: flex; gap: 0.6rem; justify-content: center; }
         .dialog-btns button {
-            flex: 1; padding: 0.45rem; border-radius: 6px; font-weight: 600; cursor: pointer; border: none; font-size: 0.8rem;
+            flex: 1;
+            padding: 0.5rem;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            border: none;
+            font-size: 0.85rem;
         }
-        .btn-confirm { background-color: #0369a1; color: #e0f2fe; }
+        .btn-confirm { background-color: #0369a1; color: #e0f2fe; box-shadow: 0 2px 6px rgba(3, 105, 161, 0.2); }
+        .btn-confirm:hover { background-color: #0284c7; }
         .btn-cancel { background-color: #3e495e; color: #cbd5e1; }
+        .btn-cancel:hover { background-color: #4d5b73; color: #fff; }
 
         .loading-modal { display: none; position: fixed; z-index: 1010; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(18, 22, 30, 0.85); justify-content: center; align-items: center; flex-direction: column; padding: 1rem; }
         .loading-dialog-box {
-            background-color: #323b4d; border: 1px solid #434e63; padding: 1.2rem; border-radius: 12px; width: 92%; max-width: 320px; text-align: center;
+            background-color: #323b4d;
+            border: 1px solid #434e63;
+            padding: 1.5rem 1.2rem;
+            border-radius: 14px;
+            width: 92%;
+            max-width: 380px;
+            text-align: center;
+            box-shadow: 0 12px 30px rgba(0,0,0,0.4);
         }
-        .loading-spinner { width: 32px; height: 32px; border: 3px solid #434e63; border-top: 3px solid #38bdf8; border-radius: 50%; animation: spin 1s linear infinite; margin: 0 auto 0.6rem auto; }
+        .loading-spinner { width: 38px; height: 38px; border: 3px solid #434e63; border-top: 3px solid #38bdf8; border-radius: 50%; animation: spin 1s linear infinite; margin: 0 auto 0.8rem auto; }
 
-        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
 
-        .footer { text-align: center; margin-top: 1.5rem; font-size: 0.7rem; color: #6b7280; font-weight: 500; }
+        .footer { text-align: center; margin-top: 2rem; font-size: 0.75rem; color: #6b7280; font-weight: 500; }
     </style>
 </head>
 <body>
@@ -635,7 +726,7 @@
                 <div class="section-title" id="sectionTitle">
                     <span>📁 เลือกปีประจำระบบ</span>
                 </div>
-                <div style="display: flex; gap: 0.4rem; align-items: center;">
+                <div style="display: flex; gap: 0.5rem; align-items: center;">
                     <button id="installAppBtn" class="btn-install-pwa" onclick="installPWA()">📲 ติดตั้งแอป</button>
                     
                     <div id="navButtonsGroup" class="nav-buttons-group" style="display: none;">
@@ -655,7 +746,7 @@
                         <option value="Smartแถม">Smart (แถม)</option>
                     </select>
                 </div>
-                <div class="stack-row-item" style="flex: 2;">
+                <div class="stack-row-item">
                     <input type="text" id="searchCombinedInput" class="search-input" placeholder="ค้นหา..." oninput="applyFilters()">
                 </div>
             </div>
@@ -686,7 +777,7 @@
     <div id="passwordModal" class="modal" style="z-index: 1005;">
         <div class="dialog-box">
             <h3 id="dialogTitle">🔒 ใส่รหัสผ่าน 4 หลัก</h3>
-            <p style="font-size: 0.75rem; color: #94a3b8; margin-bottom: 0.5rem;">กรอกรหัสผ่านเพื่อดำเนินการต่อ</p>
+            <p style="font-size: 0.78rem; color: #94a3b8; margin-bottom: 0.6rem;">กรอกรหัสผ่านเพื่อดำเนินการต่อ</p>
             <input type="password" id="adminPasswordInput" maxlength="4" placeholder="••••" oninput="checkPasswordLength(this)">
             <div class="dialog-btns">
                 <button class="btn-cancel" onclick="closePasswordModal()">ยกเลิก</button>
@@ -697,7 +788,7 @@
     <div id="addImagesModal" class="modal" style="z-index: 1005;">
         <div class="dialog-box">
             <h3>📷 เพิ่มรูปภาพในอัลบั้ม</h3>
-            <p id="targetAlbumLabel" style="font-size: 0.75rem; color: #38bdf8; margin-bottom: 0.5rem; word-break: break-all; font-weight: 600;"></p>
+            <p id="targetAlbumLabel" style="font-size: 0.78rem; color: #38bdf8; margin-bottom: 0.6rem; word-break: break-all; font-weight: 600;"></p>
             
             <div class="file-upload-wrapper">
                 <input type="file" id="additionalImagesInput" multiple accept="image/*" onchange="updateFileNameLabel(this)">
@@ -714,16 +805,16 @@
     <div id="loadingModal" class="loading-modal" style="display: flex;">
         <div class="loading-dialog-box">
             <div class="loading-spinner"></div>
-            <h3 id="loadingTitle" style="color: #38bdf8; margin-bottom: 0.2rem; font-size: 1rem; white-space: nowrap;">กรุณารอสักครู่</h3>
-            <p id="loadingDesc" style="font-size: 0.75rem; color: #94a3b8; white-space: nowrap;">กำลังโหลดข้อมูล...</p>
+            <h3 id="loadingTitle" style="color: #38bdf8; margin-bottom: 0.3rem; font-size: 1.1rem; white-space: nowrap;">กรุณารอสักครู่</h3>
+            <p id="loadingDesc" style="font-size: 0.8rem; color: #94a3b8; white-space: nowrap;">กำลังโหลดข้อมูล...</p>
         </div>
     </div>
 
     <div id="customAlertModal" class="modal" style="z-index: 1020;">
         <div class="dialog-box">
             <h3 id="alertTitle" style="color: #fca5a5; margin-bottom: 0.3rem;">รหัสผ่านผิด</h3>
-            <p id="alertDesc" style="font-size: 0.78rem; color: #94a3b8; margin-bottom: 0.8rem; line-height: 1.4;">กรุณากรอกรหัสผ่านให้ถูกต้องใหม่อีกครั้ง</p>
-            <button class="btn-confirm" style="width: 100%; padding: 0.45rem;" onclick="closeCustomAlert()">ตกลง</button>
+            <p id="alertDesc" style="font-size: 0.8rem; color: #94a3b8; margin-bottom: 1rem; line-height: 1.4;">กรุณากรอกรหัสผ่านให้ถูกต้องใหม่อีกครั้ง</p>
+            <button class="btn-confirm" style="width: 100%; padding: 0.5rem;" onclick="closeCustomAlert()">ตกลง</button>
         </div>
     </div>
 
@@ -745,6 +836,14 @@
         let navigationLevel = 'years'; 
         let currentSelectedYear = null;
         let currentSelectedMonth = null;
+
+        let currentAlbumImages = [];
+        let currentIndex = 0;
+
+        let pendingAction = null;
+        let selectedCategory = '';
+        let selectedFolderName = '';
+        let selectedTargetMonth = '';
 
         let deferredPrompt;
 
@@ -785,7 +884,7 @@
         updateLiveClock();
 
         window.addEventListener('scroll', () => {
-            if (window.scrollY > 200) {
+            if (window.scrollY > 300) {
                 scrollTopBtn.style.display = 'flex';
             } else {
                 scrollTopBtn.style.display = 'none';
@@ -798,13 +897,14 @@
 
         window.onload = function() {
             fetchAllAlbums();
+
             setInterval(() => {
                 backgroundSyncAlbums();
             }, 3000);
         };
 
         async function fetchAllAlbums() {
-            setSystemStatus('orange', 'กำลังซิงค์...');
+            setSystemStatus('orange', 'กำลังซิงค์ข้อมูล...');
             try {
                 const response = await fetch(SCRIPT_URL + "?action=getAlbums");
                 const result = await response.json();
@@ -814,10 +914,11 @@
                     renderCurrentLevel();
                     setSystemStatus('green', 'พร้อมใช้งาน');
                 } else {
-                    setSystemStatus('red', 'โหลดไม่สำเร็จ');
+                    setSystemStatus('red', 'โหลดข้อมูลไม่สำเร็จ');
                 }
             } catch (err) {
-                setSystemStatus('red', 'เชื่อมต่อล้มเหลว');
+                console.error(err);
+                setSystemStatus('red', 'เชื่อมต่อเซิร์ฟเวอร์ล้มเหลว');
             } finally {
                 loadingModal.style.display = 'none';
             }
@@ -880,7 +981,7 @@
                 renderMonthsView();
             } else if (navigationLevel === 'albums') {
                 navButtonsGroup.style.display = 'flex';
-                sectionTitle.innerHTML = `<span>📁 ปี ${currentSelectedYear} / เดือน ${currentSelectedMonth}</span>`;
+                sectionTitle.innerHTML = `<span>📁 ปี ${currentSelectedYear} / เดือน ${currentSelectedMonth} • อัลบั้มงาน</span>`;
                 stackControlsWrapper.style.display = 'flex';
                 renderAlbumsView();
             }
@@ -918,8 +1019,8 @@
             let html = '<div class="folder-grid">';
             sortedYears.forEach(year => {
                 html += `
-                    <div class="folder-card" onclick="selectYear('${year}')">
-                        <div class="folder-card-main">
+                    <div class="folder-card">
+                        <div class="folder-card-main" onclick="selectYear('${year}')">
                             <div class="folder-icon">📁</div>
                             <div class="folder-info">
                                 <h3>ปี ${year}</h3>
@@ -1003,7 +1104,7 @@
             }
 
             if (filtered.length === 0) {
-                mainContainer.innerHTML = '<div style="text-align: center; color: #94a3b8; padding: 2rem;">ไม่พบอัลบั้มภาพในเงื่อนไขนี้</div>';
+                mainContainer.innerHTML = '<div style="text-align: center; color: #94a3b8; padding: 3rem;">ไม่พบอัลบั้มภาพในเงื่อนไขนี้</div>';
                 return;
             }
 
@@ -1031,12 +1132,12 @@
                     html += `
                         <div class="more-images-box" onclick="openModal('${encodeURIComponent(JSON.stringify(imgs))}', 3)">
                             <span>+${imgs.length - 3}</span>
-                            <span style="font-size: 0.6rem;">ดูทั้งหมด</span>
+                            <span style="font-size: 0.65rem;">ดูทั้งหมด</span>
                         </div>
                     `;
                 } else if (imgs.length < 4) {
                     for (let i = imgs.length; i < 4; i++) {
-                        html += `<div style="background: rgba(255,255,255,0.02); border-radius: 5px; height: 65px;"></div>`;
+                        html += `<div style="background: rgba(255,255,255,0.02); border-radius: 6px; height: 75px;"></div>`;
                     }
                 }
 
@@ -1045,8 +1146,8 @@
                         <div class="album-action-bar">
                             <span class="album-footer-info">📅 ${album.month} (${imgs.length} รูป)</span>
                             <div class="action-btns">
-                                <button class="btn-action btn-download-album" onclick="downloadAlbumZip('${encodeURIComponent(album.folderName)}', '${encodeURIComponent(JSON.stringify(imgs))}')">⬇️ ZIP</button>
-                                <button class="btn-action btn-add-img" onclick="promptAddImages('${album.folderName}')">➕ เพิ่ม</button>
+                                <button class="btn-action btn-download-album" onclick="downloadAlbumZip('${encodeURIComponent(album.folderName)}', '${encodeURIComponent(JSON.stringify(imgs))}')">⬇️ โหลด ZIP</button>
+                                <button class="btn-action btn-add-img" onclick="promptAddImages('${album.folderName}')">➕ เพิ่มรูป</button>
                                 <button class="btn-action btn-del-album" onclick="promptDeleteAlbum('${album.folderName}', '${album.optionType}')">🗑️ ลบ</button>
                             </div>
                         </div>
@@ -1130,6 +1231,53 @@
             updateTransform();
         });
 
+        modalWrapper.addEventListener('touchstart', (e) => {
+            if (e.touches.length === 1) {
+                touchStartX = e.touches[0].clientX;
+                panning = true;
+                startX = e.touches[0].clientX - pointX;
+                startY = e.touches[0].clientY - pointY;
+            } else if (e.touches.length === 2) {
+                panning = false;
+                initialPinchDistance = Math.hypot(
+                    e.touches[0].clientX - e.touches[1].clientX,
+                    e.touches[0].clientY - e.touches[1].clientY
+                );
+            }
+        }, { passive: false });
+
+        modalWrapper.addEventListener('touchmove', (e) => {
+            if (e.touches.length === 1 && panning) {
+                if (scale === 1) return;
+                e.preventDefault();
+                pointX = e.touches[0].clientX - startX;
+                pointY = e.touches[0].clientY - startY;
+                updateTransform();
+            } else if (e.touches.length === 2 && initialPinchDistance !== null) {
+                e.preventDefault();
+                let currentDistance = Math.hypot(
+                    e.touches[0].clientX - e.touches[1].clientX,
+                    e.touches[0].clientY - e.touches[1].clientY
+                );
+                let factor = currentDistance / initialPinchDistance;
+                scale = Math.max(1, Math.min(scale * factor, 5));
+                initialPinchDistance = currentDistance;
+                updateTransform();
+            }
+        }, { passive: false });
+
+        modalWrapper.addEventListener('touchend', (e) => {
+            if (e.touches.length < 2) { initialPinchDistance = null; }
+            if (e.touches.length === 0 && scale === 1) {
+                let touchEndX = e.changedTouches[0].clientX;
+                let diffX = touchEndX - touchStartX;
+                if (Math.abs(diffX) > 50) {
+                    if (diffX > 0) { prevImage(); } else { nextImage(); }
+                }
+            }
+            if (e.touches.length === 0) { panning = false; }
+        });
+
         async function downloadCurrentModalImage() {
             let imgUrl = activeModalImages[activeModalIndex];
             try {
@@ -1154,6 +1302,7 @@
             }
         }
 
+        // ปรับแก้ฟังก์ชันดาวน์โหลด ZIP ให้นำภาพใส่ลงใน root ของ ZIP โดยตรง (โฟลเดอร์มีแค่ชื่ออัลบั้มเดียว)
         async function downloadAlbumZip(folderNameEncoded, imagesJson) {
             let folderName = decodeURIComponent(folderNameEncoded);
             let imgs = JSON.parse(decodeURIComponent(imagesJson));
@@ -1168,7 +1317,7 @@
                 for (let i = 0; i < imgs.length; i++) {
                     let response = await fetch(imgs[i]);
                     let blob = await response.blob();
-                    zip.file(`Photo_${i + 1}.jpg`, blob);
+                    zip.file(`Photo_${i + 1}.jpg`, blob); // วางไฟล์รูปไว้ใน root ของ ZIP ทันที
                 }
 
                 let content = await zip.generateAsync({ type: "blob" });
@@ -1187,7 +1336,7 @@
 
         function promptDeleteAlbum(folderName, optionType) {
             pendingAction = { type: 'deleteAlbum', folderName: folderName, optionType: optionType };
-            document.getElementById('dialogTitle').innerText = "🔒 ใส่รหัสผ่านเพื่อลบ";
+            document.getElementById('dialogTitle').innerText = "🔒 ใส่รหัสผ่านเพื่อลบอัลบั้ม";
             document.getElementById('adminPasswordInput').value = '';
             document.getElementById('passwordModal').style.display = 'flex';
             document.getElementById('adminPasswordInput').focus();
@@ -1217,9 +1366,6 @@
         function closePasswordModal() {
             document.getElementById('passwordModal').style.display = 'none';
         }
-
-        let pendingAction = null;
-        let selectedFolderName = '';
 
         function checkPasswordLength(input) {
             if (input.value.length === 4) {
@@ -1271,17 +1417,35 @@
                             loadingModal.style.display = 'none';
                             if (spinner) spinner.style.display = 'block';
                             fetchAllAlbums();
-                        }, 1500);
+                        }, 2000);
                     } else {
                         loadingModal.style.display = 'none';
-                        alert("ลบไม่สำเร็จ: " + (result.message || ""));
+                        showAutoToast("❌ " + (result.message || "ลบไม่สำเร็จ"), true);
                     }
                 } catch (err) {
                     loadingModal.style.display = 'none';
-                    alert("เกิดข้อผิดพลาดในการเชื่อมต่อเซิร์ฟเวอร์");
+                    showAutoToast("❌ เกิดข้อผิดพลาดในการเชื่อมต่อเซิร์ฟเวอร์", true);
                 }
             }
             pendingAction = null;
+        }
+
+        function showAutoToast(message, isError = false) {
+            let toast = document.getElementById('customToast');
+            if (!toast) {
+                toast = document.createElement('div');
+                toast.id = 'customToast';
+                toast.style.cssText = "display: none; position: fixed; z-index: 3000; top: 20px; left: 50%; transform: translateX(-50%); background-color: #323b4d; border: 1px solid #38bdf8; color: #f8fafc; padding: 0.9rem 1.5rem; border-radius: 12px; box-shadow: 0 10px 25px rgba(0,0,0,0.5); font-weight: 600; font-size: 0.95rem; align-items: center; gap: 0.6rem;";
+                toast.innerHTML = `<span id="toastMessage"></span>`;
+                document.body.appendChild(toast);
+            }
+            document.getElementById('toastMessage').innerText = message;
+            toast.style.borderColor = isError ? '#f87171' : '#38bdf8';
+            toast.style.display = 'flex';
+            
+            setTimeout(() => {
+                toast.style.display = 'none';
+            }, 3000);
         }
 
         async function uploadAdditionalImages() {
@@ -1289,7 +1453,7 @@
             if (!input.files || input.files.length === 0) return alert("กรุณาเลือกรูปภาพ");
 
             document.getElementById('addImagesModal').style.display = 'none';
-            document.getElementById('loadingTitle').innerText = "กำลังอัปโหลดรูปเพิ่ม";
+            document.getElementById('loadingTitle').innerText = "กำลังอัปโหลดรูปภาพเพิ่ม";
             document.getElementById('loadingDesc').innerText = "กำลังประมวลผลและบันทึก...";
             loadingModal.style.display = 'flex';
 
@@ -1312,7 +1476,7 @@
                 let result = await response.json();
                 
                 if (result.status === "success") {
-                    document.getElementById('loadingTitle').innerText = "เพิ่มรูปสำเร็จ!";
+                    document.getElementById('loadingTitle').innerText = "เพิ่มรูปภาพสำเร็จ!";
                     document.getElementById('loadingDesc').innerText = "กำลังรีเฟรชหน้าจอ...";
                     const spinner = document.querySelector('.loading-spinner');
                     if (spinner) spinner.style.display = 'none';
@@ -1321,7 +1485,7 @@
                         loadingModal.style.display = 'none';
                         if (spinner) spinner.style.display = 'block';
                         fetchAllAlbums();
-                    }, 1500);
+                    }, 2000);
                 } else {
                     loadingModal.style.display = 'none';
                     alert("ผิดพลาด: " + result.message);
