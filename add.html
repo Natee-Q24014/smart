@@ -280,11 +280,8 @@
             e.preventDefault();
             if (selectedFiles.length === 0) return alert("กรุณาเลือกรูปภาพ");
             
-            // ดึงวันที่จากรูปแรก (ถ้าไม่มีใช้ใช้วันที่ปัจจุบัน)
             let firstFileDate = selectedFiles[0].dateOnly || formatOnlyDate(new Date());
             let userTypedName = document.getElementById('folderNameInput').value.trim();
-            
-            // รวมวันที่จากรูปแรกไว้หน้าชื่อหัวข้ออัลบั้ม
             let finalFolderName = `[${firstFileDate}] ${userTypedName}`;
 
             const totalFiles = selectedFiles.length;
@@ -295,6 +292,8 @@
             try {
                 let base64Images = [];
                 for (let i = 0; i < selectedFiles.length; i++) {
+                    // คงข้อความหัวข้อว่า "กำลังอัปโหลด" ไว้ และอัปเดตตัวเลขความคืบหน้าแบบ 1/14 ที่บรรทัดล่างสุด
+                    document.getElementById('loadingTitle').innerText = "กำลังอัปโหลด";
                     document.getElementById('loadingDesc').innerText = `${i + 1}/${totalFiles}`;
                     base64Images.push(await fileToBase64(selectedFiles[i], 1200));
                 }
