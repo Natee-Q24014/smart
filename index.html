@@ -303,11 +303,20 @@
         .modal {
             display: none; position: fixed; z-index: 999; top: 0; left: 0; width: 100%; height: 100%;
             background-color: rgba(18, 22, 30, 0.95); justify-content: center; align-items: center; flex-direction: column;
+            overflow: hidden; touch-action: none;
         }
         .modal-top-bar { position: absolute; top: 15px; left: 20px; right: 20px; display: flex; justify-content: space-between; align-items: center; z-index: 1000; }
         .btn-modal-download { background-color: #047857; color: #fff; padding: 0.4rem 0.9rem; border-radius: 8px; font-size: 0.85rem; font-weight: 600; border: none; cursor: pointer; }
-        .modal-content-wrapper { position: relative; width: 100%; height: 100%; display: flex; justify-content: center; align-items: center; }
-        .modal-content { max-width: 90%; max-height: 80vh; border-radius: 8px; object-fit: contain; }
+        
+        .modal-content-wrapper { 
+            position: relative; width: 100%; height: 100%; display: flex; justify-content: center; align-items: center; 
+            overflow: auto; touch-action: pan-x pan-y pinch-zoom;
+        }
+        .modal-content { 
+            max-width: 90%; max-height: 80vh; border-radius: 8px; object-fit: contain; 
+            transition: transform 0.1s ease-out; transform-origin: center center; cursor: zoom-in;
+        }
+
         .modal-close { color: #fff; font-size: 2.2rem; cursor: pointer; background: none; border: none; }
         .modal-nav-btn { position: absolute; top: 50%; transform: translateY(-50%); background: none; border: none; color: rgba(255, 255, 255, 0.8); font-size: 2.5rem; cursor: pointer; padding: 0.8rem; z-index: 1000; }
         .nav-prev { left: 5px; } .nav-next { right: 5px; }
@@ -462,7 +471,7 @@
     <div id="loadingModal" class="loading-modal" style="display: flex;">
         <div class="loading-dialog-box">
             <div class="loading-spinner"></div>
-            <h3 id="loadingTitle" style="color: #38bdf8; margin-bottom: 0.2rem; font-size: 1rem; white-space: nowrap;">กำลังอัปโหลด</h3>
+            <h3 id="loadingTitle" style="color: #38bdf8; margin-bottom: 0.2rem; font-size: 1rem; white-space: nowrap;">กรุณารอสักครู่</h3>
             <p id="loadingDesc" style="font-size: 0.75rem; color: #94a3b8; white-space: nowrap;">กำลังโหลดข้อมูล...</p>
         </div>
     </div>
@@ -882,10 +891,12 @@
 
         let activeModalImages = [];
         let activeModalIndex = 0;
+        let currentZoom = 1;
 
         function openModal(imagesJson, index) {
             activeModalImages = JSON.parse(decodeURIComponent(imagesJson));
             activeModalIndex = index;
+            currentZoom = 1;
             showImageInModal();
             document.getElementById('imageModal').style.display = 'flex';
         }
@@ -896,6 +907,8 @@
 
         function showImageInModal() {
             const img = document.getElementById('modalImg');
+            currentZoom = 1;
+            img.style.transform = `scale(${currentZoom})`;
             img.src = activeModalImages[activeModalIndex];
             document.getElementById('modalCounter').innerText = `${activeModalIndex + 1} / ${activeModalImages.length}`;
         }
@@ -908,6 +921,53 @@
         function prevImage() {
             activeModalIndex = (activeModalIndex - 1 + activeModalImages.length) % activeModalImages.length;
             showImageInModal();
+        }
+
+        // ระบบซูมภาพด้วยเมาส์ในคอม (Wheel Zoom)
+        const modalImg = document.getElementById('modalImg');
+        modalImg.addEventListener('wheel', (e) => {
+            e.preventDefault();
+            if (e.deltaY < 0) {
+                currentZoom = Math.min(currentZoom + 0.2, 4); // ซูมเข้าสูงสุด 4 เท่า
+            } else {
+                currentZoom = Math.max(currentZoom - 0.2, 1); // ซูมออกต่ำสุด 1 เท่า
+            }
+            modalImg.style.transform = `scale(${currentZoom})`;
+        });
+
+        // ระบบคลิกซูมสลับ 1x และ 2.5x
+        modalImg.addEventListener('click', () => {
+            if (currentZoom === 1) {
+                currentZoom = 2.5;
+            } else {
+                currentZoom = 1;
+            }
+            modalImg.style.transform = `scale(${currentZoom})`;
+        });
+
+        // ระบบปัดซ้าย-ปัดขวา (Swipe) สำหรับมือถือ
+        let touchStartX = 0;
+        let touchEndX = 0;
+        const modalWrapper = document.getElementById('modalWrapper');
+
+        modalWrapper.addEventListener('touchstart', (e) => {
+            touchStartX = e.changedTouches[0].screenX;
+        }, {passive: true});
+
+        modalWrapper.addEventListener('touchend', (e) => {
+            touchEndX = e.changedTouches[0].screenX;
+            handleSwipeGesture();
+        }, {passive: true});
+
+        function handleSwipeGesture() {
+            if (currentZoom > 1) return; // ถ้ารูปซูมอยู่ ไม่ให้ปัดเปลี่ยนรูป
+            let threshold = 50; // ระยะขั้นต่ำในการปัด
+            if (touchEndX < touchStartX - threshold) {
+                nextImage(); // ปัดซ้าย -> รูปถัดไป
+            }
+            if (touchEndX > touchStartX + threshold) {
+                prevImage(); // ปัดขวา -> รูปก่อนหน้า
+            }
         }
 
         async function downloadCurrentModalImage() {
