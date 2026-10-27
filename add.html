@@ -1,373 +1,333 @@
 <!DOCTYPE html>
 <html lang="th">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>เพิ่มอัลบั้มใหม่ - Smart Monitoring Box</title>
-    
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/exif-js/2.3.0/exif.min.js"></script>
-    <style>
-        * { box-sizing: border-box; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; margin: 0; padding: 0; }
-        
-        body { 
-            background-color: #262c38; 
-            background-image: 
-                radial-gradient(at 10% 20%, rgba(14, 165, 233, 0.1) 0px, transparent 40%),
-                radial-gradient(at 90% 80%, rgba(56, 189, 248, 0.07) 0px, transparent 40%),
-                linear-gradient(to right, rgba(255, 255, 255, 0.035) 1px, transparent 1px),
-                linear-gradient(to bottom, rgba(255, 255, 255, 0.035) 1px, transparent 1px);
-            background-size: 100% 100%, 100% 100%, 40px 40px, 40px 40px;
-            color: #e2e8f0; 
-            min-height: 100vh; 
-            padding: 1rem; 
-        }
-        
-        .container { max-width: 600px; margin: 0 auto; }
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>เพิ่มอัลบั้มใหม่ - Smart Monitoring Box</title>
+    
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/exif-js/2.3.0/exif.min.js"></script>
+    <style>
+        * { box-sizing: border-box; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; margin: 0; padding: 0; }
+        
+        body { 
+            background-color: #262c38; 
+            background-image: 
+                radial-gradient(at 10% 20%, rgba(14, 165, 233, 0.1) 0px, transparent 40%),
+                radial-gradient(at 90% 80%, rgba(56, 189, 248, 0.07) 0px, transparent 40%),
+                linear-gradient(to right, rgba(255, 255, 255, 0.035) 1px, transparent 1px),
+                linear-gradient(to bottom, rgba(255, 255, 255, 0.035) 1px, transparent 1px);
+            background-size: 100% 100%, 100% 100%, 40px 40px, 40px 40px;
+            color: #e2e8f0; 
+            min-height: 100vh; 
+            padding: 1rem; 
+        }
+        
+        .container { max-width: 600px; margin: 0 auto; }
 
-        .form-card {
-            background-color: #323b4d;
-            border: 1px solid #434e63;
-            padding: 1.2rem;
-            border-radius: 14px;
-            box-shadow: 0 8px 25px rgba(0,0,0,0.4);
-        }
+        .form-card {
+            background-color: #323b4d;
+            border: 1px solid #434e63;
+            padding: 1.2rem;
+            border-radius: 14px;
+            box-shadow: 0 8px 25px rgba(0,0,0,0.4);
+        }
 
-        .form-title {
-            font-size: 1rem;
-            color: #38bdf8;
-            font-weight: 700;
-            margin-bottom: 1rem;
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
-            border-bottom: 1px solid #434e63;
-            padding-bottom: 0.6rem;
-        }
+        .form-title {
+            font-size: 1rem;
+            color: #38bdf8;
+            font-weight: 700;
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            border-bottom: 1px solid #434e63;
+            padding-bottom: 0.6rem;
+        }
 
-        .form-group { margin-bottom: 0.9rem; }
-        .form-group label { display: block; font-size: 0.8rem; color: #94a3b8; font-weight: 600; margin-bottom: 0.3rem; }
+        .form-group { margin-bottom: 0.9rem; }
+        .form-group label { display: block; font-size: 0.8rem; color: #94a3b8; font-weight: 600; margin-bottom: 0.3rem; }
 
-        .option-group { display: flex; gap: 0.5rem; }
-        .option-btn {
-            flex: 1; padding: 0.5rem; background-color: #262c38; border: 1px solid #4d5b73;
-            color: #94a3b8; font-weight: 700; font-size: 0.85rem; border-radius: 8px; cursor: pointer; text-align: center;
-        }
-        .option-btn.active { background-color: rgba(56, 189, 248, 0.15); color: #38bdf8; border-color: #38bdf8; }
+        .option-group { display: flex; gap: 0.5rem; }
+        .option-btn {
+            flex: 1; padding: 0.5rem; background-color: #262c38; border: 1px solid #4d5b73;
+            color: #94a3b8; font-weight: 700; font-size: 0.85rem; border-radius: 8px; cursor: pointer; text-align: center;
+        }
+        .option-btn.active { background-color: rgba(56, 189, 248, 0.15); color: #38bdf8; border-color: #38bdf8; }
 
-        .form-input {
-            width: 100%; background-color: #262c38; color: #f8fafc; border: 1px solid #4d5b73;
-            padding: 0.55rem 0.8rem; border-radius: 8px; font-size: 0.9rem; font-weight: 600; outline: none;
-        }
-        .form-input:focus { border-color: #38bdf8; }
+        .form-input {
+            width: 100%; background-color: #262c38; color: #f8fafc; border: 1px solid #4d5b73;
+            padding: 0.55rem 0.8rem; border-radius: 8px; font-size: 0.9rem; font-weight: 600; outline: none;
+        }
+        .form-input:focus { border-color: #38bdf8; }
 
-        .file-upload-box {
-            background-color: #262c38; border: 2px dashed #4d5b73; border-radius: 8px; padding: 1rem;
-            text-align: center; cursor: pointer; color: #38bdf8; font-weight: 600; font-size: 0.85rem;
-        }
-        .file-upload-box:hover { border-color: #38bdf8; background-color: rgba(56, 189, 248, 0.03); }
+        .file-upload-box {
+            background-color: #262c38; border: 2px dashed #4d5b73; border-radius: 8px; padding: 1rem;
+            text-align: center; cursor: pointer; color: #38bdf8; font-weight: 600; font-size: 0.85rem;
+        }
+        .file-upload-box:hover { border-color: #38bdf8; background-color: rgba(56, 189, 248, 0.03); }
 
-        .preview-grid {
-            display: none; grid-template-columns: repeat(3, 1fr); gap: 0.5rem; margin-top: 0.6rem;
-            max-height: 220px; overflow-y: auto; padding-right: 2px;
-        }
-        .preview-item { position: relative; width: 100%; height: 85px; border-radius: 6px; overflow: hidden; border: 1px solid #4d5b73; }
-        .preview-item img { width: 100%; height: 100%; object-fit: cover; cursor: pointer; }
-        .img-date-tag {
-            position: absolute; bottom: 0; left: 0; right: 0; background: rgba(0,0,0,0.7);
-            color: #38bdf8; font-size: 0.55rem; font-weight: 700; text-align: center; padding: 1px 0;
-        }
-        .btn-remove-img {
-            position: absolute; top: 3px; right: 3px; background: rgba(239, 68, 68, 0.8); color: #fff;
-            border: none; border-radius: 50%; width: 20px; height: 20px; font-size: 0.75rem; cursor: pointer;
-            display: flex; align-items: center; justify-content: center;
-        }
+        .preview-grid {
+            display: none; grid-template-columns: repeat(3, 1fr); gap: 0.5rem; margin-top: 0.6rem;
+            max-height: 220px; overflow-y: auto; padding-right: 2px;
+        }
+        .preview-item { position: relative; width: 100%; height: 85px; border-radius: 6px; overflow: hidden; border: 1px solid #4d5b73; }
+        .preview-item img { width: 100%; height: 100%; object-fit: cover; cursor: pointer; }
+        .img-date-tag {
+            position: absolute; bottom: 0; left: 0; right: 0; background: rgba(0,0,0,0.7);
+            color: #38bdf8; font-size: 0.55rem; font-weight: 700; text-align: center; padding: 1px 0;
+        }
+        .btn-remove-img {
+            position: absolute; top: 3px; right: 3px; background: rgba(239, 68, 68, 0.8); color: #fff;
+            border: none; border-radius: 50%; width: 20px; height: 20px; font-size: 0.75rem; cursor: pointer;
+            display: flex; align-items: center; justify-content: center;
+        }
 
-        .btn-action-row { display: flex; gap: 0.6rem; margin-top: 1.2rem; }
-        .btn {
-            flex: 1; padding: 0.6rem; border-radius: 8px; font-size: 0.85rem; font-weight: 700; text-align: center; cursor: pointer; text-decoration: none; border: none;
-        }
-        .btn-back { background-color: #3e495e; color: #e2e8f0; border: 1px solid #4d5b73; }
-        .btn-submit { background-color: #0f766e; color: #e2e8f0; }
-        .btn-submit:hover { background-color: #115e59; }
+        .btn-action-row { display: flex; gap: 0.6rem; margin-top: 1.2rem; }
+        .btn {
+            flex: 1; padding: 0.6rem; border-radius: 8px; font-size: 0.85rem; font-weight: 700; text-align: center; cursor: pointer; text-decoration: none; border: none;
+        }
+        .btn-back { background-color: #3e495e; color: #e2e8f0; border: 1px solid #4d5b73; }
+        .btn-submit { background-color: #0f766e; color: #e2e8f0; }
+        .btn-submit:hover { background-color: #115e59; }
 
-        .loading-modal {
-            display: none; position: fixed; z-index: 1010; top: 0; left: 0; width: 100%; height: 100%;
-            background-color: rgba(18, 22, 30, 0.85); justify-content: center; align-items: center; flex-direction: column;
-        }
-        .loading-dialog-box { background-color: #323b4d; border: 1px solid #434e63; padding: 1.2rem; border-radius: 12px; width: 92%; max-width: 300px; text-align: center; }
-        .loading-spinner { width: 32px; height: 32px; border: 3px solid #434e63; border-top: 3px solid #38bdf8; border-radius: 50%; animation: spin 1s linear infinite; margin: 0 auto 0.6rem auto; }
-        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+        .loading-modal {
+            display: none; position: fixed; z-index: 1010; top: 0; left: 0; width: 100%; height: 100%;
+            background-color: rgba(18, 22, 30, 0.85); justify-content: center; align-items: center; flex-direction: column;
+        }
+        .loading-dialog-box { background-color: #323b4d; border: 1px solid #434e63; padding: 1.2rem; border-radius: 12px; width: 92%; max-width: 300px; text-align: center; }
+        .loading-spinner { width: 32px; height: 32px; border: 3px solid #434e63; border-top: 3px solid #38bdf8; border-radius: 50%; animation: spin 1s linear infinite; margin: 0 auto 0.6rem auto; }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
 
-        .custom-toast {
-            display: none; position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%);
-            background-color: #323b4d; border: 1px solid #38bdf8; padding: 0.6rem 1rem; border-radius: 8px;
-            z-index: 1020; font-size: 0.8rem; font-weight: 600; color: #fff; box-shadow: 0 5px 15px rgba(0,0,0,0.3); align-items: center; gap: 0.5rem;
-        }
-    </style>
+        .custom-toast {
+            display: none; position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%);
+            background-color: #323b4d; border: 1px solid #38bdf8; padding: 0.6rem 1rem; border-radius: 8px;
+            z-index: 1020; font-size: 0.8rem; font-weight: 600; color: #fff; box-shadow: 0 5px 15px rgba(0,0,0,0.3); align-items: center; gap: 0.5rem;
+        }
+    </style>
 </head>
 <body>
 
-    <div class="container">
-        <div class="form-card">
-            <div class="form-title">
-                <span>➕ เพิ่มอัลบั้มภาพถ่ายใหม่</span>
-            </div>
+    <div class="container">
+        <div class="form-card">
+            <div class="form-title">
+                <span>➕ เพิ่มอัลบั้มภาพถ่ายใหม่</span>
+            </div>
 
-            <form id="uploadForm" onsubmit="handleFormSubmit(event)">
-                <div class="form-group">
-                    <label>หมวดหมู่ผลงาน:</label>
-                    <div class="option-group">
-                        <div id="btnSmart" class="option-btn active" onclick="setCategory('Smart')">Smart</div>
-                        <div id="btnFree" class="option-btn" onclick="setCategory('Smartแถม')">Smart (แถม)</div>
-                    </div>
-                </div>
+            <form id="uploadForm" onsubmit="handleFormSubmit(event)">
+                <div class="form-group">
+                    <label>หมวดหมู่ผลงาน:</label>
+                    <div class="option-group">
+                        <div id="btnSmart" class="option-btn active" onclick="setCategory('Smart')">Smart</div>
+                        <div id="btnFree" class="option-btn" onclick="setCategory('Smartแถม')">Smart (แถม)</div>
+                    </div>
+                </div>
 
-                <div class="form-group">
-                    <label>วันที่ปฏิบัติงาน (วัน/เดือน/ปี):</label>
-                    <input type="text" id="dateInput" class="form-input" placeholder="DD/MM/YYYY" required>
-                </div>
+                <div class="form-group">
+                    <label>ชื่อหัวข้ออัลบั้ม:</label>
+                    <input type="text" id="folderNameInput" class="form-input" placeholder="เช่น SOD123456 S/N6312345 TR100" required>
+                </div>
 
-                <div class="form-group">
-                    <label>ชื่อหัวข้ออัลบั้ม:</label>
-                    <input type="text" id="folderNameInput" class="form-input" placeholder="เช่น SOD123456 S/N6312345 TR100" required>
-                </div>
+                <div class="form-group">
+                    <label>เลือกรูปภาพ:</label>
+                    <div class="file-upload-box" onclick="document.getElementById('imageFilesInput').click()">
+                        <span>📁 เลือกรูปภาพ</span>
+                        <div id="fileCountLabel" style="font-size: 0.75rem; color: #94a3b8; margin-top: 0.2rem; font-weight: 500;">ยังไม่ได้เลือกรูปภาพ</div>
+                    </div>
+                    <input type="file" id="imageFilesInput" multiple accept="image/*" onchange="handleFileSelect(this)" style="display:none;">
+                    
+                    <div id="previewGrid" class="preview-grid"></div>
+                </div>
 
-                <div class="form-group">
-                    <label>เลือกรูปภาพ:</label>
-                    <div class="file-upload-box" onclick="document.getElementById('imageFilesInput').click()">
-                        <span>📁 เลือกรูปภาพ</span>
-                        <div id="fileCountLabel" style="font-size: 0.75rem; color: #94a3b8; margin-top: 0.2rem; font-weight: 500;">ยังไม่ได้เลือกรูปภาพ</div>
-                    </div>
-                    <input type="file" id="imageFilesInput" multiple accept="image/*" onchange="handleFileSelect(this)" style="display:none;">
-                    
-                    <div id="previewGrid" class="preview-grid"></div>
-                </div>
+                <div class="btn-action-row">
+                    <a href="index.html" class="btn btn-back">⬅️ กลับหน้าหลัก</a>
+                    <button type="submit" class="btn btn-submit">💾 บันทึก</button>
+                </div>
+            </form>
+        </div>
+    </div>
 
-                <div class="btn-action-row">
-                    <a href="index.html" class="btn btn-back">⬅️ กลับหน้าหลัก</a>
-                    <button type="submit" class="btn btn-submit">💾 บันทึก</button>
-                </div>
-            </form>
-        </div>
-    </div>
+    <div id="imageModal" class="loading-modal" onclick="closeImageModal()" style="background-color: rgba(18, 22, 30, 0.95);">
+        <span style="position: absolute; top: 15px; right: 20px; color: #fff; font-size: 2rem; cursor: pointer;">&times;</span>
+        <img id="modalImageSrc" style="max-width: 90%; max-height: 80vh; border-radius: 8px; object-fit: contain;">
+    </div>
 
-    <div id="imageModal" class="loading-modal" onclick="closeImageModal()" style="background-color: rgba(18, 22, 30, 0.95);">
-        <span style="position: absolute; top: 15px; right: 20px; color: #fff; font-size: 2rem; cursor: pointer;">&times;</span>
-        <img id="modalImageSrc" style="max-width: 90%; max-height: 80vh; border-radius: 8px; object-fit: contain;">
-    </div>
+    <div id="customToast" class="custom-toast">
+        <span style="color: #34d399; font-size: 1.1rem;">✅</span>
+        <span id="toastMessage">บันทึกสำเร็จ! กำลังกลับหน้าหลัก...</span>
+    </div>
 
-    <div id="customToast" class="custom-toast">
-        <span style="color: #34d399; font-size: 1.1rem;">✅</span>
-        <span id="toastMessage">บันทึกสำเร็จ! กำลังกลับหน้าหลัก...</span>
-    </div>
+    <div id="loadingModal" class="loading-modal">
+        <div class="loading-dialog-box">
+            <div id="spinnerBox" class="loading-spinner"></div>
+            <h3 id="loadingTitle" style="color: #38bdf8; margin-bottom: 0.2rem; font-size: 1rem;">กำลังอัปโหลด</h3>
+            <p id="loadingDesc" style="font-size: 0.75rem; color: #94a3b8;">โปรดรอสักครู่...</p>
+        </div>
+    </div>
 
-    <div id="loadingModal" class="loading-modal">
-        <div class="loading-dialog-box">
-            <div id="spinnerBox" class="loading-spinner"></div>
-            <h3 id="loadingTitle" style="color: #38bdf8; margin-bottom: 0.2rem; font-size: 1rem;">กำลังบันทึกข้อมูล</h3>
-            <p id="loadingDesc" style="font-size: 0.75rem; color: #94a3b8;">โปรดรอสักครู่...</p>
-        </div>
-    </div>
+    <script>
+        const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzM6LAjut8SRHhbgaXpHwrCIm0aeNo8fVV8v3K8JsC1af0xmA807cciiyoe_kn5wsYeyg/exec";
+        
+        let selectedCategory = "Smart";
+        let selectedFiles = [];
 
-    <script>
-        const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzM6LAjut8SRHhbgaXpHwrCIm0aeNo8fVV8v3K8JsC1af0xmA807cciiyoe_kn5wsYeyg/exec";
-        
-        let selectedCategory = "Smart";
-        let selectedFiles = [];
-        let rawUserFolderName = ""; 
+        function setCategory(cat) {
+            selectedCategory = cat;
+            document.getElementById('btnSmart').className = cat === 'Smart' ? 'option-btn active' : 'option-btn';
+            document.getElementById('btnFree').className = cat === 'Smartแถม' ? 'option-btn active' : 'option-btn';
+        }
 
-        const today = new Date();
-        document.getElementById('dateInput').value = `${String(today.getDate()).padStart(2, '0')}/${String(today.getMonth() + 1).padStart(2, '0')}/${today.getFullYear()}`;
+        async function handleFileSelect(input) {
+            if (!input.files || input.files.length === 0) return;
+            const filesArray = Array.from(input.files);
 
-        function setCategory(cat) {
-            selectedCategory = cat;
-            document.getElementById('btnSmart').className = cat === 'Smart' ? 'option-btn active' : 'option-btn';
-            document.getElementById('btnFree').className = cat === 'Smartแถม' ? 'option-btn active' : 'option-btn';
-        }
+            for (let file of filesArray) {
+                await new Promise((resolve) => {
+                    EXIF.getData(file, function() {
+                        const exifDateTime = EXIF.getTag(this, "DateTimeOriginal") || EXIF.getTag(this, "DateTime");
+                        let shootDate = exifDateTime ? parseExifDate(exifDateTime) : (file.lastModified ? new Date(file.lastModified) : new Date());
+                        file.formattedDate = formatDateTime(shootDate);
+                        file.dateOnly = formatOnlyDate(shootDate);
+                        resolve();
+                    });
+                });
+                selectedFiles.push(file);
+            }
 
-        async function handleFileSelect(input) {
-            if (!input.files || input.files.length === 0) return;
-            const filesArray = Array.from(input.files);
+            renderPreview();
+            input.value = '';
+        }
 
-            for (let file of filesArray) {
-                await new Promise((resolve) => {
-                    EXIF.getData(file, function() {
-                        const exifDateTime = EXIF.getTag(this, "DateTimeOriginal") || EXIF.getTag(this, "DateTime");
-                        let shootDate = exifDateTime ? parseExifDate(exifDateTime) : (file.lastModified ? new Date(file.lastModified) : new Date());
-                        file.formattedDate = formatDateTime(shootDate);
-                        file.dateOnly = formatOnlyDate(shootDate);
-                        resolve();
-                    });
-                });
-                selectedFiles.push(file);
-            }
+        function fileToBase64(file, maxDim) {
+            return new Promise((resolve) => {
+                const reader = new FileReader();
+                reader.readAsDataURL(file);
+                reader.onload = e => {
+                    const img = new Image();
+                    img.src = e.target.result;
+                    img.onload = () => {
+                        const canvas = document.createElement('canvas');
+                        let w = img.width, h = img.height;
+                        if (w > h && w > maxDim) { h *= maxDim / w; w = maxDim; }
+                        else if (h > maxDim) { w *= maxDim / h; h = maxDim; }
+                        canvas.width = w; canvas.height = h;
+                        canvas.getContext('2d').drawImage(img, 0, 0, w, h);
+                        resolve(canvas.toDataURL('image/jpeg', 0.85).split(',')[1]);
+                    };
+                };
+            });
+        }
 
-            if (selectedFiles.length > 0 && selectedFiles[0].dateOnly) {
-                document.getElementById('dateInput').value = selectedFiles[0].dateOnly;
-            }
+        function parseExifDate(str) {
+            let p = str.split(/[:\s]/);
+            return p.length >= 6 ? new Date(p[0], p[1] - 1, p[2], p[3], p[4], p[5]) : null;
+        }
+        function formatDateTime(d) {
+            return isNaN(d?.getTime()) ? "ไม่ทราบเวลา" : `${String(d.getDate()).padStart(2, '0')}/${String(d.getMonth() + 1).padStart(2, '0')}/${d.getFullYear()} ${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}`;
+        }
+        function formatOnlyDate(d) {
+            return isNaN(d?.getTime()) ? null : `${String(d.getDate()).padStart(2, '0')}/${String(d.getMonth() + 1).padStart(2, '0')}/${d.getFullYear()}`;
+        }
 
-            updateFolderNameWithDate();
-            renderPreview();
-            input.value = '';
-        }
+        function renderPreview() {
+            const grid = document.getElementById('previewGrid');
+            const fileCountLabel = document.getElementById('fileCountLabel');
+            grid.innerHTML = '';
+            
+            if (selectedFiles.length === 0) { 
+                grid.style.display = 'none'; 
+                fileCountLabel.innerText = "ยังไม่ได้เลือกรูปภาพ";
+                return; 
+            }
+            
+            grid.style.display = 'grid';
+            fileCountLabel.innerText = `เลือกแล้ว ${selectedFiles.length} รูป`;
 
-        function updateFolderNameWithDate() {
-            const currentDate = document.getElementById('dateInput').value;
-            const inputField = document.getElementById('folderNameInput');
-            
-            let currentVal = inputField.value.trim();
-            if (currentVal.startsWith("[")) {
-                let parts = currentVal.split(" ");
-                parts.shift(); 
-                rawUserFolderName = parts.join(" ");
-            } else if (rawUserFolderName === "") {
-                rawUserFolderName = currentVal;
-            }
+            selectedFiles.forEach((file, index) => {
+                const reader = new FileReader();
+                reader.onload = e => {
+                    const item = document.createElement('div');
+                    item.className = 'preview-item';
+                    item.innerHTML = `<img src="${e.target.result}" onclick="openImageModal('${e.target.result}')"><div class="img-date-tag">📅 ${file.formattedDate}</div><button type="button" class="btn-remove-img" onclick="removeFile(event, ${index})">&times;</button>`;
+                    grid.appendChild(item);
+                };
+                reader.readAsDataURL(file);
+            });
+        }
 
-            if (currentDate) {
-                inputField.value = `[${currentDate}] ${rawUserFolderName}`.trim();
-            }
-        }
+        function removeFile(event, index) {
+            event.stopPropagation();
+            selectedFiles.splice(index, 1);
+            renderPreview();
+        }
 
-        document.getElementById('folderNameInput').addEventListener('input', function(e) {
-            let val = e.target.value;
-            if (!val.startsWith("[")) {
-                rawUserFolderName = val;
-            }
-        });
+        function openImageModal(src) {
+            document.getElementById('modalImageSrc').src = src;
+            document.getElementById('imageModal').style.display = 'flex';
+        }
 
-        document.getElementById('dateInput').addEventListener('input', function() {
-            updateFolderNameWithDate();
-        });
+        function closeImageModal() {
+            document.getElementById('imageModal').style.display = 'none';
+        }
 
-        function fileToBase64(file, maxDim) {
-            return new Promise((resolve) => {
-                const reader = new FileReader();
-                reader.readAsDataURL(file);
-                reader.onload = e => {
-                    const img = new Image();
-                    img.src = e.target.result;
-                    img.onload = () => {
-                        const canvas = document.createElement('canvas');
-                        let w = img.width, h = img.height;
-                        if (w > h && w > maxDim) { h *= maxDim / w; w = maxDim; }
-                        else if (h > maxDim) { w *= maxDim / h; h = maxDim; }
-                        canvas.width = w; canvas.height = h;
-                        canvas.getContext('2d').drawImage(img, 0, 0, w, h);
-                        resolve(canvas.toDataURL('image/jpeg', 0.85).split(',')[1]);
-                    };
-                };
-            });
-        }
+        function showToast(message, isError = false) {
+            const toast = document.getElementById('customToast');
+            document.getElementById('toastMessage').innerText = message;
+            toast.style.borderColor = isError ? '#f87171' : '#38bdf8';
+            toast.style.display = 'flex';
+        }
 
-        function parseExifDate(str) {
-            let p = str.split(/[:\s]/);
-            return p.length >= 6 ? new Date(p[0], p[1] - 1, p[2], p[3], p[4], p[5]) : null;
-        }
-        function formatDateTime(d) {
-            return isNaN(d?.getTime()) ? "ไม่ทราบเวลา" : `${String(d.getDate()).padStart(2, '0')}/${String(d.getMonth() + 1).padStart(2, '0')}/${d.getFullYear()} ${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}`;
-        }
-        function formatOnlyDate(d) {
-            return isNaN(d?.getTime()) ? null : `${String(d.getDate()).padStart(2, '0')}/${String(d.getMonth() + 1).padStart(2, '0')}/${d.getFullYear()}`;
-        }
+        async function handleFormSubmit(e) {
+            e.preventDefault();
+            if (selectedFiles.length === 0) return alert("กรุณาเลือกรูปภาพ");
+            
+            // ดึงวันที่จากรูปแรก (ถ้าไม่มีใช้ใช้วันที่ปัจจุบัน)
+            let firstFileDate = selectedFiles[0].dateOnly || formatOnlyDate(new Date());
+            let userTypedName = document.getElementById('folderNameInput').value.trim();
+            
+            // รวมวันที่จากรูปแรกไว้หน้าชื่อหัวข้ออัลบั้ม
+            let finalFolderName = `[${firstFileDate}] ${userTypedName}`;
 
-        function renderPreview() {
-            const grid = document.getElementById('previewGrid');
-            const fileCountLabel = document.getElementById('fileCountLabel');
-            grid.innerHTML = '';
-            
-            if (selectedFiles.length === 0) { 
-                grid.style.display = 'none'; 
-                fileCountLabel.innerText = "ยังไม่ได้เลือกรูปภาพ";
-                return; 
-            }
-            
-            grid.style.display = 'grid';
-            fileCountLabel.innerText = `เลือกแล้ว ${selectedFiles.length} รูป`;
+            const totalFiles = selectedFiles.length;
+            document.getElementById('loadingTitle').innerText = "กำลังอัปโหลด";
+            document.getElementById('spinnerBox').style.display = 'block';
+            document.getElementById('loadingModal').style.display = 'flex';
 
-            selectedFiles.forEach((file, index) => {
-                const reader = new FileReader();
-                reader.onload = e => {
-                    const item = document.createElement('div');
-                    item.className = 'preview-item';
-                    item.innerHTML = `<img src="${e.target.result}" onclick="openImageModal('${e.target.result}')"><div class="img-date-tag">📅 ${file.formattedDate}</div><button type="button" class="btn-remove-img" onclick="removeFile(event, ${index})">&times;</button>`;
-                    grid.appendChild(item);
-                };
-                reader.readAsDataURL(file);
-            });
-        }
+            try {
+                let base64Images = [];
+                for (let i = 0; i < selectedFiles.length; i++) {
+                    document.getElementById('loadingDesc').innerText = `${i + 1}/${totalFiles}`;
+                    base64Images.push(await fileToBase64(selectedFiles[i], 1200));
+                }
 
-        function removeFile(event, index) {
-            event.stopPropagation();
-            selectedFiles.splice(index, 1);
-            if (index === 0 && selectedFiles.length > 0 && selectedFiles[0].dateOnly) {
-                document.getElementById('dateInput').value = selectedFiles[0].dateOnly;
-                updateFolderNameWithDate();
-            }
-            renderPreview();
-        }
+                document.getElementById('loadingTitle').innerText = "กำลังบันทึกข้อมูล";
+                document.getElementById('loadingDesc').innerText = "กำลังส่งข้อมูลเข้าสู่ระบบ...";
 
-        function openImageModal(src) {
-            document.getElementById('modalImageSrc').src = src;
-            document.getElementById('imageModal').style.display = 'flex';
-        }
+                const response = await fetch(SCRIPT_URL, {
+                    method: 'POST',
+                    body: JSON.stringify({
+                        action: 'create',
+                        optionType: selectedCategory,
+                        month: firstFileDate,
+                        folderName: finalFolderName,
+                        images: base64Images
+                    })
+                });
+                const result = await response.json();
+                document.getElementById('loadingModal').style.display = 'none';
 
-        function closeImageModal() {
-            document.getElementById('imageModal').style.display = 'none';
-        }
-
-        function showToast(message, isError = false) {
-            const toast = document.getElementById('customToast');
-            document.getElementById('toastMessage').innerText = message;
-            toast.style.borderColor = isError ? '#f87171' : '#38bdf8';
-            toast.style.display = 'flex';
-        }
-
-        async function handleFormSubmit(e) {
-            e.preventDefault();
-            if (selectedFiles.length === 0) return alert("กรุณาเลือกรูปภาพ");
-            
-            const totalFiles = selectedFiles.length;
-            document.getElementById('loadingTitle').innerText = "กำลังอัปโหลด";
-            document.getElementById('spinnerBox').style.display = 'block';
-            document.getElementById('loadingModal').style.display = 'flex';
-
-            try {
-                let base64Images = [];
-                for (let i = 0; i < selectedFiles.length; i++) {
-                    document.getElementById('loadingDesc').innerText = `${i + 1}/${totalFiles}`;
-                    base64Images.push(await fileToBase64(selectedFiles[i], 1200));
-                }
-
-                document.getElementById('loadingTitle').innerText = "กำลังบันทึกข้อมูล";
-                document.getElementById('loadingDesc').innerText = "กำลังส่งข้อมูลเข้าสู่ระบบ...";
-
-                const response = await fetch(SCRIPT_URL, {
-                    method: 'POST',
-                    body: JSON.stringify({
-                        action: 'create',
-                        optionType: selectedCategory,
-                        month: document.getElementById('dateInput').value,
-                        folderName: document.getElementById('folderNameInput').value.trim(),
-                        images: base64Images
-                    })
-                });
-                const result = await response.json();
-                document.getElementById('loadingModal').style.display = 'none';
-
-                if (result.status === "success") {
-                    showToast("บันทึกสำเร็จ! กำลังกลับหน้าหลัก...");
-                    setTimeout(() => {
-                        window.location.href = "index.html";
-                    }, 2000);
-                } else {
-                    showToast("ผิดพลาด: " + result.message, true);
-                }
-            } catch (err) {
-                document.getElementById('loadingModal').style.display = 'none';
-                showToast("เชื่อมต่อเซิร์ฟเวอร์ไม่สำเร็จ", true);
-            }
-        }
-    </script>
+                if (result.status === "success") {
+                    showToast("บันทึกสำเร็จ! กำลังกลับหน้าหลัก...");
+                    setTimeout(() => {
+                        window.location.href = "index.html";
+                    }, 2000);
+                } else {
+                    showToast("ผิดพลาด: " + result.message, true);
+                }
+            } catch (err) {
+                document.getElementById('loadingModal').style.display = 'none';
+                showToast("เชื่อมต่อเซิร์ฟเวอร์ไม่สำเร็จ", true);
+            }
+        }
+    </script>
 </body>
-</html>         อยากได้แบบนี้
+</html>
