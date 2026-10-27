@@ -597,8 +597,7 @@
 
         .dialog-box h3 { color: #f8fafc; margin-bottom: 0.4rem; font-size: 1.1rem; font-weight: 700; }
         
-        .dialog-box input[type="password"],
-        .dialog-box input[type="file"] {
+        .dialog-box input[type="password"] {
             width: 100%;
             padding: 0.6rem;
             border-radius: 8px;
@@ -609,6 +608,36 @@
             text-align: center;
             font-size: 1.1rem;
             letter-spacing: 5px;
+        }
+
+        /* ตกแต่งปุ่มเลือกไฟล์ให้เป็นภาษาไทยแบบสวยงาม */
+        .file-upload-wrapper {
+            position: relative;
+            width: 100%;
+            margin-bottom: 1rem;
+            text-align: center;
+        }
+        .file-upload-wrapper input[type="file"] {
+            display: none;
+        }
+        .custom-file-btn {
+            display: block;
+            width: 100%;
+            background-color: #262c38;
+            color: #38bdf8;
+            border: 1px dashed #38bdf8;
+            padding: 0.7rem;
+            border-radius: 8px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+        .custom-file-btn:hover {
+            background-color: #384357;
         }
 
         .dialog-btns { display: flex; gap: 0.6rem; justify-content: center; }
@@ -758,7 +787,12 @@
         <div class="dialog-box">
             <h3>📷 เพิ่มรูปภาพในอัลบั้ม</h3>
             <p id="targetAlbumLabel" style="font-size: 0.78rem; color: #38bdf8; margin-bottom: 0.6rem; word-break: break-all; font-weight: 600;"></p>
-            <input type="file" id="additionalImagesInput" multiple accept="image/*" style="font-size: 0.8rem; padding: 0.4rem;">
+            
+            <div class="file-upload-wrapper">
+                <input type="file" id="additionalImagesInput" multiple accept="image/*" onchange="updateFileNameLabel(this)">
+                <label for="additionalImagesInput" id="fileUploadLabel" class="custom-file-btn">📁 เลือกรูปภาพ (ยังไม่ได้เลือกไฟล์)</label>
+            </div>
+
             <div class="dialog-btns">
                 <button class="btn-cancel" onclick="document.getElementById('addImagesModal').style.display='none'">ยกเลิก</button>
                 <button class="btn-confirm" onclick="uploadAdditionalImages()">อัปโหลด</button>
@@ -1285,7 +1319,21 @@
             selectedFolderName = folderName;
             document.getElementById('targetAlbumLabel').innerText = folderName;
             document.getElementById('additionalImagesInput').value = '';
+            document.getElementById('fileUploadLabel').innerText = "📁 เลือกรูปภาพ (ยังไม่ได้เลือกไฟล์)";
             document.getElementById('addImagesModal').style.display = 'flex';
+        }
+
+        function updateFileNameLabel(input) {
+            const label = document.getElementById('fileUploadLabel');
+            if (input.files && input.files.length > 0) {
+                if (input.files.length === 1) {
+                    label.innerText = `📁 เลือกแล้ว: ${input.files[0].name}`;
+                } else {
+                    label.innerText = `📁 เลือกแล้ว: ${input.files.length} ไฟล์`;
+                }
+            } else {
+                label.innerText = "📁 เลือกรูปภาพ (ยังไม่ได้เลือกไฟล์)";
+            }
         }
 
         function closePasswordModal() {
@@ -1311,12 +1359,15 @@
             document.getElementById('customAlertModal').style.display = 'none';
         }
 
-        // ฟังก์ชันลบอัลบั้มพร้อมระบบ Toast แจ้งเตือนแบบ Auto-dismiss (2 วินาทีหายเอง)
+        // ฟังก์ชันลบอัลบั้ม พร้อมแสดงวงกลมหมุนเคลื่อนไหวและเปลี่ยนข้อความสำเร็จก่อนหายไปเอง
         async function executePendingAction() {
             if (!pendingAction) return;
 
             if (pendingAction.type === 'deleteAlbum') {
-                showAutoToast("⏳ กำลังลบอัลบั้ม...");
+                // แสดงวงกลมโหลดกลางหน้าจอพร้อมข้อความ "กำลังลบอัลบั้ม..."
+                document.getElementById('loadingTitle').innerText = "กำลังลบอัลบั้ม";
+                document.getElementById('loadingDesc').innerText = "โปรดรอสักครู่...";
+                loadingModal.style.display = 'flex';
 
                 try {
                     let response = await fetch(SCRIPT_URL, {
@@ -1331,24 +1382,32 @@
                     let result = await response.json();
 
                     if (result.status === "success") {
-                        showAutoToast("✅ ลบอัลบั้มสำเร็จ!");
+                        // เปลี่ยนข้อความเป็นสำเร็จและซ่อนวงกลมหมุนชั่วคราว
+                        document.getElementById('loadingTitle').innerText = "ลบอัลบั้มสำเร็จ!";
+                        document.getElementById('loadingDesc').innerText = "กำลังอัปเดตหน้าจอ...";
+                        
+                        // ซ่อนวงกลมหมุนให้เหลือแต่กล่องข้อความสวยๆ
+                        const spinner = document.querySelector('.loading-spinner');
+                        if (spinner) spinner.style.display = 'none';
+
                         setTimeout(() => {
-                            hideAutoToast();
-                            fetchAllAlbums(); // ดึงรายการอัลบั้มใหม่เพื่ออัปเดตหน้าจอทันที
+                            loadingModal.style.display = 'none';
+                            if (spinner) spinner.style.display = 'block'; // คืนค่า spinner ไว้ใช้รอบหน้า
+                            location.reload();
                         }, 2000);
                     } else {
+                        loadingModal.style.display = 'none';
                         showAutoToast("❌ " + (result.message || "ลบไม่สำเร็จ"), true);
-                        setTimeout(() => { hideAutoToast(); }, 3000);
                     }
                 } catch (err) {
+                    loadingModal.style.display = 'none';
                     showAutoToast("❌ เกิดข้อผิดพลาดในการเชื่อมต่อเซิร์ฟเวอร์", true);
-                    setTimeout(() => { hideAutoToast(); }, 3000);
                 }
             }
             pendingAction = null;
         }
 
-        // ฟังก์ชันจัดการแสดงผล Toast อัตโนมัติ
+        // ฟังก์ชันจัดการแสดงผล Toast อัตโนมัติสำหรับแจ้งเตือนอื่นๆ
         function showAutoToast(message, isError = false) {
             let toast = document.getElementById('customToast');
             if (!toast) {
@@ -1361,11 +1420,10 @@
             document.getElementById('toastMessage').innerText = message;
             toast.style.borderColor = isError ? '#f87171' : '#38bdf8';
             toast.style.display = 'flex';
-        }
-
-        function hideAutoToast() {
-            let toast = document.getElementById('customToast');
-            if (toast) toast.style.display = 'none';
+            
+            setTimeout(() => {
+                toast.style.display = 'none';
+            }, 3000);
         }
 
         async function uploadAdditionalImages() {
@@ -1394,22 +1452,25 @@
                     })
                 });
                 let result = await response.json();
-                loadingModal.style.display = 'none';
-
+                
                 if (result.status === "success") {
-                    showAutoToast("✅ เพิ่มรูปภาพสำเร็จ!");
+                    document.getElementById('loadingTitle').innerText = "เพิ่มรูปภาพสำเร็จ!";
+                    document.getElementById('loadingDesc').innerText = "กำลังรีเฟรชหน้าจอ...";
+                    const spinner = document.querySelector('.loading-spinner');
+                    if (spinner) spinner.style.display = 'none';
+
                     setTimeout(() => {
-                        hideAutoToast();
+                        loadingModal.style.display = 'none';
+                        if (spinner) spinner.style.display = 'block';
                         fetchAllAlbums();
                     }, 2000);
                 } else {
-                    showAutoToast("❌ " + result.message, true);
-                    setTimeout(() => { hideAutoToast(); }, 3000);
+                    loadingModal.style.display = 'none';
+                    alert("ผิดพลาด: " + result.message);
                 }
             } catch (err) {
                 loadingModal.style.display = 'none';
-                showAutoToast("❌ เชื่อมต่อเซิร์ฟเวอร์ไม่สำเร็จ", true);
-                setTimeout(() => { hideAutoToast(); }, 3000);
+                alert("เชื่อมต่อเซิร์ฟเวอร์ไม่สำเร็จ");
             }
         }
 
