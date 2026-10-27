@@ -1290,7 +1290,6 @@
 
         function closePasswordModal() {
             document.getElementById('passwordModal').style.display = 'none';
-            pendingAction = null;
         }
 
         function checkPasswordLength(input) {
@@ -1312,7 +1311,7 @@
             document.getElementById('customAlertModal').style.display = 'none';
         }
 
-        // ฟังก์ชันลบอัลบั้มพร้อม Toast แจ้งเตือนแบบ Auto-dismiss (2 วินาทีหายเอง)
+        // ฟังก์ชันลบอัลบั้มพร้อมระบบ Toast แจ้งเตือนแบบ Auto-dismiss (2 วินาทีหายเอง)
         async function executePendingAction() {
             if (!pendingAction) return;
 
@@ -1335,7 +1334,7 @@
                         showAutoToast("✅ ลบอัลบั้มสำเร็จ!");
                         setTimeout(() => {
                             hideAutoToast();
-                            location.reload();
+                            fetchAllAlbums(); // ดึงรายการอัลบั้มใหม่เพื่ออัปเดตหน้าจอทันที
                         }, 2000);
                     } else {
                         showAutoToast("❌ " + (result.message || "ลบไม่สำเร็จ"), true);
