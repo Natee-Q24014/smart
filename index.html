@@ -388,8 +388,8 @@
                     <tr>
                         <th>📁 อัลบั้มทั้งหมด</th>
                         <th>📸 รูปภาพทั้งหมด</th>
-                        <th>⚡ หมวด Smart</th>
-                        <th>🎁 หมวด (แถม)</th>
+                        <th>⚡ Smart</th>
+                        <th>🎁 Smart(แถม)</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -406,7 +406,7 @@
         <div class="sticky-nav-area">
             <div class="top-action-bar">
                 <div class="section-title" id="sectionTitle">
-                    <span>📁 เลือกปีประจำระบบ</span>
+                    <span>📁 เลือกปี</span>
                 </div>
                 <div style="display: flex; gap: 0.4rem; align-items: center;">
                     <button id="installAppBtn" class="btn-install-pwa" onclick="installPWA()">📲 ติดตั้งแอป</button>
@@ -719,7 +719,7 @@
 
             if (navigationLevel === 'years') {
                 navButtonsGroup.style.display = 'none';
-                sectionTitle.innerHTML = '<span>📁 เลือกปีประจำระบบ</span>';
+                sectionTitle.innerHTML = '<span>📁 เลือกปี</span>';
                 renderYearsView();
             } else if (navigationLevel === 'months') {
                 navButtonsGroup.style.display = 'flex';
@@ -1102,7 +1102,7 @@
 
                     if (result.status === "success") {
                         document.getElementById('loadingTitle').innerText = "ลบอัลบั้มสำเร็จ!";
-                        document.getElementById('loadingDesc').innerText = "กำลังอัปเดตหน้าจอ...";
+                        document.getElementById('loadingDesc').innerText = "กรุณารอสักครู่...";
                         const spinner = document.querySelector('.loading-spinner');
                         if (spinner) spinner.style.display = 'none';
 
