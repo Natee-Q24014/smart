@@ -521,6 +521,9 @@
 
         function markAllAsRead() {
             recentNewAlbums = [];
+            // บันทึกรายการล่าสุดทั้งหมดลง localStorage เพื่อไม่ให้แจ้งเตือนซ้ำของเดิม
+            let currentNames = allAlbumsData.map(a => a.folderName);
+            localStorage.setItem('seen_albums', JSON.stringify(currentNames));
             updateNotificationUI();
             closeNotificationModal();
         }
@@ -581,30 +584,20 @@
         }
 
         window.onload = function() {
-            fetchAllAlbums(true);
+            fetchAllAlbums();
             setInterval(() => {
                 backgroundSyncAlbums();
             }, 3000);
         };
 
-        async function fetchAllAlbums(isInitial = false) {
+        async function fetchAllAlbums() {
             setSystemStatus('orange', 'กำลังซิงค์...');
             try {
                 const response = await fetch(SCRIPT_URL + "?action=getAlbums");
                 const result = await response.json();
                 if (result.status === "success") {
                     let newData = result.data || [];
-                    
-                    if (!isInitial && allAlbumsData.length > 0) {
-                        // ตรวจสอบอัลบั้มใหม่ที่เพิ่มเข้ามา
-                        let existingNames = new Set(allAlbumsData.map(a => a.folderName));
-                        newData.forEach(album => {
-                            if (!existingNames.has(album.folderName)) {
-                                recentNewAlbums.push(album);
-                            }
-                        });
-                        updateNotificationUI();
-                    }
+                    processNewAlbumsDetection(newData);
 
                     allAlbumsData = newData;
                     updateStats();
@@ -633,20 +626,48 @@
                 if (result.status === "success") {
                     let newData = result.data || [];
                     if (JSON.stringify(newData) !== JSON.stringify(allAlbumsData)) {
-                        let existingNames = new Set(allAlbumsData.map(a => a.folderName));
-                        newData.forEach(album => {
-                            if (!existingNames.has(album.folderName)) {
-                                recentNewAlbums.push(album);
-                            }
-                        });
-                        updateNotificationUI();
-
+                        processNewAlbumsDetection(newData);
                         allAlbumsData = newData;
                         updateStats();
                         renderCurrentLevel();
                     }
                 }
             } catch (err) {}
+        }
+
+        function processNewAlbumsDetection(newData) {
+            let seenAlbums = JSON.parse(localStorage.getItem('seen_albums') || '[]');
+            
+            if (seenAlbums.length === 0 && allAlbumsData.length === 0) {
+                // ครั้งแรกสุดที่เปิดเว็บ ให้จำชื่อทั้งหมดไว้ก่อนเพื่อไม่ให้เด้งแจ้งเตือนย้อนหลังทั้งหมด
+                let allNames = newData.map(a => a.folderName);
+                localStorage.setItem('seen_albums', JSON.stringify(allNames));
+                return;
+            }
+
+            let seenSet = new Set(seenAlbums);
+            let detectedNew = [];
+
+            newData.forEach(album => {
+                if (!seenSet.has(album.folderName)) {
+                    detectedNew.push(album);
+                    seenSet.add(album.folderName);
+                }
+            });
+
+            if (detectedNew.length > 0) {
+                // เพิ่มเข้าในรายการแจ้งเตือนใหม่
+                detectedNew.forEach(item => {
+                    if (!recentNewAlbums.some(n => n.folderName === item.folderName)) {
+                        recentNewAlbums.push(item);
+                    }
+                });
+                
+                // อัปเดตรายการที่เห็นแล้วเก็บลง localStorage
+                let updatedNames = Array.from(seenSet);
+                localStorage.setItem('seen_albums', JSON.stringify(updatedNames));
+                updateNotificationUI();
+            }
         }
 
         function updateStats() {
@@ -1014,7 +1035,7 @@
                         setTimeout(() => {
                             loadingModal.style.display = 'none';
                             if (spinner) spinner.style.display = 'block';
-                            fetchAllAlbums(true);
+                            fetchAllAlbums();
                         }, 1500);
                     } else {
                         loadingModal.style.display = 'none';
@@ -1064,7 +1085,7 @@
                     setTimeout(() => {
                         loadingModal.style.display = 'none';
                         if (spinner) spinner.style.display = 'block';
-                        fetchAllAlbums(true);
+                        fetchAllAlbums();
                     }, 1500);
                 } else {
                     loadingModal.style.display = 'none';
