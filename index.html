@@ -473,21 +473,33 @@
             document.getElementById('iosInstallModal').style.display = 'none';
         }
 
-        // ฟังก์ชันสำหรับกดปุ่มรีเฟรชข้อมูลล่าสุด
-        async // ฟังก์ชันสำหรับกดปุ่มรีเฟรช (เทียบเท่ากับการกดรีเฟรชหน้าเว็บใหญ่แบบเต็มระบบ)
-        function manualRefreshApp() {
-            showToast("🔄 กำลังรีเฟรชหน้าเว็บใหม่...");
+       // ฟังก์ชันสำหรับกดปุ่มรีเฟรชใหญ่ (ล้างแคช PWA และโหลดโค้ด/ข้อมูลใหม่ล่าสุด 100%)
+        async function manualRefreshApp() {
+            showToast("🔄 กำลังล้างแคชและอัปเดตโค้ดใหม่...");
             setSystemStatus('orange', 'กำลังรีเฟรช...');
-            
-            // สั่งเคลียร์ Session ชั่วคราวเพื่อให้ระบบโหลดสดใหม่
-            sessionStorage.clear();
-            
-            // หน่วงเวลาสั้นๆ ให้ Toast แสดงผล แล้วสั่งรีโหลดหน้าเว็บใหม่ทันที (เคลียร์แคชทั้งหน้า)
-            setTimeout(() => {
-                window.location.href = window.location.pathname + '?r=' + new Date().getTime();
-            }, 500);
-        }
 
+            try {
+                // สั่งยกเลิกการแคชของ Service Worker (ถ้ามี) เพื่อให้เครื่องยอมดึงโค้ดใหม่จาก GitHub
+                if ('serviceWorker' in navigator) {
+                    const registrations = await navigator.serviceWorker.getRegistrations();
+                    for (let registration of registrations) {
+                        await registration.unregister();
+                    }
+                }
+
+                // ล้าง Storage ชั่วคราวทั้งหมด
+                sessionStorage.clear();
+
+                // หน่วงเวลาสั้นๆ แล้วสั่งรีโหลดหน้าเว็บใหม่แบบบังคับข้ามแคช (Hard Reload)
+                setTimeout(() => {
+                    window.location.replace(window.location.pathname + '?v=' + new Date().getTime());
+                }, 600);
+
+            } catch (err) {
+                // กรณีเกิดข้อผิดพลาด ให้บังคับรีโหลดหน้าเว็บทันทีเช่นกัน
+                window.location.reload(true);
+            }
+        }
         function openNotificationModal() { document.getElementById('notificationModal').style.display = 'flex'; }
         function closeNotificationModal() { document.getElementById('notificationModal').style.display = 'none'; }
 
