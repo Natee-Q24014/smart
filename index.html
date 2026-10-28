@@ -1083,8 +1083,13 @@
     loadingModal.style.display = 'flex';
 
     try {
-        let response = await fetch(SCRIPT_URL, {
+        // ใช้ mode: 'no-cors' เพื่อบังคับส่งข้อมูลข้ามโดเมนไปหา Apps Script โดยไม่ติดบล็อก CORS
+        await fetch(SCRIPT_URL, {
             method: 'POST',
+            mode: 'no-cors',
+            headers: {
+                'Content-Type': 'application/json'
+            },
             body: JSON.stringify({
                 action: 'rename',
                 optionType: optionType,
@@ -1093,21 +1098,14 @@
             })
         });
 
-        let textResult = await response.text();
-        let result;
-        
-        try {
-            result = JSON.parse(textResult);
-        } catch (e) {
-            result = { status: "success" };
-        }
-
+        // ปิดหน้าโหลดแล้วแจ้งเตือนสำเร็จทันที
         loadingModal.style.display = 'none';
         showToast("เปลี่ยนชื่ออัลบั้มสำเร็จ!");
-        
+
+        // หน่วงเวลาเล็กน้อยให้ Google Drive บันทึกค่า แล้วดึงข้อมูลใหม่มาแสดง
         setTimeout(() => {
             fetchAllAlbums();
-        }, 1000);
+        }, 1200);
 
     } catch (err) {
         loadingModal.style.display = 'none';
