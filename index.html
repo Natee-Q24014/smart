@@ -196,9 +196,6 @@
             </div>
             
             <div class="header-right-actions">
-                <div class="bell-wrapper" onclick="openExitConfirmModal()" title="ปิดแอปพลิเคชัน" style="background-color: rgba(239, 68, 68, 0.1); border-color: rgba(239, 68, 68, 0.3); color: #f87171;">
-                    ❌
-                </div>
                 <div class="bell-wrapper" onclick="openNotificationModal()" title="ดูรายการอัลบั้มใหม่">
                     🔔
                     <div id="notificationBadge" class="notification-badge">0</div>
@@ -280,18 +277,6 @@
     </div>
 
     <button id="scrollTopBtn" class="scroll-top-btn" onclick="scrollToTop()" title="เลื่อนขึ้นด้านบน">&#8593;</button>
-
-    <!-- Modal ยืนยันการออกจากโปรแกรม -->
-    <div id="exitConfirmModal" class="modal" style="z-index: 10010; display: none;">
-        <div class="loading-dialog-box" style="max-width: 300px; text-align: center;">
-            <h3 style="color: #f8fafc; font-size: 1rem; margin-bottom: 0.3rem;">🚪 ออกจากแอปพลิเคชัน</h3>
-            <p style="font-size: 0.75rem; color: #94a3b8; margin-bottom: 1rem;">คุณต้องการออกจากโปรแกรมใช่หรือไม่?</p>
-            <div style="display: flex; gap: 0.5rem; justify-content: center;">
-                <button class="btn-nav-action" style="flex: 1; padding: 0.45rem; background-color: #3e495e;" onclick="cancelExit()">ไม่ใช่</button>
-                <button class="btn-nav-action" style="flex: 1; padding: 0.45rem; background-color: #ef4444; color: #fff; border: none;" onclick="confirmExit()">ใช่</button>
-            </div>
-        </div>
-    </div>
 
     <div id="imageModal" class="modal" style="display: none;">
         <div class="modal-top-bar">
@@ -448,27 +433,13 @@
         });
         function scrollToTop() { window.scrollTo({ top: 0, behavior: 'smooth' }); }
 
-        // --- ระบบจัดการปุ่ม Back มือถือ (แยกสถานะชัดเจน ไม่ให้หน้าดูรูปตีกับหน้าหลัก) ---
-        function openExitConfirmModal() {
-            document.getElementById('exitConfirmModal').style.display = 'flex';
-        }
-        function cancelExit() {
-            document.getElementById('exitConfirmModal').style.display = 'none';
-            history.pushState({ level: 'years' }, ''); 
-        }
-        function confirmExit() {
-            document.getElementById('exitConfirmModal').style.display = 'none';
-            try {
-                window.close();
-            } catch(e) {}
-            // เปลี่ยนหน้าเว็บไปหน้าเปล่า เพื่อบังคับออกจากแอปทันที
-            window.location.replace("about:blank");
-        }
-
+        // --- ระบบดักจับปุ่ม Back มือถือ (แยกสถานะชัดเจน ไม่ให้หน้าดูรูปตีกับหน้าหลัก) ---
         window.addEventListener('popstate', (event) => {
             // 1. ถ้ากำลังเปิดดูรูปอยู่ -> ปิด Modal รูปภาพอย่างเดียว
-            if (document.getElementById('imageModal').style.display === 'flex') {
-                document.getElementById('imageModal').style.display = 'none';
+            const imageModal = document.getElementById('imageModal');
+            if (imageModal && imageModal.style.display === 'flex') {
+                imageModal.style.display = 'none';
+                history.pushState({ level: navigationLevel }, '', window.location.href);
                 return;
             }
 
@@ -477,6 +448,7 @@
                 navigationLevel = 'months';
                 currentSelectedMonth = null;
                 renderCurrentLevel();
+                history.pushState({ level: 'months' }, '', window.location.href);
                 return;
             }
 
@@ -485,19 +457,18 @@
                 navigationLevel = 'years';
                 currentSelectedYear = null;
                 renderCurrentLevel();
+                history.pushState({ level: 'years' }, '', window.location.href);
                 return;
             }
 
-            // 4. ถ้าอยู่ที่หน้าแรกสุด (หน้าปี) แล้วกดย้อนกลับ -> เด้ง Popup ถามออกแอป
+            // 4. ถ้าอยู่ที่หน้าแรกสุด (หน้าปี) แล้วกดย้อนกลับ -> ปล่อยให้ออกนอกแอปตามปกติทันที
             if (navigationLevel === 'years') {
-                openExitConfirmModal();
-                history.pushState({ level: 'years' }, ''); 
+                history.back();
             }
         });
 
         window.onload = function() {
-            history.replaceState({ level: 'years' }, '');
-            history.pushState({ level: 'years' }, '');
+            history.replaceState({ level: 'years' }, '', window.location.href);
             
             initializeAppWithSplash();
             setInterval(backgroundSyncAlbums, 3000);
@@ -551,8 +522,7 @@
             if (document.getElementById('passwordModal').style.display === 'flex' || 
                 document.getElementById('addImagesModal').style.display === 'flex' || 
                 document.getElementById('loadingModal').style.display === 'flex' ||
-                document.getElementById('imageModal').style.display === 'flex' ||
-                document.getElementById('exitConfirmModal').style.display === 'flex') {
+                document.getElementById('imageModal').style.display === 'flex') {
                 return;
             }
             try {
@@ -634,9 +604,11 @@
             if (navigationLevel === 'albums') {
                 navigationLevel = 'months';
                 currentSelectedMonth = null;
+                history.pushState({ level: 'months' }, '', window.location.href);
             } else if (navigationLevel === 'months') {
                 navigationLevel = 'years';
                 currentSelectedYear = null;
+                history.pushState({ level: 'years' }, '', window.location.href);
             }
             renderCurrentLevel();
         }
@@ -1004,11 +976,11 @@
             document.getElementById('loadingDesc').innerText = `0/${totalFiles}`;
             loadingModal.style.display = 'flex';
             try {
-                let initialTotalImages = await fetchTotalImageCount();
                 let filesArray = Array.from(input.files);
                 let base64Images = [];
                 for (let i = 0; i < filesArray.length; i++) {
                     base64Images.push(await fileToBase64(filesArray[i], 2000));
+                    document.getElementById('loadingDesc').innerText = `${i + 1}/${totalFiles}`;
                 }
                 let response = await fetch(SCRIPT_URL, {
                     method: 'POST',
