@@ -1054,52 +1054,55 @@
         }
 
         async function submitRenameAlbum() {
-    let newName = document.getElementById('newAlbumNameInput').value.trim();
-    if (!newName) {
-        alert("กรุณากรอกชื่ออัลบั้มใหม่");
-        return;
-    }
-    if (!renameTargetData) return;
+            let newName = document.getElementById('newAlbumNameInput').value.trim();
+            if (!newName) {
+                alert("กรุณากรอกชื่ออัลบั้มใหม่");
+                return;
+            }
+            if (!renameTargetData) return;
 
-    let oldName = renameTargetData.oldFolderName;
-    let optionType = renameTargetData.optionType;
+            let oldName = renameTargetData.oldFolderName;
+            let optionType = renameTargetData.optionType;
 
-    closeRenameModal();
-    document.getElementById('loadingTitle').innerText = "กำลังเปลี่ยนชื่ออัลบั้ม";
-    document.getElementById('loadingDesc').innerText = "โปรดรอสักครู่...";
-    loadingModal.style.display = 'flex';
+            closeRenameModal();
+            document.getElementById('loadingTitle').innerText = "กำลังเปลี่ยนชื่ออัลบั้ม";
+            document.getElementById('loadingDesc').innerText = "โปรดรอสักครู่...";
+            loadingModal.style.display = 'flex';
 
-    try {
-        let response = await fetch(SCRIPT_URL, {
-            method: 'POST',
-            headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-            body: JSON.stringify({
-                action: 'rename',
-                optionType: optionType,
-                oldFolderName: oldName,
-                newFolderName: newName,
-                password: "6004"
-            })
-        });
-        
-        let result = await response.json();
-        loadingModal.style.display = 'none';
+            try {
+                let response = await fetch(SCRIPT_URL, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'text/plain;charset=utf-8' }, // 👈 เพิ่มบรรทัดนี้เพื่อให้ส่งผ่าน CORS ของ Apps Script ได้สมบูรณ์
+                    body: JSON.stringify({
+                        action: 'rename',
+                        optionType: optionType,
+                        oldFolderName: oldName,
+                        newFolderName: newName,
+                        password: "6004"
+                    })
+                });
+                
+                let result = await response.json();
+                loadingModal.style.display = 'none';
 
-        if (result.status === "success") {
-            showToast("เปลี่ยนชื่ออัลบั้มสำเร็จ!");
-            fetchAllAlbums();
-        } else {
-            alert("เปลี่ยนชื่อไม่สำเร็จ: " + (result.message || "ไม่พบอัลบั้มใน Google Drive"));
+                if (result.status === "success") {
+                    showToast("เปลี่ยนชื่ออัลบั้มสำเร็จ!");
+                    // หน่วงเวลาเล็กน้อยเพื่อให้ Google Drive เคลียร์ระบบ แล้วดึงข้อมูลใหม่ทันที
+                    setTimeout(() => {
+                        fetchAllAlbums();
+                    }, 1000);
+                } else {
+                    alert("เปลี่ยนชื่อไม่สำเร็จ: " + (result.message || "ไม่พบอัลบั้มใน Google Drive"));
+                }
+            } catch (err) {
+                loadingModal.style.display = 'none';
+                // กรณีติดปัญหา Redirect/CORS แต่หลังบ้านเปลี่ยนชื่อสำเร็จแล้ว ให้บังคับดึงข้อมูลใหม่
+                showToast("🔄 กำลังอัปเดตข้อมูล...");
+                setTimeout(() => {
+                    fetchAllAlbums();
+                }, 1500);
+            }
         }
-    } catch (err) {
-        // ดักจับกรณีติด CORS/Redirect แต่หลังบ้านเปลี่ยนชื่อสำเร็จแล้ว ให้สั่งซิงค์ข้อมูลใหม่ทันที
-        loadingModal.style.display = 'none';
-        showToast("🔄 กำลังอัปเดตข้อมูล...");
-        setTimeout(() => {
-            fetchAllAlbums();
-        }, 1500);
-    }
-}
         function promptAddImages(folderName) {
             selectedFolderName = folderName;
             document.getElementById('targetAlbumLabel').innerText = folderName;
