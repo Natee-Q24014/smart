@@ -925,23 +925,45 @@
             updateImageTransform();
         });
 
-        async function downloadCurrentModalImage() {
+      async function downloadCurrentModalImage() {
             let imgUrl = activeModalImages[activeModalIndex];
-            try {
-                let response = await fetch(imgUrl);
-                let blob = await response.blob();
-                let blobUrl = window.URL.createObjectURL(blob);
+            
+            // ตรวจสอบว่าเป็นอุปกรณ์ iOS (iPhone / iPad) หรือไม่
+            const isIos = /iphone|ipad|ipod/.test(navigator.userAgent.toLowerCase());
+            
+            if (isIos) {
+                // สำหรับ iOS ให้เปิดรูปในแท็บใหม่ เพื่อให้ผู้ใช้กดค้างแล้วบันทึกลงเครื่องได้ง่ายๆ
                 let a = document.createElement('a');
-                a.href = blobUrl; a.download = `Photo_${activeModalIndex + 1}.jpg`;
-                document.body.appendChild(a); a.click(); document.body.removeChild(a);
-                window.URL.revokeObjectURL(blobUrl);
-            } catch (err) {
-                let a = document.createElement('a');
-                a.href = imgUrl; a.target = '_blank'; a.download = `Photo_${activeModalIndex + 1}.jpg`;
-                document.body.appendChild(a); a.click(); document.body.removeChild(a);
+                a.href = imgUrl;
+                a.target = '_blank';
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+                showToast("💡 บน iOS: กดค้างที่รูปภาพแล้วเลือก 'Add to Photos'");
+            } else {
+                // สำหรับ Android และคอมพิวเตอร์ ทำการดาวน์โหลดไฟล์ลงเครื่องปกติ
+                try {
+                    let response = await fetch(imgUrl);
+                    let blob = await response.blob();
+                    let blobUrl = window.URL.createObjectURL(blob);
+                    let a = document.createElement('a');
+                    a.href = blobUrl;
+                    a.download = `Photo_${activeModalIndex + 1}.jpg`;
+                    document.body.appendChild(a);
+                    a.click();
+                    document.body.removeChild(a);
+                    window.URL.revokeObjectURL(blobUrl);
+                } catch (err) {
+                    let a = document.createElement('a');
+                    a.href = imgUrl;
+                    a.target = '_blank';
+                    a.download = `Photo_${activeModalIndex + 1}.jpg`;
+                    document.body.appendChild(a);
+                    a.click();
+                    document.body.removeChild(a);
+                }
             }
         }
-
         async function downloadAlbumZip(folderNameEncoded, imagesJson) {
             let folderName = decodeURIComponent(folderNameEncoded);
             let imgs = JSON.parse(decodeURIComponent(imagesJson));
