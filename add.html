@@ -90,6 +90,28 @@
         .btn-submit { background-color: #0f766e; color: #e2e8f0; }
         .btn-submit:hover { background-color: #115e59; }
 
+        /* --- Modal ดูรูปตัวอย่าง พร้อมระบบซูมและปัดเลื่อนซ้าย-ขวา --- */
+        #imageModal {
+            display: none; position: fixed; z-index: 9999; top: 0; left: 0; width: 100%; height: 100%;
+            background-color: rgba(12, 16, 24, 0.96); flex-direction: column; overflow: hidden; touch-action: none;
+        }
+        .modal-top-bar { position: absolute; top: 15px; left: 20px; right: 20px; display: flex; justify-content: space-between; align-items: center; z-index: 10000; }
+        .modal-close { color: #fff; font-size: 2.2rem; cursor: pointer; background: none; border: none; }
+        
+        .modal-content-wrapper {
+            position: relative; width: 100%; height: 100%; display: flex; justify-content: center; align-items: center;
+            overflow: hidden; touch-action: none;
+        }
+        .modal-content {
+            max-width: 90vw; max-height: 80vh; border-radius: 8px; object-fit: contain;
+            transform-origin: center center; cursor: grab; user-select: none; will-change: transform;
+        }
+        .modal-content:active { cursor: grabbing; }
+
+        .modal-nav-btn { position: absolute; top: 50%; transform: translateY(-50%); background: none; border: none; color: rgba(255, 255, 255, 0.8); font-size: 2.5rem; cursor: pointer; padding: 0.8rem; z-index: 10000; }
+        .nav-prev { left: 5px; } .nav-next { right: 5px; }
+        .modal-counter { position: absolute; bottom: 20px; color: #94a3b8; font-size: 0.85rem; font-weight: 600; z-index: 10000; }
+
         .loading-modal {
             display: none; position: fixed; z-index: 1010; top: 0; left: 0; width: 100%; height: 100%;
             background-color: rgba(18, 22, 30, 0.85); justify-content: center; align-items: center; flex-direction: column;
@@ -146,9 +168,18 @@
         </div>
     </div>
 
-    <div id="imageModal" class="loading-modal" onclick="closeImageModal()" style="background-color: rgba(18, 22, 30, 0.95);">
-        <span style="position: absolute; top: 15px; right: 20px; color: #fff; font-size: 2rem; cursor: pointer;">&times;</span>
-        <img id="modalImageSrc" style="max-width: 90%; max-height: 80vh; border-radius: 8px; object-fit: contain;">
+    <!-- Modal ดูรูปตัวอย่าง รองรับทั้งซูม เลื่อน และปัดซ้ายขวา -->
+    <div id="imageModal" class="loading-modal" style="background-color: rgba(12, 16, 24, 0.96); justify-content: center;">
+        <div class="modal-top-bar">
+            <div></div>
+            <button class="modal-close" onclick="closeImageModal()">&times;</button>
+        </div>
+        <button class="modal-nav-btn nav-prev" onclick="prevModalImage()">&#10094;</button>
+        <div class="modal-content-wrapper" id="modalWrapper">
+            <img class="modal-content" id="modalImageSrc" alt="Preview">
+        </div>
+        <button class="modal-nav-btn nav-next" onclick="nextModalImage()">&#10095;</button>
+        <div id="modalCounter" class="modal-counter">1 / 1</div>
     </div>
 
     <div id="customToast" class="custom-toast">
@@ -169,6 +200,7 @@
         
         let selectedCategory = "Smart";
         let selectedFiles = [];
+        let previewDataUrls = []; // เก็บ Data URL ของรูปทั้งหมดไว้ดูใน Modal
 
         function setCategory(cat) {
             selectedCategory = cat;
@@ -193,11 +225,27 @@
                 selectedFiles.push(file);
             }
 
-            renderPreview();
+            await loadAllPreviewDataUrls();
             input.value = '';
         }
 
-        // ปรับความละเอียดสูงสุดเป็น 2000 พิกเซล และคุณภาพ JPEG เป็น 95% เพื่อความคมชัดสูง
+        async function loadAllPreviewDataUrls() {
+            previewDataUrls = [];
+            for (let i = 0; i < selectedFiles.length; i++) {
+                let dataUrl = await readFileAsDataURL(selectedFiles[i]);
+                previewDataUrls.push(dataUrl);
+            }
+            renderPreview();
+        }
+
+        function readFileAsDataURL(file) {
+            return new Promise((resolve) => {
+                const reader = new FileReader();
+                reader.onload = e => resolve(e.target.result);
+                reader.readAsDataURL(file);
+            });
+        }
+
         function fileToBase64(file, maxDim = 2000) {
             return new Promise((resolve) => {
                 const reader = new FileReader();
@@ -244,31 +292,154 @@
             fileCountLabel.innerText = `เลือกแล้ว ${selectedFiles.length} รูป`;
 
             selectedFiles.forEach((file, index) => {
-                const reader = new FileReader();
-                reader.onload = e => {
-                    const item = document.createElement('div');
-                    item.className = 'preview-item';
-                    item.innerHTML = `<img src="${e.target.result}" onclick="openImageModal('${e.target.result}')"><div class="img-date-tag">📅 ${file.formattedDate}</div><button type="button" class="btn-remove-img" onclick="removeFile(event, ${index})">&times;</button>`;
-                    grid.appendChild(item);
-                };
-                reader.readAsDataURL(file);
+                const item = document.createElement('div');
+                item.className = 'preview-item';
+                item.innerHTML = `<img src="${previewDataUrls[index]}" onclick="openImageModal(${index})"><div class="img-date-tag">📅 ${file.formattedDate}</div><button type="button" class="btn-remove-img" onclick="removeFile(event, ${index})">&times;</button>`;
+                grid.appendChild(item);
             });
         }
 
-        function removeFile(event, index) {
+        async function removeFile(event, index) {
             event.stopPropagation();
             selectedFiles.splice(index, 1);
+            previewDataUrls.splice(index, 1);
             renderPreview();
         }
 
-        function openImageModal(src) {
-            document.getElementById('modalImageSrc').src = src;
+        // --- ระบบจัดการ Modal ดูรูปตัวอย่าง พร้อมซูมและปัดเปลี่ยนรูป ---
+        let activeModalIndex = 0;
+        let scale = 1, pointX = 0, pointY = 0, startX = 0, startY = 0, isDragging = false;
+        let initialDistance = null;
+        let touchStartX = 0, touchEndX = 0;
+
+        function openImageModal(index) {
+            activeModalIndex = index;
+            resetZoom();
+            showImageInModal();
             document.getElementById('imageModal').style.display = 'flex';
         }
 
         function closeImageModal() {
             document.getElementById('imageModal').style.display = 'none';
         }
+
+        function resetZoom() {
+            scale = 1; pointX = 0; pointY = 0;
+            updateImageTransform();
+        }
+
+        function showImageInModal() {
+            const img = document.getElementById('modalImageSrc');
+            resetZoom();
+            img.src = previewDataUrls[activeModalIndex];
+            document.getElementById('modalCounter').innerText = `${activeModalIndex + 1} / ${previewDataUrls.length}`;
+        }
+
+        function nextModalImage() {
+            if (scale > 1) return; // ถ้าซูมอยู่ ให้ขยับรูปภาพแทน
+            activeModalIndex = (activeModalIndex + 1) % previewDataUrls.length;
+            showImageInModal();
+        }
+
+        function prevModalImage() {
+            if (scale > 1) return;
+            activeModalIndex = (activeModalIndex - 1 + previewDataUrls.length) % previewDataUrls.length;
+            showImageInModal();
+        }
+
+        function updateImageTransform() {
+            const img = document.getElementById('modalImageSrc');
+            img.style.transform = `translate(${pointX}px, ${pointY}px) scale(${scale})`;
+        }
+
+        const modalImg = document.getElementById('modalImageSrc');
+        const modalWrapper = document.getElementById('modalWrapper');
+
+        // ซูมด้วยเมาส์ Wheel
+        modalWrapper.addEventListener('wheel', (e) => {
+            e.preventDefault();
+            if (e.deltaY < 0) {
+                scale = Math.min(scale * 1.2, 5);
+            } else {
+                scale = Math.max(scale / 1.2, 1);
+                if (scale === 1) { pointX = 0; pointY = 0; }
+            }
+            updateImageTransform();
+        });
+
+        // รองรับการปัดนิ้วเปลี่ยนรูป (เมื่อไม่ได้ซูม) และลากเลื่อนรูป (เมื่อซูมแล้ว)
+        modalWrapper.addEventListener('touchstart', (e) => {
+            if (e.touches.length === 1) {
+                if (scale === 1) {
+                    touchStartX = e.touches[0].clientX;
+                } else {
+                    isDragging = true;
+                    startX = e.touches[0].clientX - pointX;
+                    startY = e.touches[0].clientY - pointY;
+                }
+            } else if (e.touches.length === 2) {
+                isDragging = false;
+                initialDistance = Math.hypot(
+                    e.touches[0].clientX - e.touches[1].clientX,
+                    e.touches[0].clientY - e.touches[1].clientY
+                );
+            }
+        }, { passive: true });
+
+        modalWrapper.addEventListener('touchmove', (e) => {
+            if (isDragging && e.touches.length === 1 && scale > 1) {
+                pointX = e.touches[0].clientX - startX;
+                pointY = e.touches[0].clientY - startY;
+                updateImageTransform();
+            } else if (e.touches.length === 2 && initialDistance) {
+                const currentDistance = Math.hypot(
+                    e.touches[0].clientX - e.touches[1].clientX,
+                    e.touches[0].clientY - e.touches[1].clientY
+                );
+                let newScale = scale * (currentDistance / initialDistance);
+                scale = Math.max(1, Math.min(newScale, 5));
+                if (scale === 1) { pointX = 0; pointY = 0; }
+                initialDistance = currentDistance;
+                updateImageTransform();
+            }
+        }, { passive: true });
+
+        modalWrapper.addEventListener('touchend', (e) => {
+            if (scale === 1 && e.changedTouches.length === 1) {
+                touchEndX = e.changedTouches[0].clientX;
+                let threshold = 50;
+                if (touchEndX < touchStartX - threshold) {
+                    nextModalImage(); // ปัดซ้าย -> รูปถัดไป
+                } else if (touchEndX > touchStartX + threshold) {
+                    prevModalImage(); // ปัดขวา -> รูปก่อนหน้า
+                }
+            }
+            isDragging = false;
+            initialDistance = null;
+        });
+
+        // ลากเลื่อนด้วยเมาส์เมื่อซูม
+        modalImg.addEventListener('mousedown', (e) => {
+            if (scale > 1) {
+                isDragging = true;
+                startX = e.clientX - pointX;
+                startY = e.clientY - pointY;
+                e.preventDefault();
+            }
+        });
+        window.addEventListener('mousemove', (e) => {
+            if (!isDragging) return;
+            pointX = e.clientX - startX;
+            pointY = e.clientY - startY;
+            updateImageTransform();
+        });
+        window.addEventListener('mouseup', () => { isDragging = false; });
+
+        // ดับเบิลคลิกเพื่อซูมเข้า/ออกทันที
+        modalImg.addEventListener('dblclick', () => {
+            if (scale === 1) { scale = 2.5; } else { resetZoom(); }
+            updateImageTransform();
+        });
 
         function showToast(message, isError = false) {
             const toast = document.getElementById('customToast');
