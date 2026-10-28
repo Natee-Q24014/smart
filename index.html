@@ -206,7 +206,7 @@
                 <!-- ปุ่มรีเฟรช พร้อมชื่อด้านล่าง -->
                 <div class="action-icon-wrapper" onclick="manualRefreshApp()" title="รีเฟรชข้อมูลใหม่">
                     <div class="bell-wrapper">🔄</div>
-                    <div class="action-icon-label">รีเฟรช</div>
+                    <div class="action-icon-label">อัปเดตเวอร์ชั่น</div>
                 </div>
                 <!-- ปุ่มแจ้งเตือน พร้อมชื่อด้านล่าง -->
                 <div class="action-icon-wrapper" onclick="openNotificationModal()" title="ดูรายการอัลบั้มใหม่">
@@ -475,7 +475,7 @@
 
        // ฟังก์ชันสำหรับกดปุ่มรีเฟรชใหญ่ (ล้างแคช PWA และโหลดโค้ด/ข้อมูลใหม่ล่าสุด 100%)
         async function manualRefreshApp() {
-            showToast("🔄 กำลังล้างแคชและอัปเดตโค้ดใหม่...");
+            showToast("🔄 กำลังอัปเดตโค้ดใหม่...");
             setSystemStatus('orange', 'กำลังรีเฟรช...');
 
             try {
