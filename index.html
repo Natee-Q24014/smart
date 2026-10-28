@@ -448,56 +448,55 @@
         });
         function scrollToTop() { window.scrollTo({ top: 0, behavior: 'smooth' }); }
 
-        // --- ระบบจัดการปุ่ม Back มือถือ และ ออกจากแอป (แก้ไขบั๊กแล้ว) ---
+        // --- ระบบจัดการปุ่ม Back มือถือ (ทำงานปกติในหน้าย่อย และเตือนเฉพาะหน้าแรกสุด) ---
         function openExitConfirmModal() {
             document.getElementById('exitConfirmModal').style.display = 'flex';
         }
         function cancelExit() {
             document.getElementById('exitConfirmModal').style.display = 'none';
-            // ดักเพิ่มสถานะกลับเข้ามาใหม่กันลูปพัง
-            history.pushState({ level: 'years' }, '');
+            history.pushState({ level: 'years' }, ''); // ดักสถานะกลับคืนไว้
         }
         function confirmExit() {
             document.getElementById('exitConfirmModal').style.display = 'none';
-            // สั่งเคลียร์ประวัติย้อนกลับเพื่อออกนอกแอป
             try {
                 window.close();
             } catch(e) {}
-            // ถ้าสั่ง window.close แล้วเบราว์เซอร์ไม่ออก ให้ใช้วิธีเด้งหน้าประวัติออก
             history.go(-2);
         }
 
         window.addEventListener('popstate', (event) => {
+            // 1. ถ้ากำลังเปิดดูรูปอยู่ -> ปิดรูป
             if (document.getElementById('imageModal').style.display === 'flex') {
                 closeModal();
                 history.pushState(null, '', window.location.href);
                 return;
             }
+
+            // 2. ถ้าอยู่หน้าอัลบั้ม -> ถอยกลับไปหน้าเดือน (ปกติ)
             if (navigationLevel === 'albums') {
                 navigationLevel = 'months';
                 currentSelectedMonth = null;
-                history.pushState(null, '', window.location.href);
                 renderCurrentLevel();
                 return;
             }
+
+            // 3. ถ้าอยู่หน้าเดือน -> ถอยกลับไปหน้าปี (ปกติ)
             if (navigationLevel === 'months') {
                 navigationLevel = 'years';
                 currentSelectedYear = null;
-                history.pushState(null, '', window.location.href);
                 renderCurrentLevel();
                 return;
             }
+
+            // 4. ถ้าอยู่ที่หน้าแรกสุด (ปี) แล้วกดย้อนกลับ -> แสดง Popup แจ้งเตือนออกแอป
             if (navigationLevel === 'years') {
                 openExitConfirmModal();
-                history.pushState(null, '', window.location.href);
+                history.pushState({ level: 'years' }, ''); // ล็อกไว้ไม่ให้เด้งหลุด
             }
         });
 
         window.onload = function() {
-            // สร้างสถานะตั้งต้นให้ประวัติย้อนกลับดักจับได้ตั้งแต่เปิดแอปทันที
             history.replaceState({ level: 'years' }, '');
-            history.pushState({ level: 'years' }, '');
-            
             initializeAppWithSplash();
             setInterval(backgroundSyncAlbums, 3000);
         };
@@ -625,7 +624,7 @@
             navigationLevel = 'years';
             currentSelectedYear = null;
             currentSelectedMonth = null;
-            history.pushState(null, '', window.location.href);
+            history.pushState({ level: 'years' }, '', window.location.href);
             renderCurrentLevel();
         }
 
@@ -660,7 +659,7 @@
         function selectYear(year) {
             currentSelectedYear = year;
             navigationLevel = 'months';
-            history.pushState(null, '', window.location.href);
+            history.pushState({ level: 'months' }, '', window.location.href);
             renderCurrentLevel();
         }
 
@@ -688,7 +687,7 @@
         function selectMonth(m) {
             currentSelectedMonth = m;
             navigationLevel = 'albums';
-            history.pushState(null, '', window.location.href);
+            history.pushState({ level: 'albums' }, '', window.location.href);
             renderCurrentLevel();
         }
 
@@ -738,7 +737,7 @@
             resetZoom();
             showImageInModal();
             document.getElementById('imageModal').style.display = 'flex';
-            history.pushState(null, '', window.location.href);
+            history.pushState({ level: 'modal' }, '', window.location.href);
         }
 
         function closeModal() {
