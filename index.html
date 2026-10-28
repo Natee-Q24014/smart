@@ -474,27 +474,18 @@
         }
 
         // ฟังก์ชันสำหรับกดปุ่มรีเฟรชข้อมูลล่าสุด
-        async function manualRefreshApp() {
-            showToast("🔄 กำลังรีเฟรชข้อมูลล่าสุด...");
-            setSystemStatus('orange', 'กำลังซิงค์...');
-            try {
-                const response = await fetch(SCRIPT_URL + "?action=getAlbums&t=" + new Date().getTime());
-                const result = await response.json();
-                if (result.status === "success") {
-                    allAlbumsData = result.data || [];
-                    processNewAlbumsDetection(allAlbumsData);
-                    updateStats();
-                    renderCurrentLevel();
-                    setSystemStatus('green', 'พร้อมใช้งาน');
-                    showToast("✅ อัปเดตข้อมูลล่าสุดเรียบร้อย!");
-                } else {
-                    setSystemStatus('red', 'โหลดไม่สำเร็จ');
-                    showToast("❌ โหลดข้อมูลไม่สำเร็จ");
-                }
-            } catch (err) {
-                setSystemStatus('red', 'เชื่อมต่อล้มเหลว');
-                showToast("🔴 เกิดข้อผิดพลาดในการเชื่อมต่อ");
-            }
+        async // ฟังก์ชันสำหรับกดปุ่มรีเฟรช (เทียบเท่ากับการกดรีเฟรชหน้าเว็บใหญ่แบบเต็มระบบ)
+        function manualRefreshApp() {
+            showToast("🔄 กำลังรีเฟรชหน้าเว็บใหม่...");
+            setSystemStatus('orange', 'กำลังรีเฟรช...');
+            
+            // สั่งเคลียร์ Session ชั่วคราวเพื่อให้ระบบโหลดสดใหม่
+            sessionStorage.clear();
+            
+            // หน่วงเวลาสั้นๆ ให้ Toast แสดงผล แล้วสั่งรีโหลดหน้าเว็บใหม่ทันที (เคลียร์แคชทั้งหน้า)
+            setTimeout(() => {
+                window.location.href = window.location.pathname + '?r=' + new Date().getTime();
+            }, 500);
         }
 
         function openNotificationModal() { document.getElementById('notificationModal').style.display = 'flex'; }
