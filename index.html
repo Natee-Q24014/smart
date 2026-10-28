@@ -1083,7 +1083,6 @@
     loadingModal.style.display = 'flex';
 
     try {
-        // 🚀 ส่งแบบปกติไม่มี headers ซับซ้อน เพื่อเลี่ยงปัญหา CORS policy
         let response = await fetch(SCRIPT_URL, {
             method: 'POST',
             body: JSON.stringify({
@@ -1096,10 +1095,11 @@
 
         let textResult = await response.text();
         let result;
+        
         try {
             result = JSON.parse(textResult);
-        } else {
-            result = { status: "success" }; // เผื่อกรณีติด Redirect ของ Apps Script แต่หลังบ้านทำสำเร็จแล้ว
+        } catch (e) {
+            result = { status: "success" };
         }
 
         loadingModal.style.display = 'none';
@@ -1111,7 +1111,6 @@
 
     } catch (err) {
         loadingModal.style.display = 'none';
-        // แม้จะติด CORS แต่คำสั่งมักจะวิ่งไปถึง Google Drive แล้ว ให้สั่งรีเฟรชข้อมูลใหม่ทันที
         showToast("🔄 กำลังอัปเดตข้อมูล...");
         setTimeout(() => {
             fetchAllAlbums();
