@@ -1083,13 +1083,9 @@
     loadingModal.style.display = 'flex';
 
     try {
-        // ใช้ mode: 'no-cors' เพื่อบังคับส่งข้อมูลข้ามโดเมนไปหา Apps Script โดยไม่ติดบล็อก CORS
-        await fetch(SCRIPT_URL, {
+        // ใช้ fetch แบบมาตรฐานเด๊ะๆ เหมือนกับฟังก์ชันลบอัลบั้มที่ใช้งานได้ปกติ
+        let response = await fetch(SCRIPT_URL, {
             method: 'POST',
-            mode: 'no-cors',
-            headers: {
-                'Content-Type': 'application/json'
-            },
             body: JSON.stringify({
                 action: 'rename',
                 optionType: optionType,
@@ -1098,17 +1094,32 @@
             })
         });
 
-        // ปิดหน้าโหลดแล้วแจ้งเตือนสำเร็จทันที
+        let result = await response.json();
         loadingModal.style.display = 'none';
-        showToast("เปลี่ยนชื่ออัลบั้มสำเร็จ!");
 
-        // หน่วงเวลาเล็กน้อยให้ Google Drive บันทึกค่า แล้วดึงข้อมูลใหม่มาแสดง
-        setTimeout(() => {
-            fetchAllAlbums();
-        }, 1200);
+        if (result.status === "success") {
+            showToast("เปลี่ยนชื่ออัลบั้มสำเร็จ!");
+            
+            // อัปเดตข้อมูลบนหน้าจอทันที
+            if (typeof allAlbumsData !== 'undefined') {
+                allAlbumsData.forEach(album => {
+                    if (album.folderName === oldName && album.optionType === optionType) {
+                        album.folderName = newName;
+                    }
+                });
+                renderCurrentLevel();
+            }
 
+            // ดึงข้อมูลใหม่จากเซิร์ฟเวอร์ซ้ำเพื่อความชัวร์
+            setTimeout(() => {
+                fetchAllAlbums();
+            }, 1000);
+        } else {
+            alert("เปลี่ยนชื่อไม่สำเร็จ: " + (result.message || "ไม่พบโฟลเดอร์ในระบบ"));
+        }
     } catch (err) {
         loadingModal.style.display = 'none';
+        // กรณีดักจับ Error แต่คำสั่งใน Drive อาจจะเปลี่ยนไปแล้ว ให้สั่งรีเฟรชซิงค์ข้อมูลใหม่
         showToast("🔄 กำลังอัปเดตข้อมูล...");
         setTimeout(() => {
             fetchAllAlbums();
