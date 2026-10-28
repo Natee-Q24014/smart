@@ -1057,13 +1057,17 @@
             renameTargetData = null;
         }
 
-        async function submitRenameAlbum() {
-            let newName = document.getElementById('newAlbumNameInput').value.trim();
-            if (!newName) {
-                alert("กรุณากรอกชื่ออัลบั้มใหม่");
-                return;
-            }
-            if (!renameTargetData) return;
+       async function submitRenameAlbum() {
+    console.log("ปุ่มเปลี่ยนชื่อถูกกดแล้ว!"); // <-- เพิ่มบรรทัดนี้ไว้บนสุด
+
+    let newName = document.getElementById('newAlbumNameInput').value.trim();
+    if (!newName) {
+        alert("กรุณากรอกชื่ออัลบั้มใหม่");
+        return;
+    }
+    if (!renameTargetData) return;
+    
+    // ... (โค้ดส่วนที่เหลือปล่อยไว้ตามเดิม)
 
             closeRenameModal();
             document.getElementById('loadingTitle').innerText = "กำลังเปลี่ยนชื่ออัลบั้ม";
