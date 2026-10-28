@@ -384,13 +384,11 @@
         window.addEventListener('beforeinstallprompt', (e) => {
             e.preventDefault();
             deferredPrompt = e;
-            // ถ้าอยู่ในเบราว์เซอร์ปกติ ให้แสดงปุ่มติดตั้งบนแถบเมนูด้านบนด้วย
             if (!isAppInstalled()) {
                 if (installAppBtn) installAppBtn.style.display = 'inline-flex';
             }
         });
 
-        // ฟังก์ชันตรวจสอบว่าเปิดผ่านแอปที่ติดตั้งแล้วหรือยัง
         function isAppInstalled() {
             const isStandalone = window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone === document.referrer.includes('android-app://');
             return isStandalone;
@@ -403,12 +401,8 @@
             }
         }
 
-        // --- ระบบควบคุม Popup แนะนำติดตั้งแอป (แสดงเฉพาะตอนเข้าผ่านเว็บเบราว์เซอร์เท่านั้น) ---
         function checkAndShowInstallPrompt() {
-            // ถ้าเปิดผ่านแอปที่ติดตั้งแล้ว ไม่ต้องแสดง Popup นี้เด็ดขาด
             if (isAppInstalled()) return;
-
-            // ถ้าเปิดผ่านเว็บเบราว์เซอร์ปกติ และยังไม่เคยกดปฏิเสธ
             if (!sessionStorage.getItem('install_prompt_declined')) {
                 setTimeout(() => {
                     document.getElementById('installPromptModal').style.display = 'flex';
@@ -515,17 +509,28 @@
         });
         function scrollToTop() { window.scrollTo({ top: 0, behavior: 'smooth' }); }
 
-        // --- ระบบจัดการปุ่ม Back ของมือถือแบบสมบูรณ์ ครบทุกสเต็ปชั้นข้อมูล ---
+        // --- ระบบจัดการปุ่ม Back และคีย์บอร์ด (ซ้าย ขวา Esc) ---
+        window.addEventListener('keydown', (e) => {
+            const imageModal = document.getElementById('imageModal');
+            if (imageModal && imageModal.style.display === 'flex') {
+                if (e.key === 'ArrowRight') {
+                    nextImage();
+                } else if (e.key === 'ArrowLeft') {
+                    prevImage();
+                } else if (e.key === 'Escape') {
+                    closeModal();
+                }
+            }
+        });
+
         window.addEventListener('popstate', (event) => {
             const imageModal = document.getElementById('imageModal');
             
-            // 1. ถ้ากำลังเปิดดูรูปอยู่ ให้ปิดรูปก่อน
             if (imageModal && imageModal.style.display === 'flex') {
                 imageModal.style.display = 'none';
                 return;
             }
 
-            // 2. ถ้าอยู่ที่หน้าอัลบั้ม -> ถอยกลับมาหน้าเดือน
             if (navigationLevel === 'albums') {
                 navigationLevel = 'months';
                 currentSelectedMonth = null;
@@ -533,7 +538,6 @@
                 return;
             }
 
-            // 3. ถ้าอยู่ที่หน้าเดือน -> ถอยกลับมาหน้าปี (หน้าแรก)
             if (navigationLevel === 'months') {
                 navigationLevel = 'years';
                 currentSelectedYear = null;
@@ -541,7 +545,6 @@
                 return;
             }
 
-            // 4. ถ้าอยู่ที่หน้าปีแล้วกดย้อนกลับอีกครั้ง ปล่อยให้ออกแอปตามปกติ
             if (navigationLevel === 'years') {
                 history.back();
             }
