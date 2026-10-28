@@ -72,9 +72,10 @@
         .status-orange { background: rgba(245, 158, 11, 0.1); color: #fbbf24; border: 1px solid rgba(245, 158, 11, 0.2); }
         .status-red { background: rgba(239, 68, 68, 0.1); color: #f87171; border: 1px solid rgba(239, 68, 68, 0.2); }
 
+        .header-right-actions { display: flex; gap: 0.4rem; align-items: center; }
         .bell-wrapper {
             position: relative; cursor: pointer; background-color: #262c38; border: 1px solid #4d5b73;
-            width: 42px; height: 42px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 1.2rem;
+            width: 42px; height: 42px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 1.1rem;
         }
         .notification-badge {
             position: absolute; top: -3px; right: -3px; background-color: #ef4444; color: white;
@@ -141,7 +142,7 @@
 
         .scroll-top-btn { display: none; position: fixed; bottom: 15px; right: 15px; z-index: 950; background: none; color: #ffffff; border: none; width: 38px; height: 38px; font-size: 1.5rem; cursor: pointer; align-items: center; justify-content: center; }
 
-        /* --- ปรับปรุง Modal ดูรูปภาพให้รองรับการซูมและเลื่อนดูได้อย่างอิสระ --- */
+        /* --- Modal ดูรูปภาพรองรับซูม เลื่อน และปัดซ้ายขวา --- */
         #imageModal {
             display: none; position: fixed; z-index: 9999; top: 0; left: 0; width: 100%; height: 100%;
             background-color: rgba(12, 16, 24, 0.96); flex-direction: column; overflow: hidden; touch-action: none;
@@ -195,9 +196,17 @@
                     </div>
                 </div>
             </div>
-            <div class="bell-wrapper" onclick="openNotificationModal()" title="ดูรายการอัลบั้มใหม่">
-                🔔
-                <div id="notificationBadge" class="notification-badge">0</div>
+            
+            <div class="header-right-actions">
+                <!-- ปุ่มปิดแอป -->
+                <div class="bell-wrapper" onclick="openExitConfirmModal()" title="ปิดแอปพลิเคชัน" style="background-color: rgba(239, 68, 68, 0.1); border-color: rgba(239, 68, 68, 0.3); color: #f87171;">
+                    ❌
+                </div>
+                <!-- ปุ่มกระดิ่งแจ้งเตือน -->
+                <div class="bell-wrapper" onclick="openNotificationModal()" title="ดูรายการอัลบั้มใหม่">
+                    🔔
+                    <div id="notificationBadge" class="notification-badge">0</div>
+                </div>
             </div>
         </div>
 
@@ -276,7 +285,19 @@
 
     <button id="scrollTopBtn" class="scroll-top-btn" onclick="scrollToTop()" title="เลื่อนขึ้นด้านบน">&#8593;</button>
 
-    <!-- Modal ดูรูปภาพรองรับซูมและเลื่อน (Pan & Zoom) -->
+    <!-- Modal ยืนยันการออกจากโปรแกรม -->
+    <div id="exitConfirmModal" class="modal" style="z-index: 10010; display: none;">
+        <div class="loading-dialog-box" style="max-width: 300px; text-align: center;">
+            <h3 style="color: #f8fafc; font-size: 1rem; margin-bottom: 0.3rem;">🚪 ออกจากแอปพลิเคชัน</h3>
+            <p style="font-size: 0.75rem; color: #94a3b8; margin-bottom: 1rem;">คุณต้องการออกจากโปรแกรมใช่หรือไม่?</p>
+            <div style="display: flex; gap: 0.5rem; justify-content: center;">
+                <button class="btn-nav-action" style="flex: 1; padding: 0.45rem; background-color: #3e495e;" onclick="cancelExit()">ไม่ใช่</button>
+                <button class="btn-nav-action" style="flex: 1; padding: 0.45rem; background-color: #ef4444; color: #fff; border: none;" onclick="confirmExit()">ใช่</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal ดูรูปภาพ รองรับซูม เลื่อน และปัดซ้ายขวา -->
     <div id="imageModal" class="modal" style="display: none;">
         <div class="modal-top-bar">
             <button class="btn-modal-download" onclick="downloadCurrentModalImage()">⬇️ ดาวน์โหลดรูปนี้</button>
@@ -403,6 +424,21 @@
             systemStatusBadge.innerHTML = `<span>${icon}</span> ${text}`;
         }
 
+        // --- ระบบตรวจจับสถานะอินเทอร์เน็ตแบบเรียลไทม์ ---
+        window.addEventListener('online', () => {
+            setSystemStatus('green', 'พร้อมใช้งาน');
+            showToast("🟢 เชื่อมต่ออินเทอร์เน็ตแล้ว");
+        });
+
+        window.addEventListener('offline', () => {
+            setSystemStatus('red', 'ขาดการเชื่อมต่ออินเทอร์เน็ต');
+            showToast("🔴 อินเทอร์เน็ตหลุด! กำลังทำงานแบบออฟไลน์");
+        });
+
+        if (!navigator.onLine) {
+            setSystemStatus('red', 'ไม่มีอินเทอร์เน็ต');
+        }
+
         function updateLiveClock() {
             const now = new Date();
             const dateStr = now.toLocaleDateString('th-TH', { day: '2-digit', month: '2-digit', year: 'numeric' });
@@ -418,7 +454,19 @@
         });
         function scrollToTop() { window.scrollTo({ top: 0, behavior: 'smooth' }); }
 
-        // --- จัดการปุ่ม Back ของมือถือให้ทำงานเหมือนปุ่มย้อนกลับในหน้าเว็บ ---
+        // --- ระบบจัดการปุ่ม Back มือถือ และ ออกจากแอป ---
+        function openExitConfirmModal() {
+            document.getElementById('exitConfirmModal').style.display = 'flex';
+        }
+        function cancelExit() {
+            document.getElementById('exitConfirmModal').style.display = 'none';
+        }
+        function confirmExit() {
+            document.getElementById('exitConfirmModal').style.display = 'none';
+            window.close();
+            history.back();
+        }
+
         window.addEventListener('popstate', (event) => {
             if (document.getElementById('imageModal').style.display === 'flex') {
                 closeModal();
@@ -428,11 +476,20 @@
             if (navigationLevel === 'albums') {
                 navigationLevel = 'months';
                 currentSelectedMonth = null;
+                history.pushState(null, '', window.location.href);
                 renderCurrentLevel();
-            } else if (navigationLevel === 'months') {
+                return;
+            }
+            if (navigationLevel === 'months') {
                 navigationLevel = 'years';
                 currentSelectedYear = null;
+                history.pushState(null, '', window.location.href);
                 renderCurrentLevel();
+                return;
+            }
+            if (navigationLevel === 'years') {
+                openExitConfirmModal();
+                history.pushState(null, '', window.location.href);
             }
         });
 
@@ -490,7 +547,8 @@
             if (document.getElementById('passwordModal').style.display === 'flex' || 
                 document.getElementById('addImagesModal').style.display === 'flex' || 
                 document.getElementById('loadingModal').style.display === 'flex' ||
-                document.getElementById('imageModal').style.display === 'flex') {
+                document.getElementById('imageModal').style.display === 'flex' ||
+                document.getElementById('exitConfirmModal').style.display === 'flex') {
                 return;
             }
             try {
@@ -665,11 +723,12 @@
 
         function applyFilters() { if (navigationLevel === 'albums') renderAlbumsView(); }
 
-        // --- ระบบซูมและเลื่อนดูภาพแบบสมบูรณ์ (รองรับทั้งมือถือและคอมพิวเตอร์) ---
+        // --- ระบบซูม เลื่อนภาพ และปัดซ้าย-ขวาในหน้าอัลบั้ม ---
         let activeModalImages = [];
         let activeModalIndex = 0;
         let scale = 1, pointX = 0, pointY = 0, startX = 0, startY = 0, isDragging = false;
         let initialDistance = null;
+        let touchStartX = 0, touchEndX = 0;
 
         function openModal(imagesJson, index) {
             activeModalImages = JSON.parse(decodeURIComponent(imagesJson));
@@ -697,7 +756,7 @@
         }
 
         function nextImage() {
-            if (scale > 1) return; // ถ้ากำลังซูมอยู่ ให้เลื่อนภาพก่อนเปลี่ยนรูป
+            if (scale > 1) return;
             activeModalIndex = (activeModalIndex + 1) % activeModalImages.length;
             showImageInModal();
         }
@@ -716,11 +775,8 @@
         const modalImg = document.getElementById('modalImg');
         const modalWrapper = document.getElementById('modalWrapper');
 
-        // ควบคุมการซูมด้วยเมาส์ (Scroll Wheel)
         modalWrapper.addEventListener('wheel', (e) => {
             e.preventDefault();
-            const xs = (e.clientX - window.innerWidth / 2 - pointX) / scale;
-            const ys = (e.clientY - window.innerHeight / 2 - pointY) / scale;
             if (e.deltaY < 0) {
                 scale = Math.min(scale * 1.2, 5);
             } else {
@@ -730,12 +786,15 @@
             updateImageTransform();
         });
 
-        // ควบคุมการลากเลื่อนภาพ (Pan) และ Pinch-to-Zoom บนมือถือ
         modalWrapper.addEventListener('touchstart', (e) => {
             if (e.touches.length === 1) {
-                isDragging = true;
-                startX = e.touches[0].clientX - pointX;
-                startY = e.touches[0].clientY - pointY;
+                if (scale === 1) {
+                    touchStartX = e.touches[0].clientX;
+                } else {
+                    isDragging = true;
+                    startX = e.touches[0].clientX - pointX;
+                    startY = e.touches[0].clientY - pointY;
+                }
             } else if (e.touches.length === 2) {
                 isDragging = false;
                 initialDistance = Math.hypot(
@@ -764,11 +823,19 @@
         }, { passive: true });
 
         modalWrapper.addEventListener('touchend', (e) => {
+            if (scale === 1 && e.changedTouches.length === 1) {
+                touchEndX = e.changedTouches[0].clientX;
+                let threshold = 50;
+                if (touchEndX < touchStartX - threshold) {
+                    nextImage();
+                } else if (touchEndX > touchStartX + threshold) {
+                    prevImage();
+                }
+            }
             isDragging = false;
             initialDistance = null;
         });
 
-        // สำหรับเมาส์คลิกลากภาพเมื่อซูม
         modalImg.addEventListener('mousedown', (e) => {
             if (scale > 1) {
                 isDragging = true;
@@ -785,13 +852,8 @@
         });
         window.addEventListener('mouseup', () => { isDragging = false; });
 
-        // ดับเบิลคลิกเพื่อซูมเข้า/ออกทันที
-        modalImg.addEventListener('dblclick', (e) => {
-            if (scale === 1) {
-                scale = 2.5;
-            } else {
-                resetZoom();
-            }
+        modalImg.addEventListener('dblclick', () => {
+            if (scale === 1) { scale = 2.5; } else { resetZoom(); }
             updateImageTransform();
         });
 
@@ -947,7 +1009,7 @@
                 }
                 let response = await fetch(SCRIPT_URL, {
                     method: 'POST',
-                    body: JSON.stringify({ action: 'add_images', folderName: selectedFolderName, images: base64Insights = base64Images, password: "6004" })
+                    body: JSON.stringify({ action: 'add_images', folderName: selectedFolderName, images: base64Images, password: "6004" })
                 });
                 let result = await response.json();
                 loadingModal.style.display = 'none';
