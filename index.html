@@ -291,7 +291,7 @@
         <div id="modalCounter" class="modal-counter">1 / 1</div>
     </div>
 
-    <!-- Popup แนะนำติดตั้งแอปเมื่อเข้าเว็บครั้งแรก -->
+    <!-- Popup แนะนำติดตั้งแอปเมื่อเข้าผ่านเว็บเบราว์เซอร์ครั้งแรก -->
     <div id="installPromptModal" class="modal" style="z-index: 10050; display: none;">
         <div class="loading-dialog-box" style="max-width: 320px; text-align: center;">
             <div style="font-size: 2.5rem; margin-bottom: 0.3rem;">📲</div>
@@ -384,25 +384,32 @@
         window.addEventListener('beforeinstallprompt', (e) => {
             e.preventDefault();
             deferredPrompt = e;
-            if (installAppBtn) installAppBtn.style.display = 'inline-flex';
+            // ถ้าอยู่ในเบราว์เซอร์ปกติ ให้แสดงปุ่มติดตั้งบนแถบเมนูด้านบนด้วย
+            if (!isAppInstalled()) {
+                if (installAppBtn) installAppBtn.style.display = 'inline-flex';
+            }
         });
+
+        // ฟังก์ชันตรวจสอบว่าเปิดผ่านแอปที่ติดตั้งแล้วหรือยัง
+        function isAppInstalled() {
+            const isStandalone = window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone === document.referrer.includes('android-app://');
+            return isStandalone;
+        }
 
         function checkIOSInstallButton() {
             const isIos = /iphone|ipad|ipod/.test(navigator.userAgent.toLowerCase());
-            const isInStandaloneMode = ('standalone' in window.navigator) && (window.navigator.standalone);
-            if (isIos && !isInStandaloneMode) {
+            if (isIos && !isAppInstalled()) {
                 if (installAppBtn) installAppBtn.style.display = 'inline-flex';
             }
         }
 
-        // --- ระบบควบคุม Popup แนะนำติดตั้งแอปตอนเข้าเว็บครั้งแรก ---
+        // --- ระบบควบคุม Popup แนะนำติดตั้งแอป (แสดงเฉพาะตอนเข้าผ่านเว็บเบราว์เซอร์เท่านั้น) ---
         function checkAndShowInstallPrompt() {
-            const isIos = /iphone|ipad|ipod/.test(navigator.userAgent.toLowerCase());
-            const isInStandaloneMode = ('standalone' in window.navigator) && (window.navigator.standalone);
-            
-            // เช็คว่าถ้ายังไม่ได้ติดตั้ง และยังไม่เคยปฏิเสธในเซสชันนี้
-            if (!isInStandaloneMode && !sessionStorage.getItem('install_prompt_declined')) {
-                // รอให้ Splash Screen หายไปก่อนสักครู่ค่อยเด้ง Popup แนะนำ
+            // ถ้าเปิดผ่านแอปที่ติดตั้งแล้ว ไม่ต้องแสดง Popup นี้เด็ดขาด
+            if (isAppInstalled()) return;
+
+            // ถ้าเปิดผ่านเว็บเบราว์เซอร์ปกติ และยังไม่เคยกดปฏิเสธ
+            if (!sessionStorage.getItem('install_prompt_declined')) {
                 setTimeout(() => {
                     document.getElementById('installPromptModal').style.display = 'flex';
                 }, 1200);
@@ -418,11 +425,13 @@
             }
 
             if (deferredPrompt) {
-                deferredPrompt.prompt();
-                const { outcome } = await deferredPrompt.userChoice;
-                if (outcome === 'accepted') { 
-                    if (installAppBtn) installAppBtn.style.display = 'none'; 
-                }
+                try {
+                    await deferredPrompt.prompt();
+                    const { outcome } = await deferredPrompt.userChoice;
+                    if (outcome === 'accepted') { 
+                        if (installAppBtn) installAppBtn.style.display = 'none'; 
+                    }
+                } catch (err) {}
                 deferredPrompt = null;
             } else {
                 alert("สามารถติดตั้งแอปได้จากเมนูของเบราว์เซอร์ (Add to Home Screen)");
