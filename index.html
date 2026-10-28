@@ -32,7 +32,6 @@
             flex-direction: column;
         }
         
-        /* --- Splash Screen --- */
         #app-splash-screen {
             position: fixed;
             top: 0; left: 0; width: 100%; height: 100%;
@@ -142,7 +141,6 @@
 
         .scroll-top-btn { display: none; position: fixed; bottom: 15px; right: 15px; z-index: 950; background: none; color: #ffffff; border: none; width: 38px; height: 38px; font-size: 1.5rem; cursor: pointer; align-items: center; justify-content: center; }
 
-        /* --- Modal ดูรูปภาพรองรับซูม เลื่อน และปัดซ้ายขวา --- */
         #imageModal {
             display: none; position: fixed; z-index: 9999; top: 0; left: 0; width: 100%; height: 100%;
             background-color: rgba(12, 16, 24, 0.96); flex-direction: column; overflow: hidden; touch-action: none;
@@ -198,11 +196,9 @@
             </div>
             
             <div class="header-right-actions">
-                <!-- ปุ่มปิดแอป -->
                 <div class="bell-wrapper" onclick="openExitConfirmModal()" title="ปิดแอปพลิเคชัน" style="background-color: rgba(239, 68, 68, 0.1); border-color: rgba(239, 68, 68, 0.3); color: #f87171;">
                     ❌
                 </div>
-                <!-- ปุ่มกระดิ่งแจ้งเตือน -->
                 <div class="bell-wrapper" onclick="openNotificationModal()" title="ดูรายการอัลบั้มใหม่">
                     🔔
                     <div id="notificationBadge" class="notification-badge">0</div>
@@ -297,7 +293,6 @@
         </div>
     </div>
 
-    <!-- Modal ดูรูปภาพ รองรับซูม เลื่อน และปัดซ้ายขวา -->
     <div id="imageModal" class="modal" style="display: none;">
         <div class="modal-top-bar">
             <button class="btn-modal-download" onclick="downloadCurrentModalImage()">⬇️ ดาวน์โหลดรูปนี้</button>
@@ -424,7 +419,6 @@
             systemStatusBadge.innerHTML = `<span>${icon}</span> ${text}`;
         }
 
-        // --- ระบบตรวจจับสถานะอินเทอร์เน็ตแบบเรียลไทม์ ---
         window.addEventListener('online', () => {
             setSystemStatus('green', 'พร้อมใช้งาน');
             showToast("🟢 เชื่อมต่ออินเทอร์เน็ตแล้ว");
@@ -454,17 +448,23 @@
         });
         function scrollToTop() { window.scrollTo({ top: 0, behavior: 'smooth' }); }
 
-        // --- ระบบจัดการปุ่ม Back มือถือ และ ออกจากแอป ---
+        // --- ระบบจัดการปุ่ม Back มือถือ และ ออกจากแอป (แก้ไขบั๊กแล้ว) ---
         function openExitConfirmModal() {
             document.getElementById('exitConfirmModal').style.display = 'flex';
         }
         function cancelExit() {
             document.getElementById('exitConfirmModal').style.display = 'none';
+            // ดักเพิ่มสถานะกลับเข้ามาใหม่กันลูปพัง
+            history.pushState({ level: 'years' }, '');
         }
         function confirmExit() {
             document.getElementById('exitConfirmModal').style.display = 'none';
-            window.close();
-            history.back();
+            // สั่งเคลียร์ประวัติย้อนกลับเพื่อออกนอกแอป
+            try {
+                window.close();
+            } catch(e) {}
+            // ถ้าสั่ง window.close แล้วเบราว์เซอร์ไม่ออก ให้ใช้วิธีเด้งหน้าประวัติออก
+            history.go(-2);
         }
 
         window.addEventListener('popstate', (event) => {
@@ -494,7 +494,10 @@
         });
 
         window.onload = function() {
+            // สร้างสถานะตั้งต้นให้ประวัติย้อนกลับดักจับได้ตั้งแต่เปิดแอปทันที
             history.replaceState({ level: 'years' }, '');
+            history.pushState({ level: 'years' }, '');
+            
             initializeAppWithSplash();
             setInterval(backgroundSyncAlbums, 3000);
         };
@@ -723,7 +726,6 @@
 
         function applyFilters() { if (navigationLevel === 'albums') renderAlbumsView(); }
 
-        // --- ระบบซูม เลื่อนภาพ และปัดซ้าย-ขวาในหน้าอัลบั้ม ---
         let activeModalImages = [];
         let activeModalIndex = 0;
         let scale = 1, pointX = 0, pointY = 0, startX = 0, startY = 0, isDragging = false;
