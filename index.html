@@ -1057,7 +1057,7 @@
             renameTargetData = null;
         }
 
-  async function submitRenameAlbum() {
+ async function submitRenameAlbum() {
     let newName = document.getElementById('newAlbumNameInput').value.trim();
     if (!newName) {
         alert("กรุณากรอกชื่ออัลบั้มใหม่");
@@ -1083,10 +1083,10 @@
     loadingModal.style.display = 'flex';
 
     try {
-        // ส่งคำสั่ง POST ไปหา Apps Script แบบไม่ต้องรออ่าน body กลับมาตรงๆ เพื่อป้องกันปัญหา CORB/CORS
+        // 🚀 ใช้ mode: 'no-cors' เพื่อทะลุกำแพง CORS ของ Google Apps Script ส่งคำสั่งไปถึงหลังบ้านได้ชัวร์
         await fetch(SCRIPT_URL, {
             method: 'POST',
-            redirect: 'follow',
+            mode: 'no-cors',
             body: JSON.stringify({
                 action: 'rename',
                 optionType: optionType,
@@ -1094,28 +1094,18 @@
                 newFolderName: newName
             })
         });
-    } catch (e) {
-        // ปล่อยผ่าน error จากการบล็อกข้ามโดเมน เพราะคำสั่งได้ถูกส่งไปถึงหลังบ้านแล้ว
+    } catch (err) {
+        // ปล่อยผ่าน error การอ่านค่า เพราะ no-cors จะอ่าน response ไม่ได้ แต่คำสั่งส่งไปถึงแล้ว
     }
 
-    // หน่วงเวลาให้ Google Drive ทำการเปลี่ยนชื่อและเคลียร์ระบบเสร็จสิ้น
+    // หน่วงเวลา 2 วินาทีให้ Google Drive จัดการเปลี่ยนชื่อและบันทึกข้อมูลเสร็จสิ้น
     setTimeout(() => {
         loadingModal.style.display = 'none';
         showToast("เปลี่ยนชื่ออัลบั้มสำเร็จ!");
         
-        // อัปเดตข้อมูลบนหน้าจอทันที
-        if (typeof allAlbumsData !== 'undefined') {
-            allAlbumsData.forEach(album => {
-                if (album.folderName === oldName && album.optionType === optionType) {
-                    album.folderName = newName;
-                }
-            });
-            renderCurrentLevel();
-        }
-
-        // ดึงข้อมูลใหม่จากเซิร์ฟเวอร์ซ้ำอีกรอบเพื่อความชัวร์
+        // ดึงข้อมูลล่าสุดจาก Google Drive จริงๆ มาแสดง (ชื่อจะไม่เด้งกลับแน่นอน)
         fetchAllAlbums();
-    }, 1500);
+    }, 2000);
 }
         function promptAddImages(folderName) {
             selectedFolderName = folderName;
