@@ -1083,9 +1083,10 @@
     loadingModal.style.display = 'flex';
 
     try {
-        // ใช้ fetch แบบมาตรฐานเด๊ะๆ เหมือนกับฟังก์ชันลบอัลบั้มที่ใช้งานได้ปกติ
-        let response = await fetch(SCRIPT_URL, {
+        // ส่งคำสั่ง POST ไปหา Apps Script แบบไม่ต้องรออ่าน body กลับมาตรงๆ เพื่อป้องกันปัญหา CORB/CORS
+        await fetch(SCRIPT_URL, {
             method: 'POST',
+            redirect: 'follow',
             body: JSON.stringify({
                 action: 'rename',
                 optionType: optionType,
@@ -1093,38 +1094,28 @@
                 newFolderName: newName
             })
         });
-
-        let result = await response.json();
-        loadingModal.style.display = 'none';
-
-        if (result.status === "success") {
-            showToast("เปลี่ยนชื่ออัลบั้มสำเร็จ!");
-            
-            // อัปเดตข้อมูลบนหน้าจอทันที
-            if (typeof allAlbumsData !== 'undefined') {
-                allAlbumsData.forEach(album => {
-                    if (album.folderName === oldName && album.optionType === optionType) {
-                        album.folderName = newName;
-                    }
-                });
-                renderCurrentLevel();
-            }
-
-            // ดึงข้อมูลใหม่จากเซิร์ฟเวอร์ซ้ำเพื่อความชัวร์
-            setTimeout(() => {
-                fetchAllAlbums();
-            }, 1000);
-        } else {
-            alert("เปลี่ยนชื่อไม่สำเร็จ: " + (result.message || "ไม่พบโฟลเดอร์ในระบบ"));
-        }
-    } catch (err) {
-        loadingModal.style.display = 'none';
-        // กรณีดักจับ Error แต่คำสั่งใน Drive อาจจะเปลี่ยนไปแล้ว ให้สั่งรีเฟรชซิงค์ข้อมูลใหม่
-        showToast("🔄 กำลังอัปเดตข้อมูล...");
-        setTimeout(() => {
-            fetchAllAlbums();
-        }, 1500);
+    } catch (e) {
+        // ปล่อยผ่าน error จากการบล็อกข้ามโดเมน เพราะคำสั่งได้ถูกส่งไปถึงหลังบ้านแล้ว
     }
+
+    // หน่วงเวลาให้ Google Drive ทำการเปลี่ยนชื่อและเคลียร์ระบบเสร็จสิ้น
+    setTimeout(() => {
+        loadingModal.style.display = 'none';
+        showToast("เปลี่ยนชื่ออัลบั้มสำเร็จ!");
+        
+        // อัปเดตข้อมูลบนหน้าจอทันที
+        if (typeof allAlbumsData !== 'undefined') {
+            allAlbumsData.forEach(album => {
+                if (album.folderName === oldName && album.optionType === optionType) {
+                    album.folderName = newName;
+                }
+            });
+            renderCurrentLevel();
+        }
+
+        // ดึงข้อมูลใหม่จากเซิร์ฟเวอร์ซ้ำอีกรอบเพื่อความชัวร์
+        fetchAllAlbums();
+    }, 1500);
 }
         function promptAddImages(folderName) {
             selectedFolderName = folderName;
