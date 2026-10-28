@@ -345,7 +345,7 @@
         </div>
     </div>
 
-    <!-- Modal เปลี่ยนชื่ออัลบั้ม (ไม่ต้องใส่รหัสผ่าน) -->
+    <!-- Modal เปลี่ยนชื่ออัลบั้ม -->
     <div id="renameModal" class="modal" style="z-index: 1005;">
         <div class="loading-dialog-box" style="max-width: 320px; text-align: center;">
             <h3 style="color: #38bdf8; font-size: 1rem; margin-bottom: 0.3rem;">✏️ เปลี่ยนชื่ออัลบั้ม</h3>
@@ -389,7 +389,7 @@
     </div>
 
     <script>
-        const SCRIPT_URL = "const SCRIPT_URL = https://script.google.com/macros/s/AKfycbzM6LAjut8SRHhbgaXpHwrCIm0aeNo8fVV8v3K8JsC1af0xmA807cciiyoe_kn5wsYeyg/exec";
+        const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzM6LAjut8SRHhbgaXpHwrCIm0aeNo8fVV8v3K8JsC1af0xmA807cciiyoe_kn5wsYeyg/exec";
 
         const mainContainer = document.getElementById('mainContainer');
         const sectionTitle = document.getElementById('sectionTitle');
@@ -1053,7 +1053,7 @@
             renameTargetData = null;
         }
 
-       async function submitRenameAlbum() {
+        async function submitRenameAlbum() {
             let newName = document.getElementById('newAlbumNameInput').value.trim();
             if (!newName) {
                 alert("กรุณากรอกชื่ออัลบั้มใหม่");
@@ -1083,17 +1083,13 @@
                 if (result.status === "success") {
                     showToast("เปลี่ยนชื่ออัลบั้มสำเร็จ!");
                     
-                    // 🔄 อัปเดตข้อมูลในตัวแปรหน้าเว็บทันทีแบบไม่ต้องรอโหลดใหม่ทั้งหมด
                     allAlbumsData.forEach(album => {
                         if (album.folderName === renameTargetData.oldFolderName && album.optionType === renameTargetData.optionType) {
                             album.folderName = newName;
                         }
                     });
 
-                    // รีเฟรชหน้าจอแสดงผลใหม่ทันที
                     renderCurrentLevel();
-                    
-                    // เรียกซิงค์ข้อมูลจากเซิร์ฟเวอร์แบบเบื้องหลังอีกรอบเพื่อความชัวร์
                     setTimeout(fetchAllAlbums, 1000);
                 } else {
                     alert("เปลี่ยนชื่อไม่สำเร็จ: " + (result.message || ""));
@@ -1103,6 +1099,7 @@
                 alert("เกิดข้อผิดพลาดในการเชื่อมต่อเซิร์ฟเวอร์");
             }
         }
+
         function promptAddImages(folderName) {
             selectedFolderName = folderName;
             document.getElementById('targetAlbumLabel').innerText = folderName;
