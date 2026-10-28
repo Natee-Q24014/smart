@@ -366,14 +366,12 @@
 
         let deferredPrompt;
 
-        // จัดการปุ่มติดตั้ง PWA (รองรับทั้ง Android และ iOS)
         window.addEventListener('beforeinstallprompt', (e) => {
             e.preventDefault();
             deferredPrompt = e;
             if (installAppBtn) installAppBtn.style.display = 'inline-flex';
         });
 
-        // เช็คว่าเป็น iOS (iPhone/iPad) หรือไม่ เพื่อแสดงปุ่มติดตั้งด้วย
         function checkIOSInstallButton() {
             const isIos = /iphone|ipad|ipod/.test(navigator.userAgent.toLowerCase());
             const isInStandaloneMode = ('standalone' in window.navigator) && (window.navigator.standalone);
@@ -467,36 +465,33 @@
         });
         function scrollToTop() { window.scrollTo({ top: 0, behavior: 'smooth' }); }
 
-        // --- ระบบดักจับปุ่ม Back ของมือถือ (ตามลำดับชั้นอย่างสมบูรณ์แบบโดยไม่มี Popup) ---
+        // --- ระบบจัดการปุ่ม Back ของมือถือแบบสมบูรณ์ ครบทุกสเต็ปชั้นข้อมูล ---
         window.addEventListener('popstate', (event) => {
             const imageModal = document.getElementById('imageModal');
             
-            // 1. ถ้าเปิดดูรูปซูมอยู่ ให้ปิดรูปภาพก่อน
+            // 1. ถ้ากำลังเปิดดูรูปอยู่ ให้ปิดรูปก่อน
             if (imageModal && imageModal.style.display === 'flex') {
                 imageModal.style.display = 'none';
-                history.pushState({ level: navigationLevel }, '', window.location.href);
                 return;
             }
 
-            // 2. ถ้ายืนอยู่หน้าอัลบั้ม ให้ถอยกลับมาหน้าเดือน
+            // 2. ถ้าอยู่ที่หน้าอัลบั้ม -> ถอยกลับมาหน้าเดือน
             if (navigationLevel === 'albums') {
                 navigationLevel = 'months';
                 currentSelectedMonth = null;
                 renderCurrentLevel();
-                history.pushState({ level: 'months' }, '', window.location.href);
                 return;
             }
 
-            // 3. ถ้ายืนอยู่หน้าเดือน ให้ถอยกลับมาหน้าปี (หน้าแรก)
+            // 3. ถ้าอยู่ที่หน้าเดือน -> ถอยกลับมาหน้าปี (หน้าแรก)
             if (navigationLevel === 'months') {
                 navigationLevel = 'years';
                 currentSelectedYear = null;
                 renderCurrentLevel();
-                history.pushState({ level: 'years' }, '', window.location.href);
                 return;
             }
 
-            // 4. ถ้าอยู่ที่หน้าปี (หน้าแรกสุด) แล้วกดย้อนกลับอีกครั้ง ปล่อยให้ออกนอกแอปทันที
+            // 4. ถ้าอยู่ที่หน้าปีแล้วกดย้อนกลับอีกครั้ง ปล่อยให้ออกแอปตามปกติ
             if (navigationLevel === 'years') {
                 history.back();
             }
@@ -640,13 +635,12 @@
             if (navigationLevel === 'albums') {
                 navigationLevel = 'months';
                 currentSelectedMonth = null;
-                history.pushState({ level: 'months' }, '', window.location.href);
+                renderCurrentLevel();
             } else if (navigationLevel === 'months') {
                 navigationLevel = 'years';
                 currentSelectedYear = null;
-                history.pushState({ level: 'years' }, '', window.location.href);
+                renderCurrentLevel();
             }
-            renderCurrentLevel();
         }
 
         function renderYearsView() {
@@ -747,7 +741,7 @@
             resetZoom();
             showImageInModal();
             document.getElementById('imageModal').style.display = 'flex';
-            history.pushState({ level: navigationLevel, modalOpen: true }, '', window.location.href);
+            history.pushState({ level: 'modal' }, '', window.location.href);
         }
 
         function closeModal() {
