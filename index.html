@@ -1053,16 +1053,13 @@
             renameTargetData = null;
         }
 
-        async function submitRenameAlbum() {
+       async function submitRenameAlbum() {
             let newName = document.getElementById('newAlbumNameInput').value.trim();
             if (!newName) {
                 alert("กรุณากรอกชื่ออัลบั้มใหม่");
                 return;
             }
             if (!renameTargetData) return;
-
-            let oldName = renameTargetData.oldFolderName;
-            let optionType = renameTargetData.optionType;
 
             closeRenameModal();
             document.getElementById('loadingTitle').innerText = "กำลังเปลี่ยนชื่ออัลบั้ม";
@@ -1072,35 +1069,38 @@
             try {
                 let response = await fetch(SCRIPT_URL, {
                     method: 'POST',
-                    headers: { 'Content-Type': 'text/plain;charset=utf-8' }, // 👈 เพิ่มบรรทัดนี้เพื่อให้ส่งผ่าน CORS ของ Apps Script ได้สมบูรณ์
                     body: JSON.stringify({
                         action: 'rename',
-                        optionType: optionType,
-                        oldFolderName: oldName,
+                        optionType: renameTargetData.optionType,
+                        oldFolderName: renameTargetData.oldFolderName,
                         newFolderName: newName,
                         password: "6004"
                     })
                 });
-                
                 let result = await response.json();
                 loadingModal.style.display = 'none';
 
                 if (result.status === "success") {
                     showToast("เปลี่ยนชื่ออัลบั้มสำเร็จ!");
-                    // หน่วงเวลาเล็กน้อยเพื่อให้ Google Drive เคลียร์ระบบ แล้วดึงข้อมูลใหม่ทันที
-                    setTimeout(() => {
-                        fetchAllAlbums();
-                    }, 1000);
+                    
+                    // 🔄 อัปเดตข้อมูลในตัวแปรหน้าเว็บทันทีแบบไม่ต้องรอโหลดใหม่ทั้งหมด
+                    allAlbumsData.forEach(album => {
+                        if (album.folderName === renameTargetData.oldFolderName && album.optionType === renameTargetData.optionType) {
+                            album.folderName = newName;
+                        }
+                    });
+
+                    // รีเฟรชหน้าจอแสดงผลใหม่ทันที
+                    renderCurrentLevel();
+                    
+                    // เรียกซิงค์ข้อมูลจากเซิร์ฟเวอร์แบบเบื้องหลังอีกรอบเพื่อความชัวร์
+                    setTimeout(fetchAllAlbums, 1000);
                 } else {
-                    alert("เปลี่ยนชื่อไม่สำเร็จ: " + (result.message || "ไม่พบอัลบั้มใน Google Drive"));
+                    alert("เปลี่ยนชื่อไม่สำเร็จ: " + (result.message || ""));
                 }
             } catch (err) {
                 loadingModal.style.display = 'none';
-                // กรณีติดปัญหา Redirect/CORS แต่หลังบ้านเปลี่ยนชื่อสำเร็จแล้ว ให้บังคับดึงข้อมูลใหม่
-                showToast("🔄 กำลังอัปเดตข้อมูล...");
-                setTimeout(() => {
-                    fetchAllAlbums();
-                }, 1500);
+                alert("เกิดข้อผิดพลาดในการเชื่อมต่อเซิร์ฟเวอร์");
             }
         }
         function promptAddImages(folderName) {
