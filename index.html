@@ -197,6 +197,10 @@
             </div>
             
             <div class="header-right-actions">
+                <!-- ปุ่มรีเฟรชข้อมูลล่าสุด -->
+                <div class="bell-wrapper" onclick="manualRefreshApp()" title="รีเฟรชข้อมูลใหม่">
+                    🔄
+                </div>
                 <div class="bell-wrapper" onclick="openNotificationModal()" title="ดูรายการอัลบั้มใหม่">
                     🔔
                     <div id="notificationBadge" class="notification-badge">0</div>
@@ -456,6 +460,30 @@
 
         function closeIosModal() {
             document.getElementById('iosInstallModal').style.display = 'none';
+        }
+
+        // ฟังก์ชันสำหรับกดปุ่มรีเฟรชข้อมูลล่าสุด
+        async function manualRefreshApp() {
+            showToast("🔄 กำลังรีเฟรชข้อมูลล่าสุด...");
+            setSystemStatus('orange', 'กำลังซิงค์...');
+            try {
+                const response = await fetch(SCRIPT_URL + "?action=getAlbums&t=" + new Date().getTime());
+                const result = await response.json();
+                if (result.status === "success") {
+                    allAlbumsData = result.data || [];
+                    processNewAlbumsDetection(allAlbumsData);
+                    updateStats();
+                    renderCurrentLevel();
+                    setSystemStatus('green', 'พร้อมใช้งาน');
+                    showToast("✅ อัปเดตข้อมูลล่าสุดเรียบร้อย!");
+                } else {
+                    setSystemStatus('red', 'โหลดไม่สำเร็จ');
+                    showToast("❌ โหลดข้อมูลไม่สำเร็จ");
+                }
+            } catch (err) {
+                setSystemStatus('red', 'เชื่อมต่อล้มเหลว');
+                showToast("🔴 เกิดข้อผิดพลาดในการเชื่อมต่อ");
+            }
         }
 
         function openNotificationModal() { document.getElementById('notificationModal').style.display = 'flex'; }
