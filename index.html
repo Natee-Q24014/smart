@@ -291,12 +291,27 @@
         <div id="modalCounter" class="modal-counter">1 / 1</div>
     </div>
 
+    <!-- Popup แนะนำติดตั้งแอปเมื่อเข้าเว็บครั้งแรก -->
+    <div id="installPromptModal" class="modal" style="z-index: 10050; display: none;">
+        <div class="loading-dialog-box" style="max-width: 320px; text-align: center;">
+            <div style="font-size: 2.5rem; margin-bottom: 0.3rem;">📲</div>
+            <h3 style="color: #38bdf8; font-size: 1.05rem; margin-bottom: 0.4rem;">ติดตั้งแอปพลิเคชัน</h3>
+            <p id="installPromptDesc" style="font-size: 0.8rem; color: #cbd5e1; margin-bottom: 1rem; line-height: 1.4;">
+                แนะนำให้ติดตั้งโปรแกรมลงในหน้าจอหลัก (Home Screen) เพื่อความสะดวก รวดเร็ว และใช้งานได้เต็มจอครับ
+            </p>
+            <div style="display: flex; gap: 0.5rem; justify-content: center;">
+                <button class="btn-nav-action" style="flex: 1; padding: 0.5rem; background-color: #3e495e;" onclick="declineInstallPrompt()">ยังก่อน</button>
+                <button class="btn-nav-action" style="flex: 1; padding: 0.5rem; background-color: #0284c7; color: #fff; border: none;" onclick="acceptInstallPrompt()">ติดตั้งเลย</button>
+            </div>
+        </div>
+    </div>
+
     <!-- Modal คำแนะนำติดตั้งบน iOS -->
     <div id="iosInstallModal" class="modal" style="display: none;" onclick="closeIosModal()">
         <div class="loading-dialog-box" style="max-width: 320px; text-align: center;" onclick="event.stopPropagation()">
             <h3 style="color: #38bdf8; font-size: 1rem; margin-bottom: 0.5rem;">📲 ติดตั้งแอปบน iOS</h3>
             <p style="font-size: 0.8rem; color: #cbd5e1; margin-bottom: 0.8rem; line-height: 1.4;">
-                1. กดที่ปุ่มแชร์ <span style="font-size: 1.1rem;">⎋</span> (ด้านล่างใน Safari)<br>
+                1. กดที่ปุ่มแชร์ <span style="font-size: 1.1rem;">⎋</span> (ด้านล่างในเบราว์เซอร์ Safari)<br>
                 2. เลื่อนหาแล้วกดเลือก <b>"เพิ่มไปยังหน้าจอโฮม"</b> (Add to Home Screen)
             </p>
             <button class="btn-nav-action" style="width: 100%; padding: 0.5rem; background-color: #0284c7; color: #fff; border: none;" onclick="closeIosModal()">เข้าใจแล้ว</button>
@@ -380,7 +395,22 @@
             }
         }
 
-        async function installPWA() {
+        // --- ระบบควบคุม Popup แนะนำติดตั้งแอปตอนเข้าเว็บครั้งแรก ---
+        function checkAndShowInstallPrompt() {
+            const isIos = /iphone|ipad|ipod/.test(navigator.userAgent.toLowerCase());
+            const isInStandaloneMode = ('standalone' in window.navigator) && (window.navigator.standalone);
+            
+            // เช็คว่าถ้ายังไม่ได้ติดตั้ง และยังไม่เคยปฏิเสธในเซสชันนี้
+            if (!isInStandaloneMode && !sessionStorage.getItem('install_prompt_declined')) {
+                // รอให้ Splash Screen หายไปก่อนสักครู่ค่อยเด้ง Popup แนะนำ
+                setTimeout(() => {
+                    document.getElementById('installPromptModal').style.display = 'flex';
+                }, 1200);
+            }
+        }
+
+        async function acceptInstallPrompt() {
+            document.getElementById('installPromptModal').style.display = 'none';
             const isIos = /iphone|ipad|ipod/.test(navigator.userAgent.toLowerCase());
             if (isIos) {
                 document.getElementById('iosInstallModal').style.display = 'flex';
@@ -390,11 +420,22 @@
             if (deferredPrompt) {
                 deferredPrompt.prompt();
                 const { outcome } = await deferredPrompt.userChoice;
-                if (outcome === 'accepted') { installAppBtn.style.display = 'none'; }
+                if (outcome === 'accepted') { 
+                    if (installAppBtn) installAppBtn.style.display = 'none'; 
+                }
                 deferredPrompt = null;
             } else {
                 alert("สามารถติดตั้งแอปได้จากเมนูของเบราว์เซอร์ (Add to Home Screen)");
             }
+        }
+
+        function declineInstallPrompt() {
+            document.getElementById('installPromptModal').style.display = 'none';
+            sessionStorage.setItem('install_prompt_declined', 'true');
+        }
+
+        async function installPWA() {
+            acceptInstallPrompt();
         }
 
         function closeIosModal() {
@@ -501,6 +542,7 @@
             history.replaceState({ level: 'years' }, '', window.location.href);
             checkIOSInstallButton();
             initializeAppWithSplash();
+            checkAndShowInstallPrompt();
             setInterval(backgroundSyncAlbums, 3000);
         };
 
@@ -553,7 +595,8 @@
                 document.getElementById('addImagesModal').style.display === 'flex' || 
                 document.getElementById('loadingModal').style.display === 'flex' ||
                 document.getElementById('imageModal').style.display === 'flex' ||
-                document.getElementById('iosInstallModal').style.display === 'flex') {
+                document.getElementById('iosInstallModal').style.display === 'flex' ||
+                document.getElementById('installPromptModal').style.display === 'flex') {
                 return;
             }
             try {
