@@ -390,7 +390,7 @@
         });
 
         function isAppInstalled() {
-            const isStandalone = window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone === document.referrer.includes('android-app://');
+            const isStandalone = window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone === true;
             return isStandalone;
         }
 
@@ -405,7 +405,12 @@
             if (isAppInstalled()) return;
             if (!sessionStorage.getItem('install_prompt_declined')) {
                 setTimeout(() => {
-                    document.getElementById('installPromptModal').style.display = 'flex';
+                    const isIos = /iphone|ipad|ipod/.test(navigator.userAgent.toLowerCase());
+                    if (isIos) {
+                        document.getElementById('iosInstallModal').style.display = 'flex';
+                    } else {
+                        document.getElementById('installPromptModal').style.display = 'flex';
+                    }
                 }, 1200);
             }
         }
