@@ -448,13 +448,13 @@
         });
         function scrollToTop() { window.scrollTo({ top: 0, behavior: 'smooth' }); }
 
-        // --- ระบบจัดการปุ่ม Back มือถือ (ทำงานปกติในหน้าย่อย และเตือนเฉพาะหน้าแรกสุด) ---
+        // --- ระบบดักจับปุ่ม Back ของตัวมือถือ ---
         function openExitConfirmModal() {
             document.getElementById('exitConfirmModal').style.display = 'flex';
         }
         function cancelExit() {
             document.getElementById('exitConfirmModal').style.display = 'none';
-            history.pushState({ level: 'years' }, ''); // ดักสถานะกลับคืนไว้
+            history.pushState({ level: 'years' }, ''); // ล็อกประวัติไว้ไม่ให้หลุด
         }
         function confirmExit() {
             document.getElementById('exitConfirmModal').style.display = 'none';
@@ -465,14 +465,14 @@
         }
 
         window.addEventListener('popstate', (event) => {
-            // 1. ถ้ากำลังเปิดดูรูปอยู่ -> ปิดรูป
+            // 1. ถ้าเปิดดูรูปซูมอยู่ -> ปิดรูป
             if (document.getElementById('imageModal').style.display === 'flex') {
                 closeModal();
-                history.pushState(null, '', window.location.href);
+                history.pushState({ level: 'modal' }, '');
                 return;
             }
 
-            // 2. ถ้าอยู่หน้าอัลบั้ม -> ถอยกลับไปหน้าเดือน (ปกติ)
+            // 2. ถ้าอยู่หน้าอัลบั้ม -> ถอยกลับไปหน้าเดือน
             if (navigationLevel === 'albums') {
                 navigationLevel = 'months';
                 currentSelectedMonth = null;
@@ -480,7 +480,7 @@
                 return;
             }
 
-            // 3. ถ้าอยู่หน้าเดือน -> ถอยกลับไปหน้าปี (ปกติ)
+            // 3. ถ้าอยู่หน้าเดือน -> ถอยกลับไปหน้าปี
             if (navigationLevel === 'months') {
                 navigationLevel = 'years';
                 currentSelectedYear = null;
@@ -488,15 +488,18 @@
                 return;
             }
 
-            // 4. ถ้าอยู่ที่หน้าแรกสุด (ปี) แล้วกดย้อนกลับ -> แสดง Popup แจ้งเตือนออกแอป
+            // 4. ถ้าอยู่ที่หน้าแรกสุด (หน้าเลือกปี) แล้วกดปุ่ม Back ของมือถือ -> เด้ง Popup แจ้งเตือน
             if (navigationLevel === 'years') {
                 openExitConfirmModal();
-                history.pushState({ level: 'years' }, ''); // ล็อกไว้ไม่ให้เด้งหลุด
+                history.pushState({ level: 'years' }, ''); // ดักจับไม่ให้หลุดออกแอปทันที
             }
         });
 
         window.onload = function() {
+            // สร้างประวัติซ้อนไว้ 1 ชั้นตั้งแต่เปิดแอป เพื่อให้ดักจับปุ่ม Back ของเครื่องได้ทันทีตั้งแต่ครั้งแรก
             history.replaceState({ level: 'years' }, '');
+            history.pushState({ level: 'years' }, '');
+            
             initializeAppWithSplash();
             setInterval(backgroundSyncAlbums, 3000);
         };
