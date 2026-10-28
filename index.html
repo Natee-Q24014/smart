@@ -71,14 +71,20 @@
         .status-orange { background: rgba(245, 158, 11, 0.1); color: #fbbf24; border: 1px solid rgba(245, 158, 11, 0.2); }
         .status-red { background: rgba(239, 68, 68, 0.1); color: #f87171; border: 1px solid rgba(239, 68, 68, 0.2); }
 
-        .header-right-actions { display: flex; gap: 0.4rem; align-items: center; }
+        .header-right-actions { display: flex; gap: 0.6rem; align-items: center; }
+        .action-icon-wrapper {
+            display: flex; flex-direction: column; align-items: center; cursor: pointer; text-align: center;
+        }
         .bell-wrapper {
-            position: relative; cursor: pointer; background-color: #262c38; border: 1px solid #4d5b73;
-            width: 42px; height: 42px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 1.1rem;
+            position: relative; background-color: #262c38; border: 1px solid #4d5b73;
+            width: 38px; height: 38px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 1rem;
+        }
+        .action-icon-label {
+            font-size: 0.62rem; color: #94a3b8; font-weight: 600; margin-top: 2px; white-space: nowrap;
         }
         .notification-badge {
             position: absolute; top: -3px; right: -3px; background-color: #ef4444; color: white;
-            font-size: 0.65rem; font-weight: 700; padding: 2px 6px; border-radius: 10px; display: none;
+            font-size: 0.6rem; font-weight: 700; padding: 1px 5px; border-radius: 10px; display: none;
         }
 
         .notification-modal, .modal, .loading-modal {
@@ -197,13 +203,18 @@
             </div>
             
             <div class="header-right-actions">
-                <!-- ปุ่มรีเฟรชข้อมูลล่าสุด -->
-                <div class="bell-wrapper" onclick="manualRefreshApp()" title="รีเฟรชข้อมูลใหม่">
-                    🔄
+                <!-- ปุ่มรีเฟรช พร้อมชื่อด้านล่าง -->
+                <div class="action-icon-wrapper" onclick="manualRefreshApp()" title="รีเฟรชข้อมูลใหม่">
+                    <div class="bell-wrapper">🔄</div>
+                    <div class="action-icon-label">รีเฟรช</div>
                 </div>
-                <div class="bell-wrapper" onclick="openNotificationModal()" title="ดูรายการอัลบั้มใหม่">
-                    🔔
-                    <div id="notificationBadge" class="notification-badge">0</div>
+                <!-- ปุ่มแจ้งเตือน พร้อมชื่อด้านล่าง -->
+                <div class="action-icon-wrapper" onclick="openNotificationModal()" title="ดูรายการอัลบั้มใหม่">
+                    <div class="bell-wrapper">
+                        🔔
+                        <div id="notificationBadge" class="notification-badge">0</div>
+                    </div>
+                    <div class="action-icon-label">แจ้งเตือน</div>
                 </div>
             </div>
         </div>
