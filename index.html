@@ -448,27 +448,27 @@
         });
         function scrollToTop() { window.scrollTo({ top: 0, behavior: 'smooth' }); }
 
-        // --- ระบบดักจับปุ่ม Back ของตัวมือถือ ---
+        // --- ระบบจัดการปุ่ม Back มือถือ (แยกสถานะชัดเจน ไม่ให้หน้าดูรูปตีกับหน้าหลัก) ---
         function openExitConfirmModal() {
             document.getElementById('exitConfirmModal').style.display = 'flex';
         }
         function cancelExit() {
             document.getElementById('exitConfirmModal').style.display = 'none';
-            history.pushState({ level: 'years' }, ''); // ล็อกประวัติไว้ไม่ให้หลุด
+            history.pushState({ level: 'years' }, ''); 
         }
         function confirmExit() {
             document.getElementById('exitConfirmModal').style.display = 'none';
             try {
                 window.close();
             } catch(e) {}
-            history.go(-2);
+            // เปลี่ยนหน้าเว็บไปหน้าเปล่า เพื่อบังคับออกจากแอปทันที
+            window.location.replace("about:blank");
         }
 
         window.addEventListener('popstate', (event) => {
-            // 1. ถ้าเปิดดูรูปซูมอยู่ -> ปิดรูป
+            // 1. ถ้ากำลังเปิดดูรูปอยู่ -> ปิด Modal รูปภาพอย่างเดียว
             if (document.getElementById('imageModal').style.display === 'flex') {
-                closeModal();
-                history.pushState({ level: 'modal' }, '');
+                document.getElementById('imageModal').style.display = 'none';
                 return;
             }
 
@@ -488,15 +488,14 @@
                 return;
             }
 
-            // 4. ถ้าอยู่ที่หน้าแรกสุด (หน้าเลือกปี) แล้วกดปุ่ม Back ของมือถือ -> เด้ง Popup แจ้งเตือน
+            // 4. ถ้าอยู่ที่หน้าแรกสุด (หน้าปี) แล้วกดย้อนกลับ -> เด้ง Popup ถามออกแอป
             if (navigationLevel === 'years') {
                 openExitConfirmModal();
-                history.pushState({ level: 'years' }, ''); // ดักจับไม่ให้หลุดออกแอปทันที
+                history.pushState({ level: 'years' }, ''); 
             }
         });
 
         window.onload = function() {
-            // สร้างประวัติซ้อนไว้ 1 ชั้นตั้งแต่เปิดแอป เพื่อให้ดักจับปุ่ม Back ของเครื่องได้ทันทีตั้งแต่ครั้งแรก
             history.replaceState({ level: 'years' }, '');
             history.pushState({ level: 'years' }, '');
             
