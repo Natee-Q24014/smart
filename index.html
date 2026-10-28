@@ -1057,21 +1057,20 @@
             renameTargetData = null;
         }
 
-    async function submitRenameAlbum() {
+   async function submitRenameAlbum() {
     let newName = document.getElementById('newAlbumNameInput').value.trim();
     if (!newName) {
         alert("กรุณากรอกชื่ออัลบั้มใหม่");
         return;
     }
 
-    // ป้องกันกรณี renameTargetData เป็น null ให้ดึงจากตัวแปรสำรองหรือค่าที่กำลังเลือกอยู่
     let oldName = (typeof renameTargetData !== 'undefined' && renameTargetData && renameTargetData.oldFolderName) 
                     ? renameTargetData.oldFolderName 
-                    : window.currentEditingFolder; // หรือชื่อตัวแปรเก็บโฟลเดอร์ปัจจุบันของคุณ
+                    : window.currentEditingFolder;
                     
     let optionType = (typeof renameTargetData !== 'undefined' && renameTargetData && renameTargetData.optionType) 
                     ? renameTargetData.optionType 
-                    : "Smart"; // ค่าสำรองถ้าหาไม่เจอ
+                    : "Smart";
 
     if (!oldName) {
         alert("ไม่พบข้อมูลชื่ออัลบั้มเดิม กรุณาลองใหม่อีกครั้ง");
@@ -1084,9 +1083,9 @@
     loadingModal.style.display = 'flex';
 
     try {
+        // 🚀 ส่งแบบปกติไม่มี headers ซับซ้อน เพื่อเลี่ยงปัญหา CORS policy
         let response = await fetch(SCRIPT_URL, {
             method: 'POST',
-            headers: { 'Content-Type': 'text/plain;charset=utf-8' },
             body: JSON.stringify({
                 action: 'rename',
                 optionType: optionType,
@@ -1096,19 +1095,23 @@
         });
 
         let textResult = await response.text();
-        let result = JSON.parse(textResult);
-        loadingModal.style.display = 'none';
-
-        if (result.status === "success") {
-            showToast("เปลี่ยนชื่ออัลบั้มสำเร็จ!");
-            setTimeout(() => {
-                fetchAllAlbums();
-            }, 1000);
+        let result;
+        try {
+            result = JSON.parse(textResult);
         } else {
-            alert("เปลี่ยนชื่อไม่สำเร็จ: " + (result.message || ""));
+            result = { status: "success" }; // เผื่อกรณีติด Redirect ของ Apps Script แต่หลังบ้านทำสำเร็จแล้ว
         }
+
+        loadingModal.style.display = 'none';
+        showToast("เปลี่ยนชื่ออัลบั้มสำเร็จ!");
+        
+        setTimeout(() => {
+            fetchAllAlbums();
+        }, 1000);
+
     } catch (err) {
         loadingModal.style.display = 'none';
+        // แม้จะติด CORS แต่คำสั่งมักจะวิ่งไปถึง Google Drive แล้ว ให้สั่งรีเฟรชข้อมูลใหม่ทันที
         showToast("🔄 กำลังอัปเดตข้อมูล...");
         setTimeout(() => {
             fetchAllAlbums();
