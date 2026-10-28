@@ -1032,73 +1032,7 @@
         let selectedFolderName = '';
         let renameTargetData = null;
 
-        function promptDeleteAlbum(folderName, optionType) {
-            pendingAction = { type: 'deleteAlbum', folderName: folderName, optionType: optionType };
-            document.getElementById('dialogTitle').innerText = "🔒 ใส่รหัสผ่านเพื่อลบ";
-            document.getElementById('passwordSubText').innerText = "กรอกรหัสผ่านเพื่อดำเนินการต่อ";
-            document.getElementById('adminPasswordInput').value = '';
-            document.getElementById('passwordModal').style.display = 'flex';
-            document.getElementById('adminPasswordInput').focus();
-        }
-
-        function promptRenameAlbum(folderName, optionType) {
-            renameTargetData = { oldFolderName: folderName, optionType: optionType };
-            document.getElementById('newAlbumNameInput').value = folderName;
-            document.getElementById('renameModal').style.display = 'flex';
-            document.getElementById('newAlbumNameInput').focus();
-        }
-
-        function closeRenameModal() {
-            document.getElementById('renameModal').style.display = 'none';
-            renameTargetData = null;
-        }
-
-        async function submitRenameAlbum() {
-            let newName = document.getElementById('newAlbumNameInput').value.trim();
-            if (!newName) {
-                alert("กรุณากรอกชื่ออัลบั้มใหม่");
-                return;
-            }
-            if (!renameTargetData) return;
-
-            closeRenameModal();
-            document.getElementById('loadingTitle').innerText = "กำลังเปลี่ยนชื่ออัลบั้ม";
-            document.getElementById('loadingDesc').innerText = "โปรดรอสักครู่...";
-            loadingModal.style.display = 'flex';
-
-            try {
-                let response = await fetch(SCRIPT_URL, {
-                    method: 'POST',
-                    body: JSON.stringify({
-                        action: 'rename',
-                        optionType: renameTargetData.optionType,
-                        oldFolderName: renameTargetData.oldFolderName,
-                        newFolderName: newName,
-                        password: "6004"
-                    })
-                });
-                let result = await response.json();
-                loadingModal.style.display = 'none';
-
-                if (result.status === "success") {
-                    showToast("เปลี่ยนชื่ออัลบั้มสำเร็จ!");
-                    
-                    allAlbumsData.forEach(album => {
-                        if (album.folderName === renameTargetData.oldFolderName && album.optionType === renameTargetData.optionType) {
-                            album.folderName = newName;
-                        }
-                    });
-
-                    renderCurrentLevel();
-                    setTimeout(fetchAllAlbums, 1000);
-                } else {
-                    alert("เปลี่ยนชื่อไม่สำเร็จ: " + (result.message || ""));
-                }
-            } catch (err) {
-                loadingModal.style.display = 'none';
-                alert("เกิดข้อผิดพลาดในการเชื่อมต่อเซิร์ฟเวอร์");
-            }
-        }
+        function index.html
 
         function promptAddImages(folderName) {
             selectedFolderName = folderName;
