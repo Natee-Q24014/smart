@@ -123,8 +123,11 @@
         .custom-toast {
             display: none; position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%);
             background-color: #323b4d; border: 1px solid #38bdf8; padding: 0.6rem 1rem; border-radius: 8px;
-            z-index: 1020; font-size: 0.8rem; font-weight: 600; color: #fff; box-shadow: 0 5px 15px rgba(0,0,0,0.3); align-items: center; gap: 0.5rem;
+            z-index: 1020; max-width: calc(100vw - 24px); font-size: 0.8rem; font-weight: 600; color: #fff; box-shadow: 0 5px 15px rgba(0,0,0,0.3); align-items: center; gap: 0.5rem; white-space: nowrap;
         }
+        #toastIcon { flex: 0 0 auto; }
+        #toastMessage { min-width: 0; overflow-x: auto; white-space: nowrap; scrollbar-width: none; }
+        #toastMessage::-webkit-scrollbar { display: none; }
         button, a, .file-upload-box, .option-btn, .preview-item img, .btn-remove-img {
             -webkit-tap-highlight-color: transparent;
         }
@@ -159,7 +162,7 @@
             .btn { min-height: 48px; display: inline-flex; align-items: center; justify-content: center; padding: 0.7rem 0.45rem; }
             .modal-top-bar { top: max(10px, env(safe-area-inset-top)); left: 12px; right: 12px; }
             .modal-nav-btn { font-size: 2rem; padding: 0.45rem; }
-            .custom-toast { width: calc(100% - 24px); justify-content: center; bottom: max(16px, env(safe-area-inset-bottom)); text-align: center; }
+            .custom-toast { width: max-content; justify-content: flex-start; bottom: max(16px, env(safe-area-inset-bottom)); text-align: left; }
         }
         @media (max-width: 360px) {
             .form-card { padding: 0.8rem; }
