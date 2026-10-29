@@ -389,7 +389,7 @@
     </div>
 
     <script>
-        const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwJRLgYZb8IQ5fq9UfA7SxnduOTXW_7qoTSbjzRlYoZkNWvu0uCRlN23EVXcvm2m_DcDg/exec";
+        const API_URL = "https://smart-album-api.smartq24014.workers.dev/";
 
         const mainContainer = document.getElementById('mainContainer');
         const sectionTitle = document.getElementById('sectionTitle');
@@ -645,61 +645,27 @@
             }
         }
 
+        async function fetchWithTimeout(url, options, timeoutMs) {
+            const controller = new AbortController();
+            const timeoutId = setTimeout(() => controller.abort(), timeoutMs);
+            try {
+                return await fetch(url, { ...options, signal: controller.signal });
+            } finally {
+                clearTimeout(timeoutId);
+            }
+        }
+
         async function readAlbumsFromServer() {
-            const result = await getAlbumsJsonp();
-            if (result.status !== "success") {
+            const response = await fetchWithTimeout(
+                API_URL + "?action=getAlbums&t=" + Date.now(),
+                { cache: 'no-store' },
+                20000
+            );
+            const result = await response.json();
+            if (!response.ok || result.status !== "success") {
                 throw new Error(result.message || "โหลดรายการอัลบั้มไม่สำเร็จ");
             }
             return result.data || [];
-        }
-
-        function getAlbumsJsonp() {
-            return new Promise((resolve, reject) => {
-                const callbackName = "__albumsCallback_" + Date.now() + "_" + Math.floor(Math.random() * 1000000);
-                const script = document.createElement('script');
-                const timeoutId = setTimeout(() => finish(new Error("หมดเวลารอข้อมูลจาก Apps Script")), 10000);
-                function finish(error, result) {
-                    clearTimeout(timeoutId);
-                    delete window[callbackName];
-                    script.remove();
-                    if (error) reject(error);
-                    else resolve(result);
-                }
-                window[callbackName] = result => finish(null, result);
-                script.onerror = () => finish(new Error("โหลดข้อมูลจาก Apps Script ไม่สำเร็จ"));
-                script.src = SCRIPT_URL + "?action=getAlbums&callback=" + callbackName + "&t=" + Date.now();
-                document.head.appendChild(script);
-            });
-        }
-
-        function submitMutationForm(payload) {
-            const iframe = document.createElement('iframe');
-            const form = document.createElement('form');
-            const requestId = "mutation_" + Date.now() + "_" + Math.floor(Math.random() * 1000000);
-            iframe.name = requestId;
-            iframe.style.display = 'none';
-            form.method = 'POST';
-            form.action = SCRIPT_URL;
-            form.target = requestId;
-            form.style.display = 'none';
-            const field = document.createElement('input');
-            field.type = 'hidden';
-            field.name = 'payload';
-            field.value = JSON.stringify(payload);
-            form.appendChild(field);
-            document.body.appendChild(iframe);
-            document.body.appendChild(form);
-            try {
-                form.submit();
-            } catch (err) {
-                form.remove();
-                iframe.remove();
-                throw err;
-            }
-            setTimeout(() => {
-                form.remove();
-                iframe.remove();
-            }, 60000);
         }
 
         function isSameAlbum(album, target) {
@@ -712,24 +678,16 @@
         }
 
         async function postAndConfirm(payload, isApplied, failureMessage) {
-            submitMutationForm(payload);
-
-            let requestError = null;
-            for (let attempt = 0; attempt < 8; attempt++) {
-                document.getElementById('loadingDesc').innerText =
-                    `รอเซิร์ฟเวอร์ยืนยันผล (${attempt + 1}/8)...`;
-                try {
-                    const albums = await readAlbumsFromServer();
-                    if (isApplied(albums)) return { status: "success", confirmed: true };
-                } catch (err) {
-                    requestError = err;
-                }
-                await new Promise(resolve => setTimeout(resolve, 1000));
+            const response = await fetchWithTimeout(API_URL, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(payload)
+            }, 60000);
+            const result = await response.json();
+            if (!response.ok || result.status !== "success") {
+                throw new Error(result.message || failureMessage);
             }
-            const detail = requestError && requestError.name === "AbortError"
-                ? "หมดเวลารอการตอบกลับ"
-                : requestError ? requestError.message : "เซิร์ฟเวอร์ไม่ยืนยันผล";
-            throw new Error(failureMessage + ` (${detail}; กรุณาตรวจรายการอัลบั้มก่อนลองซ้ำ)`);
+            return result;
         }
 
         async function backgroundSyncAlbums() {
@@ -745,7 +703,12 @@
             }
             isBackgroundSyncRunning = true;
             try {
-                const result = await getAlbumsJsonp();
+                const response = await fetchWithTimeout(
+                    API_URL + "?action=getAlbums&t=" + Date.now(),
+                    { cache: 'no-store' },
+                    20000
+                );
+                const result = await response.json();
                 if (result.status === "success") {
                     let newData = result.data || [];
                     if (JSON.stringify(newData) !== JSON.stringify(allAlbumsData)) {
