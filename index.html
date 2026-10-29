@@ -176,7 +176,9 @@
         .loading-spinner { width: 32px; height: 32px; border: 3px solid #434e63; border-top: 3px solid #38bdf8; border-radius: 50%; animation: spin 1s linear infinite; margin: 0 auto 0.6rem auto; }
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
 
-        .custom-toast { display: none; position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%); background-color: #323b4d; border: 1px solid #38bdf8; padding: 0.6rem 1rem; border-radius: 8px; z-index: 1020; font-size: 0.8rem; font-weight: 600; color: #fff; box-shadow: 0 5px 15px rgba(0,0,0,0.3); align-items: center; gap: 0.5rem; }
+        .custom-toast { display: none; position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%); background-color: #323b4d; border: 1px solid #38bdf8; padding: 0.6rem 1rem; border-radius: 8px; z-index: 1020; max-width: calc(100vw - 24px); font-size: 0.8rem; font-weight: 600; color: #fff; box-shadow: 0 5px 15px rgba(0,0,0,0.3); align-items: center; gap: 0.5rem; white-space: nowrap; }
+        #toastMessage { min-width: 0; overflow-x: auto; white-space: nowrap; scrollbar-width: none; }
+        #toastMessage::-webkit-scrollbar { display: none; }
         #mainContainer { flex: 1; }
         .footer { text-align: center; margin-top: 1.5rem; margin-bottom: 0.5rem; font-size: 0.7rem; color: #6b7280; }
 
@@ -240,7 +242,7 @@
             .btn-action { min-height: 44px; padding: 0.4rem 0.2rem; font-size: 0.67rem; }
             .modal-top-bar { top: max(10px, env(safe-area-inset-top)); left: 12px; right: 12px; }
             .modal-nav-btn { font-size: 2rem; padding: 0.45rem; }
-            .custom-toast { width: calc(100% - 24px); justify-content: center; bottom: max(16px, env(safe-area-inset-bottom)); text-align: center; }
+            .custom-toast { width: max-content; justify-content: flex-start; bottom: max(16px, env(safe-area-inset-bottom)); text-align: left; }
         }
         @media (max-width: 380px) {
             .header-card { flex-direction: column; }
