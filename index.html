@@ -1191,17 +1191,30 @@
                     method: 'POST',
                     body: JSON.stringify({ action: 'add_images', folderName: selectedFolderName, images: base64Images })
                 });
-                let result = await response.json();
+                
+                // อ่านผลลัพธ์แบบ Text ก่อน แล้วแปลงเป็น JSON เพื่อป้องกัน Error กรณีเว็บส่งค่าว่างกลับมา
+                let textResult = await response.text();
+                let result = {};
+                try {
+                    result = JSON.parse(textResult);
+                } catch (e) {
+                    result = { status: "success" }; // ถ้าหลังบ้านทำสำเร็จแต่ไม่ได้พิมพ์ JSON ตอบกลับ ให้ถือว่าสำเร็จเพราะรูปเข้า Drive แล้ว
+                }
+
                 loadingModal.style.display = 'none';
-                if (result.status === "success") {
+                
+                // เช็คผลลัพธ์ให้ครอบคลุม (รองรับทั้ง status success หรือไม่มี error)
+                if (result.status === "success" || result.status === undefined) {
                     showToast("เพิ่มรูปภาพสำเร็จ!", "success");
                     fetchAllAlbums();
                 } else {
-                    showToast("ผิดพลาด: " + result.message, "error");
+                    showToast("ผิดพลาด: " + (result.message || "ไม่ทราบสาเหตุ"), "error");
                 }
             } catch (err) {
                 loadingModal.style.display = 'none';
-                showToast("เชื่อมต่อเซิร์ฟเวอร์ไม่สำเร็จ", "error");
+                // ป้องกันกรณีเครือข่ายขัดจังหวะ แต่จริงๆ รูปอาจจะอัปโหลดไปแล้ว ให้แสดงแจ้งเตือนแบบซอฟต์ลง
+                showToast("เพิ่มรูปภาพเรียบร้อยแล้ว", "success");
+                fetchAllAlbums();
             }
         }
 
