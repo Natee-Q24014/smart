@@ -183,7 +183,7 @@
     </div>
 
     <div id="customToast" class="custom-toast">
-        <span style="color: #34d399; font-size: 1.1rem;">✅</span>
+        <span id="toastIcon" style="color: #34d399; font-size: 1.1rem;">✅</span>
         <span id="toastMessage">บันทึกสำเร็จ! กำลังกลับหน้าหลัก...</span>
     </div>
 
@@ -455,7 +455,11 @@
 
         function showToast(message, isError = false) {
             const toast = document.getElementById('customToast');
-            document.getElementById('toastMessage').innerText = message;
+            const icon = document.getElementById('toastIcon');
+            icon.innerText = isError ? '❌' : '✅';
+            icon.style.color = isError ? '#f87171' : '#34d399';
+            document.getElementById('toastMessage').innerText =
+                isError ? `ไม่สำเร็จ: ${message}` : message;
             toast.style.borderColor = isError ? '#f87171' : '#38bdf8';
             toast.style.display = 'flex';
         }
