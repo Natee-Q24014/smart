@@ -627,7 +627,7 @@
 
         async function fetchAllAlbums() {
             try {
-                const response = await fetch(SCRIPT_URL + "?action=getAlbums");
+                const response = await fetch(SCRIPT_URL + "?action=getAlbums&t=" + Date.now());
                 const result = await response.json();
                 if (result.status === "success") {
                     allAlbumsData = result.data || [];
@@ -635,9 +635,13 @@
                     updateStats();
                     renderCurrentLevel();
                     setSystemStatus('green', 'พร้อมใช้งาน');
+                    return allAlbumsData;
                 }
+                setSystemStatus('red', 'โหลดข้อมูลไม่สำเร็จ');
+                return null;
             } catch (err) {
                 setSystemStatus('red', 'เชื่อมต่อล้มเหลว');
+                return null;
             } finally {
                 loadingModal.style.display = 'none';
             }
@@ -1057,60 +1061,62 @@
             renameTargetData = null;
         }
 
-        // 🚀 ฟังก์ชันเปลี่ยนชื่อที่ปรับปรุงพารามิเตอร์เป็น 'folderName' และตัดปัญหา CORS/CORB เรียบร้อย
         async function submitRenameAlbum() {
-            let newName = document.getElementById('newAlbumNameInput').value.trim();
+            const newName = document.getElementById('newAlbumNameInput').value.trim();
             if (!newName) {
                 alert("กรุณากรอกชื่ออัลบั้มใหม่");
                 return;
             }
 
-            let oldName = (typeof renameTargetData !== 'undefined' && renameTargetData && renameTargetData.oldFolderName) 
-                            ? renameTargetData.oldFolderName 
-                            : window.currentEditingFolder;
-                            
-            let optionType = (typeof renameTargetData !== 'undefined' && renameTargetData && renameTargetData.optionType) 
-                            ? renameTargetData.optionType 
-                            : "Smart";
-
-            if (!oldName) {
-                alert("ไม่พบข้อมูลชื่ออัลบั้มเดิม กรุณาลองใหม่อีกครั้ง");
+            const oldName = renameTargetData && renameTargetData.oldFolderName;
+            const optionType = renameTargetData && renameTargetData.optionType;
+            if (!oldName || !optionType) {
+                alert("ไม่พบข้อมูลอัลบั้มเดิม กรุณาปิดหน้าต่างแล้วกดแก้ไขใหม่อีกครั้ง");
+                return;
+            }
+            if (newName === oldName) {
+                closeRenameModal();
                 return;
             }
 
-            closeRenameModal();
             document.getElementById('loadingTitle').innerText = "กำลังเปลี่ยนชื่ออัลบั้ม";
-            document.getElementById('loadingDesc').innerText = "โปรดรอสักครู่...";
-            loadingModal.style.display = 'flex';
+            document.getElementById('loadingDesc').innerText = "กำลังส่งคำสั่งและตรวจสอบ Google Drive...";
+            document.getElementById('loadingModal').style.display = 'flex';
 
             try {
-                let payload = JSON.stringify({
-                    action: 'rename',
-                    optionType: optionType,
-                    folderName: oldName,     // ส่งคีย์ 'folderName' ให้ตรงกับ Apps Script ฝั่งหลังบ้าน
-                    newFolderName: newName   // ส่งคีย์ 'newFolderName' ให้ตรงกับ Apps Script ฝั่งหลังบ้าน
+                // ใช้ POST แบบปกติเพื่ออ่านผลตอบกลับจาก Apps Script ได้
+                const response = await fetch(SCRIPT_URL, {
+                    method: 'POST',
+                    body: JSON.stringify({
+                        action: 'rename',
+                        optionType: optionType,
+                        oldFolderName: oldName,
+                        newFolderName: newName
+                    })
                 });
+                const result = await response.json();
 
-                if (navigator.sendBeacon) {
-                    let blob = new Blob([payload], { type: 'text/plain;charset=UTF-8' });
-                    navigator.sendBeacon(SCRIPT_URL, blob);
+                if (!response.ok || result.status !== 'success') {
+                    throw new Error(result.message || 'เซิร์ฟเวอร์ไม่สามารถเปลี่ยนชื่ออัลบั้มได้');
+                }
+
+                closeRenameModal();
+                // โหลดข้อมูลใหม่จาก Drive แล้วตรวจว่าชื่อใหม่ปรากฏจริงในหมวดที่เลือก
+                const refreshedAlbums = await fetchAllAlbums();
+                const sameCategory = (a) => a.optionType === optionType;
+                const newNameExists = Array.isArray(refreshedAlbums) && refreshedAlbums.some(a => sameCategory(a) && a.folderName === newName);
+                const oldNameExists = Array.isArray(refreshedAlbums) && refreshedAlbums.some(a => sameCategory(a) && a.folderName === oldName);
+
+                document.getElementById('loadingModal').style.display = 'none';
+                if (newNameExists && !oldNameExists) {
+                    showToast("เปลี่ยนชื่ออัลบั้มสำเร็จ!");
                 } else {
-                    await fetch(SCRIPT_URL, {
-                        method: 'POST',
-                        mode: 'no-cors',
-                        body: payload
-                    });
+                    alert("เซิร์ฟเวอร์ตอบว่าทำงานแล้ว แต่ยังยืนยันชื่อใหม่จากข้อมูล Drive ไม่ได้ กรุณารีเฟรชหน้าเว็บ และตรวจว่าได้ Deploy เวอร์ชันล่าสุดแล้วหรือไม่");
                 }
             } catch (err) {
-                // ปล่อยผ่าน error ข้ามโดเมน เพราะคำสั่งถูกส่งไปถึงหลังบ้านแล้ว
+                document.getElementById('loadingModal').style.display = 'none';
+                alert("เปลี่ยนชื่อไม่สำเร็จ: " + (err && err.message ? err.message : "เกิดข้อผิดพลาดในการเชื่อมต่อ"));
             }
-
-            // หน่วงเวลา 2 วินาทีให้ Google Drive จัดการเปลี่ยนชื่อและบันทึกข้อมูลเสร็จสิ้น
-            setTimeout(() => {
-                loadingModal.style.display = 'none';
-                showToast("เปลี่ยนชื่ออัลบั้มสำเร็จ!");
-                fetchAllAlbums();
-            }, 2000);
         }
 
         function promptAddImages(folderName) {
