@@ -547,30 +547,41 @@
             let finalFolderName = `[${firstFileDate}] ${userTypedName}`;
 
             const totalFiles = selectedFiles.length;
-            document.getElementById('loadingTitle').innerText = "กำลังอัปโหลด";
+            let uploadedCount = 0;
+            let albumCreated = false;
+            document.getElementById('loadingTitle').innerText = "กำลังเตรียมรูปภาพ";
             document.getElementById('spinnerBox').style.display = 'block';
             document.getElementById('loadingModal').style.display = 'flex';
-            document.getElementById('loadingDesc').innerText = `0/${totalFiles}`;
+            document.getElementById('loadingDesc').innerText = `เตรียมรูปภาพ 0/${totalFiles}`;
 
             try {
                 let base64Images = [];
                 for (let i = 0; i < selectedFiles.length; i++) {
                     base64Images.push(await fileToBase64(selectedFiles[i], 2000));
+                    document.getElementById('loadingDesc').innerText = `เตรียมรูปภาพ ${i + 1}/${totalFiles}`;
                 }
 
-                document.getElementById('loadingDesc').innerText = `กำลังส่งข้อมูล... (0/${totalFiles})`;
-
-                await postAndConfirm({
-                    action: 'create',
+                document.getElementById('loadingTitle').innerText = "กำลังอัปโหลดรูป";
+                const albumResult = await postAndConfirm({
+                    action: 'create_album',
                     optionType: selectedCategory,
                     month: firstFileDate,
-                    folderName: finalFolderName,
-                    images: base64Images
-                }, albums => albums.some(album =>
-                    album.folderName === finalFolderName &&
-                    album.optionType === selectedCategory &&
-                    album.images.length >= totalFiles
-                ));
+                    folderName: finalFolderName
+                });
+                albumCreated = true;
+
+                for (let i = 0; i < base64Images.length; i++) {
+                    await postAndConfirm({
+                        action: 'add_images',
+                        folderId: albumResult.folderId,
+                        folderName: finalFolderName,
+                        optionType: selectedCategory,
+                        images: [base64Images[i]]
+                    });
+                    uploadedCount++;
+                    document.getElementById('loadingDesc').innerText = `อัปโหลดสำเร็จ ${uploadedCount}/${totalFiles} รูป`;
+                }
+
                 document.getElementById('loadingModal').style.display = 'none';
                 document.getElementById('loadingTitle').innerText = "กำลังอัปโหลด";
                 document.getElementById('loadingDesc').innerText = `${totalFiles}/${totalFiles}`;
@@ -580,7 +591,13 @@
                 }, 1500);
             } catch (err) {
                 document.getElementById('loadingModal').style.display = 'none';
-                showToast(err.message || "เชื่อมต่อเซิร์ฟเวอร์ไม่สำเร็จ", true);
+                const detail = err.message || "เชื่อมต่อเซิร์ฟเวอร์ไม่สำเร็จ";
+                showToast(
+                    albumCreated
+                        ? `อัปโหลดไม่ครบ (${uploadedCount}/${totalFiles} รูปสำเร็จ): ${detail}`
+                        : detail,
+                    true
+                );
             }
         }
     </script>
