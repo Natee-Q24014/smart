@@ -90,7 +90,7 @@
         .btn-submit { background-color: #0f766e; color: #e2e8f0; }
         .btn-submit:hover { background-color: #115e59; }
 
-        /* --- Modal ดูรูปตัวอย่าง --- */
+        /* --- Modal ดูรูปตัวอย่าง พร้อมระบบซูมและปัดเลื่อนซ้าย-ขวา --- */
         #imageModal {
             display: none; position: fixed; z-index: 9999; top: 0; left: 0; width: 100%; height: 100%;
             background-color: rgba(12, 16, 24, 0.96); flex-direction: column; overflow: hidden; touch-action: none;
@@ -120,21 +120,10 @@
         .loading-spinner { width: 32px; height: 32px; border: 3px solid #434e63; border-top: 3px solid #38bdf8; border-radius: 50%; animation: spin 1s linear infinite; margin: 0 auto 0.6rem auto; }
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
 
-        /* Toast ธีมแอป หายไปเองอัตโนมัติ */
         .custom-toast {
-            display: none; position: fixed; bottom: 30px; left: 50%; transform: translateX(-50%);
-            background-color: #323b4d; border: 1px solid #38bdf8; color: #f8fafc;
-            padding: 0.75rem 1.4rem; border-radius: 12px; z-index: 9999;
-            font-size: 0.85rem; font-weight: 600;
-            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.4), 0 0 12px rgba(56, 189, 248, 0.25);
-            align-items: center; gap: 0.6rem; pointer-events: none;
-            animation: toastFadeInOut 2.5s ease-in-out forwards;
-        }
-        @keyframes toastFadeInOut {
-            0% { opacity: 0; transform: translate(-50%, 20px); }
-            15% { opacity: 1; transform: translate(-50%, 0); }
-            85% { opacity: 1; transform: translate(-50%, 0); }
-            100% { opacity: 0; transform: translate(-50%, -10px); }
+            display: none; position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%);
+            background-color: #323b4d; border: 1px solid #38bdf8; padding: 0.6rem 1rem; border-radius: 8px;
+            z-index: 1020; font-size: 0.8rem; font-weight: 600; color: #fff; box-shadow: 0 5px 15px rgba(0,0,0,0.3); align-items: center; gap: 0.5rem;
         }
     </style>
 </head>
@@ -179,7 +168,7 @@
         </div>
     </div>
 
-    <!-- Modal ดูรูปตัวอย่าง -->
+    <!-- Modal ดูรูปตัวอย่าง รองรับทั้งซูม เลื่อน และปัดซ้ายขวา -->
     <div id="imageModal" class="loading-modal" style="background-color: rgba(12, 16, 24, 0.96); justify-content: center;">
         <div class="modal-top-bar">
             <div></div>
@@ -194,7 +183,7 @@
     </div>
 
     <div id="customToast" class="custom-toast">
-        <span id="toastIcon" style="font-size: 1.1rem;">✅</span>
+        <span style="color: #34d399; font-size: 1.1rem;">✅</span>
         <span id="toastMessage">บันทึกสำเร็จ! กำลังกลับหน้าหลัก...</span>
     </div>
 
@@ -211,7 +200,7 @@
         
         let selectedCategory = "Smart";
         let selectedFiles = [];
-        let previewDataUrls = [];
+        let previewDataUrls = []; // เก็บ Data URL ของรูปทั้งหมดไว้ดูใน Modal
 
         function setCategory(cat) {
             selectedCategory = cat;
@@ -250,28 +239,40 @@
         }
 
         function readFileAsDataURL(file) {
-            return new Promise((resolve) => {
+            return new Promise((resolve, reject) => {
                 const reader = new FileReader();
+                reader.onerror = () => reject(new Error("อ่านไฟล์รูปภาพไม่สำเร็จ"));
                 reader.onload = e => resolve(e.target.result);
                 reader.readAsDataURL(file);
             });
         }
 
         function fileToBase64(file, maxDim = 2000) {
-            return new Promise((resolve) => {
+            return new Promise((resolve, reject) => {
                 const reader = new FileReader();
                 reader.readAsDataURL(file);
+                reader.onerror = () => reject(new Error("อ่านไฟล์รูปภาพไม่สำเร็จ"));
                 reader.onload = e => {
                     const img = new Image();
                     img.src = e.target.result;
+                    img.onerror = () => reject(new Error("เปิดไฟล์รูปภาพไม่สำเร็จ"));
                     img.onload = () => {
                         const canvas = document.createElement('canvas');
                         let w = img.width, h = img.height;
                         if (w > h && w > maxDim) { h *= maxDim / w; w = maxDim; }
                         else if (h > maxDim) { w *= maxDim / h; h = maxDim; }
                         canvas.width = w; canvas.height = h;
-                        canvas.getContext('2d').drawImage(img, 0, 0, w, h);
-                        resolve(canvas.toDataURL('image/jpeg', 0.95).split(',')[1]);
+                        const context = canvas.getContext('2d');
+                        if (!context) {
+                            reject(new Error("เตรียมแปลงรูปภาพไม่สำเร็จ"));
+                            return;
+                        }
+                        context.drawImage(img, 0, 0, w, h);
+                        try {
+                            resolve(canvas.toDataURL('image/jpeg', 0.95).split(',')[1]);
+                        } catch (err) {
+                            reject(new Error("แปลงรูปภาพไม่สำเร็จ"));
+                        }
                     };
                 };
             });
@@ -317,6 +318,7 @@
             renderPreview();
         }
 
+        // --- ระบบจัดการ Modal ดูรูปตัวอย่าง พร้อมซูมและปัดเปลี่ยนรูป ---
         let activeModalIndex = 0;
         let scale = 1, pointX = 0, pointY = 0, startX = 0, startY = 0, isDragging = false;
         let initialDistance = null;
@@ -346,7 +348,7 @@
         }
 
         function nextModalImage() {
-            if (scale > 1) return;
+            if (scale > 1) return; // ถ้าซูมอยู่ ให้ขยับรูปภาพแทน
             activeModalIndex = (activeModalIndex + 1) % previewDataUrls.length;
             showImageInModal();
         }
@@ -365,6 +367,7 @@
         const modalImg = document.getElementById('modalImageSrc');
         const modalWrapper = document.getElementById('modalWrapper');
 
+        // ซูมด้วยเมาส์ Wheel
         modalWrapper.addEventListener('wheel', (e) => {
             e.preventDefault();
             if (e.deltaY < 0) {
@@ -376,6 +379,7 @@
             updateImageTransform();
         });
 
+        // รองรับการปัดนิ้วเปลี่ยนรูป (เมื่อไม่ได้ซูม) และลากเลื่อนรูป (เมื่อซูมแล้ว)
         modalWrapper.addEventListener('touchstart', (e) => {
             if (e.touches.length === 1) {
                 if (scale === 1) {
@@ -417,15 +421,16 @@
                 touchEndX = e.changedTouches[0].clientX;
                 let threshold = 50;
                 if (touchEndX < touchStartX - threshold) {
-                    nextModalImage();
+                    nextModalImage(); // ปัดซ้าย -> รูปถัดไป
                 } else if (touchEndX > touchStartX + threshold) {
-                    prevModalImage();
+                    prevModalImage(); // ปัดขวา -> รูปก่อนหน้า
                 }
             }
             isDragging = false;
             initialDistance = null;
         });
 
+        // ลากเลื่อนด้วยเมาส์เมื่อซูม
         modalImg.addEventListener('mousedown', (e) => {
             if (scale > 1) {
                 isDragging = true;
@@ -442,105 +447,100 @@
         });
         window.addEventListener('mouseup', () => { isDragging = false; });
 
+        // ดับเบิลคลิกเพื่อซูมเข้า/ออกทันที
         modalImg.addEventListener('dblclick', () => {
             if (scale === 1) { scale = 2.5; } else { resetZoom(); }
             updateImageTransform();
         });
 
-        function showToast(message, type = 'success') {
+        function showToast(message, isError = false) {
             const toast = document.getElementById('customToast');
-            const toastMessage = document.getElementById('toastMessage');
-            const toastIcon = document.getElementById('toastIcon');
+            document.getElementById('toastMessage').innerText = message;
+            toast.style.borderColor = isError ? '#f87171' : '#38bdf8';
+            toast.style.display = 'flex';
+        }
 
-            if (type === 'error') {
-                toastIcon.innerText = '⚠️';
-                toast.style.borderColor = '#ef4444';
-            } else if (type === 'info') {
-                toastIcon.innerText = 'ℹ️';
-                toast.style.borderColor = '#38bdf8';
-            } else {
-                toastIcon.innerText = '✅';
-                toast.style.borderColor = '#34d399';
+        async function readAlbumsFromServer() {
+            const response = await fetch(SCRIPT_URL + "?action=getAlbums&t=" + Date.now());
+            const result = await response.json();
+            if (!response.ok || result.status !== "success") {
+                throw new Error(result.message || "โหลดรายการอัลบั้มไม่สำเร็จ");
+            }
+            return result.data || [];
+        }
+
+        async function postAndConfirm(payload, isApplied) {
+            let result = null;
+            try {
+                const response = await fetch(SCRIPT_URL, {
+                    method: 'POST',
+                    body: JSON.stringify(payload)
+                });
+                result = await response.json();
+            } catch (err) {
+                // Apps Script may finish a cross-origin POST while the browser blocks its response.
             }
 
-            toastMessage.innerText = message;
-            toast.style.display = 'flex';
-            toast.style.animation = 'none';
-            toast.offsetHeight; 
-            toast.style.animation = 'toastFadeInOut 2.5s ease-in-out forwards';
+            if (result && result.status === "success") return result;
+            if (result && result.status === "error") {
+                throw new Error(result.message || "บันทึกข้อมูลไม่สำเร็จ");
+            }
 
-            setTimeout(() => {
-                toast.style.display = 'none';
-            }, 2500);
+            for (let attempt = 0; attempt < 15; attempt++) {
+                await new Promise(resolve => setTimeout(resolve, 1000));
+                try {
+                    const albums = await readAlbumsFromServer();
+                    if (isApplied(albums)) return { status: "success", confirmed: true };
+                } catch (err) {
+                    // Keep checking while the server may still be processing the mutation.
+                }
+            }
+            throw new Error("เซิร์ฟเวอร์ไม่ยืนยันผล กรุณาตรวจรายการอัลบั้มก่อนลองซ้ำ");
         }
 
         async function handleFormSubmit(e) {
             e.preventDefault();
-            if (selectedFiles.length === 0) {
-                showToast("กรุณาเลือกรูปภาพอย่างน้อย 1 รูป", "error");
-                return;
-            }
+            if (selectedFiles.length === 0) return alert("กรุณาเลือกรูปภาพ");
             
             let firstFileDate = selectedFiles[0].dateOnly || formatOnlyDate(new Date());
             let userTypedName = document.getElementById('folderNameInput').value.trim();
-            if (!userTypedName) {
-                showToast("กรุณากรอกชื่อหัวข้ออัลบั้ม", "error");
-                return;
-            }
-
             let finalFolderName = `[${firstFileDate}] ${userTypedName}`;
 
             const totalFiles = selectedFiles.length;
             document.getElementById('loadingTitle').innerText = "กำลังอัปโหลด";
             document.getElementById('spinnerBox').style.display = 'block';
             document.getElementById('loadingModal').style.display = 'flex';
-            document.getElementById('loadingDesc').innerText = `กำลังเตรียมไฟล์ (${totalFiles} รูป)...`;
+            document.getElementById('loadingDesc').innerText = `0/${totalFiles}`;
 
             try {
                 let base64Images = [];
                 for (let i = 0; i < selectedFiles.length; i++) {
                     base64Images.push(await fileToBase64(selectedFiles[i], 2000));
-                    document.getElementById('loadingDesc').innerText = `กำลังแปลงรูปภาพ: ${i + 1}/${totalFiles}`;
                 }
 
-                document.getElementById('loadingDesc').innerText = "กำลังส่งข้อมูลไปบันทึก...";
+                document.getElementById('loadingDesc').innerText = `กำลังส่งข้อมูล... (0/${totalFiles})`;
 
-                let response = await fetch(SCRIPT_URL, {
-                    method: 'POST',
-                    body: JSON.stringify({
-                        action: 'create',
-                        optionType: selectedCategory,
-                        month: firstFileDate,
-                        folderName: finalFolderName,
-                        images: base64Images
-                    })
-                });
-
-                let textResult = await response.text();
-                let result = {};
-                try {
-                    result = JSON.parse(textResult);
-                } catch (e) {
-                    result = { status: "success" };
-                }
-
+                await postAndConfirm({
+                    action: 'create',
+                    optionType: selectedCategory,
+                    month: firstFileDate,
+                    folderName: finalFolderName,
+                    images: base64Images
+                }, albums => albums.some(album =>
+                    album.folderName === finalFolderName &&
+                    album.optionType === selectedCategory &&
+                    album.images.length >= totalFiles
+                ));
                 document.getElementById('loadingModal').style.display = 'none';
-
-                if (result.status === "success" || result.status === undefined) {
-                    showToast("บันทึกสำเร็จ! กำลังกลับหน้าหลัก...", "success");
-                    setTimeout(() => {
-                        window.location.href = "index.html";
-                    }, 1500);
-                } else {
-                    showToast("ผิดพลาด: " + (result.message || "ไม่ทราบสาเหตุ"), "error");
-                }
-            } catch (err) {
-                document.getElementById('loadingModal').style.display = 'none';
-                // ป้องกันกรณีเครือข่ายตัดแต่ข้อมูลเข้า Drive เรียบร้อยแล้ว ให้ถือว่าสำเร็จ
-                showToast("บันทึกอัลบั้มเรียบร้อยแล้ว", "success");
+                document.getElementById('loadingTitle').innerText = "กำลังอัปโหลด";
+                document.getElementById('loadingDesc').innerText = `${totalFiles}/${totalFiles}`;
+                showToast("บันทึกสำเร็จ! กำลังกลับหน้าหลัก...");
                 setTimeout(() => {
                     window.location.href = "index.html";
                 }, 1500);
+            } catch (err) {
+                document.getElementById('loadingModal').style.display = 'none';
+                showToast(err.message || "เชื่อมต่อเซิร์ฟเวอร์ไม่สำเร็จ", true);
             }
         }
     </script>
