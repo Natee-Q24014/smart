@@ -175,23 +175,7 @@
         .loading-spinner { width: 32px; height: 32px; border: 3px solid #434e63; border-top: 3px solid #38bdf8; border-radius: 50%; animation: spin 1s linear infinite; margin: 0 auto 0.6rem auto; }
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
 
-        /* ปรับ Toast ธีมแอป ไม่ต้องกดตกลง หายไปเอง */
-        .custom-toast {
-            display: none; position: fixed; bottom: 30px; left: 50%; transform: translateX(-50%);
-            background-color: #323b4d; border: 1px solid #38bdf8; color: #f8fafc;
-            padding: 0.75rem 1.4rem; border-radius: 12px; z-index: 9999;
-            font-size: 0.85rem; font-weight: 600;
-            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.4), 0 0 12px rgba(56, 189, 248, 0.25);
-            align-items: center; gap: 0.6rem; pointer-events: none;
-            animation: toastFadeInOut 2.5s ease-in-out forwards;
-        }
-        @keyframes toastFadeInOut {
-            0% { opacity: 0; transform: translate(-50%, 20px); }
-            15% { opacity: 1; transform: translate(-50%, 0); }
-            85% { opacity: 1; transform: translate(-50%, 0); }
-            100% { opacity: 0; transform: translate(-50%, -10px); }
-        }
-
+        .custom-toast { display: none; position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%); background-color: #323b4d; border: 1px solid #38bdf8; padding: 0.6rem 1rem; border-radius: 8px; z-index: 1020; font-size: 0.8rem; font-weight: 600; color: #fff; box-shadow: 0 5px 15px rgba(0,0,0,0.3); align-items: center; gap: 0.5rem; }
         #mainContainer { flex: 1; }
         .footer { text-align: center; margin-top: 1.5rem; margin-bottom: 0.5rem; font-size: 0.7rem; color: #6b7280; }
     </style>
@@ -350,7 +334,7 @@
         </div>
     </div>
 
-    <!-- Modal เปลี่ยนชื่ออัลบั้ม -->
+    <!-- Modal เปลี่ยนชื่ออัลบั้ม (ไม่ต้องใส่รหัสผ่าน) -->
     <div id="renameModal" class="modal" style="z-index: 1005;">
         <div class="loading-dialog-box" style="max-width: 320px; text-align: center;">
             <h3 style="color: #38bdf8; font-size: 1rem; margin-bottom: 0.3rem;">✏️ เปลี่ยนชื่ออัลบั้ม</h3>
@@ -388,9 +372,8 @@
         </div>
     </div>
 
-    <!-- Toast แจ้งเตือนแบบไม่ต้องกดตกลง -->
     <div id="customToast" class="custom-toast">
-        <span id="toastIcon" style="font-size: 1.1rem;">✅</span>
+        <span style="color: #34d399; font-size: 1.1rem;">✅</span>
         <span id="toastMessage">บันทึกสำเร็จ!</span>
     </div>
 
@@ -467,7 +450,7 @@
                 } catch (err) {}
                 deferredPrompt = null;
             } else {
-                showToast("สามารถติดตั้งแอปได้จากเมนูของเบราว์เซอร์ (Add to Home Screen)", "info");
+                alert("สามารถติดตั้งแอปได้จากเมนูของเบราว์เซอร์ (Add to Home Screen)");
             }
         }
 
@@ -485,7 +468,7 @@
         }
 
         async function manualRefreshApp() {
-            showToast("🔄 กำลังล้างแคชและอัปเดตโค้ดใหม่...", "info");
+            showToast("🔄 กำลังล้างแคชและอัปเดตโค้ดใหม่...");
             setSystemStatus('orange', 'กำลังรีเฟรช...');
 
             try {
@@ -541,12 +524,12 @@
 
         window.addEventListener('online', () => {
             setSystemStatus('green', 'พร้อมใช้งาน');
-            showToast("🟢 เชื่อมต่ออินเทอร์เน็ตแล้ว", "success");
+            showToast("🟢 เชื่อมต่ออินเทอร์เน็ตแล้ว");
         });
 
         window.addEventListener('offline', () => {
             setSystemStatus('red', 'ขาดการเชื่อมต่ออินเทอร์เน็ต');
-            showToast("🔴 อินเทอร์เน็ตหลุด! กำลังทำงานแบบออฟไลน์", "error");
+            showToast("🔴 อินเทอร์เน็ตหลุด! กำลังทำงานแบบออฟไลน์");
         });
 
         if (!navigator.onLine) {
@@ -841,7 +824,7 @@
                 } else {
                     for (let i = imgs.length; i < 4; i++) { html += `<div style="background:rgba(255,255,255,0.02); border-radius:5px; height:65px;"></div>`; }
                 }
-                html += `</div><div class="album-action-bar"><span class="album-footer-info">📅 ${album.month} (${imgs.length} รูป)</span><div class="action-btns"><button class="btn-action btn-download-album" onclick="downloadAlbumZip('${encodeURIComponent(album.folderName)}', '${encodeURIComponent(JSON.stringify(imgs))}')">⬇️ ZIP</button><button class="btn-action btn-add-img" onclick="promptAddImages('${safeFolderName}')">➕ เพิ่ม</button><button class="btn-action btn-rename-album" onclick="promptRenameAlbum('${safeFolderName}', '${album.optionType}')">✏️ แก้ไข</button><button class="btn-action btn-del-album" onclick="promptDeleteAlbum('${safeFolderName}', '${album.optionType}')">🗑️ ลบ</button></div></div></div>`;
+                html += `</div><div class="album-action-bar"><span class="album-footer-info">📅 ${album.month} (${imgs.length} รูป)</span><div class="action-btns"><button class="btn-action btn-download-album" onclick="downloadAlbumZip('${encodeURIComponent(album.folderName)}', '${encodeURIComponent(JSON.stringify(imgs))}')">⬇️ ZIP</button><button class="btn-action btn-add-img" onclick="promptAddImages('${safeFolderName}', '${album.optionType}')">➕ เพิ่ม</button><button class="btn-action btn-rename-album" onclick="promptRenameAlbum('${safeFolderName}', '${album.optionType}')">✏️ แก้ไข</button><button class="btn-action btn-del-album" onclick="promptDeleteAlbum('${safeFolderName}', '${album.optionType}')">🗑️ ลบ</button></div></div></div>`;
             });
             html += '</div>';
             mainContainer.innerHTML = html;
@@ -1032,13 +1015,15 @@
                 loadingModal.style.display = 'none';
             } catch (err) {
                 loadingModal.style.display = 'none';
-                showToast("ไม่สามารถสร้างไฟล์ ZIP ได้", "error");
+                alert("ไม่สามารถสร้างไฟล์ ZIP ได้");
             }
         }
 
         let selectedFolderName = '';
+        let selectedOptionType = '';
         let renameTargetData = null;
 
+        // ลบอัลบั้มได้ทันทีโดยไม่ต้องใส่รหัสผ่าน
         async function promptDeleteAlbum(folderName, optionType) {
             if (confirm(`คุณต้องการลบอัลบั้ม "${folderName}" ใช่หรือไม่?`)) {
                 document.getElementById('loadingTitle').innerText = "กำลังลบอัลบั้ม";
@@ -1052,14 +1037,14 @@
                     let result = await response.json();
                     loadingModal.style.display = 'none';
                     if (result.status === "success") {
-                        showToast("ลบอัลบั้มสำเร็จ!", "success");
+                        showToast("ลบอัลบั้มสำเร็จ!");
                         fetchAllAlbums();
                     } else {
-                        showToast("ลบไม่สำเร็จ: " + (result.message || ""), "error");
+                        alert("ลบไม่สำเร็จ: " + (result.message || ""));
                     }
                 } catch (err) {
                     loadingModal.style.display = 'none';
-                    showToast("เกิดข้อผิดพลาดในการเชื่อมต่อเซิร์ฟเวอร์", "error");
+                    alert("เกิดข้อผิดพลาดในการเชื่อมต่อเซิร์ฟเวอร์");
                 }
             }
         }
@@ -1079,14 +1064,14 @@
         async function submitRenameAlbum() {
             const newName = document.getElementById('newAlbumNameInput').value.trim();
             if (!newName) {
-                showToast("กรุณากรอกชื่ออัลบั้มใหม่", "error");
+                alert("กรุณากรอกชื่ออัลบั้มใหม่");
                 return;
             }
 
             const oldName = renameTargetData && renameTargetData.oldFolderName;
             const optionType = renameTargetData && renameTargetData.optionType;
             if (!oldName || !optionType) {
-                showToast("ไม่พบข้อมูลอัลบั้มเดิม", "error");
+                alert("ไม่พบข้อมูลอัลบั้มเดิม กรุณาปิดหน้าต่างแล้วกดแก้ไขใหม่อีกครั้ง");
                 return;
             }
             if (newName === oldName) {
@@ -1099,33 +1084,45 @@
             document.getElementById('loadingModal').style.display = 'flex';
 
             try {
-                const response = await fetch(SCRIPT_URL, {
-                    method: 'POST',
-                    body: JSON.stringify({
-                        action: 'rename',
-                        optionType: optionType,
-                        oldFolderName: oldName,
-                        newFolderName: newName
-                    })
-                });
+                // ใช้ POST แบบปกติเพื่ออ่านผลตอบกลับจาก Apps Script ได้
 
-                const result = await response.json();
-                if (result.status !== 'success') {
-                    throw new Error(result.message || 'เปลี่ยนชื่อไม่สำเร็จ');
-                }
+const response = await fetch(SCRIPT_URL, {
+    method: 'POST',
+    body: JSON.stringify({
+        action: 'rename',
+        optionType: optionType,
+        oldFolderName: oldName,
+        newFolderName: newName
+    })
+});
+
+const result = await response.json();
+if (result.status !== 'success') {
+    throw new Error(result.message || 'เปลี่ยนชื่อไม่สำเร็จ');
+}
 
                 closeRenameModal();
+                // โหลดข้อมูลใหม่จาก Drive แล้วตรวจว่าชื่อใหม่ปรากฏจริงในหมวดที่เลือก
                 const refreshedAlbums = await fetchAllAlbums();
+                const sameCategory = (a) => a.optionType === optionType;
+                const newNameExists = Array.isArray(refreshedAlbums) && refreshedAlbums.some(a => sameCategory(a) && a.folderName === newName);
+                const oldNameExists = Array.isArray(refreshedAlbums) && refreshedAlbums.some(a => sameCategory(a) && a.folderName === oldName);
+
                 document.getElementById('loadingModal').style.display = 'none';
-                showToast("เปลี่ยนชื่ออัลบั้มสำเร็จ!", "success");
+                if (newNameExists && !oldNameExists) {
+                    showToast("เปลี่ยนชื่ออัลบั้มสำเร็จ!");
+                } else {
+                    alert("เซิร์ฟเวอร์ตอบว่าทำงานแล้ว แต่ยังยืนยันชื่อใหม่จากข้อมูล Drive ไม่ได้ กรุณารีเฟรชหน้าเว็บ และตรวจว่าได้ Deploy เวอร์ชันล่าสุดแล้วหรือไม่");
+                }
             } catch (err) {
                 document.getElementById('loadingModal').style.display = 'none';
-                showToast("เปลี่ยนชื่อไม่สำเร็จ: " + (err && err.message ? err.message : "เกิดข้อผิดพลาด"), "error");
+                alert("เปลี่ยนชื่อไม่สำเร็จ: " + (err && err.message ? err.message : "เกิดข้อผิดพลาดในการเชื่อมต่อ"));
             }
         }
 
-        function promptAddImages(folderName) {
+        function promptAddImages(folderName, optionType) {
             selectedFolderName = folderName;
+            selectedOptionType = optionType || '';
             document.getElementById('targetAlbumLabel').innerText = folderName;
             document.getElementById('additionalImagesInput').value = '';
             document.getElementById('fileUploadLabel').innerText = "📁 เลือกรูปภาพ (ยังไม่ได้เลือกไฟล์)";
@@ -1141,40 +1138,16 @@
             }
         }
 
-        // ฟังก์ชัน Toast ที่ปรับแต่งใหม่ให้สวยงามและจางหายไปเอง
-        function showToast(message, type = 'success') {
+        function showToast(message) {
             const toast = document.getElementById('customToast');
-            const toastMessage = document.getElementById('toastMessage');
-            const toastIcon = document.getElementById('toastIcon');
-
-            if (type === 'error') {
-                toastIcon.innerText = '⚠️';
-                toast.style.borderColor = '#ef4444';
-            } else if (type === 'info') {
-                toastIcon.innerText = 'ℹ️';
-                toast.style.borderColor = '#38bdf8';
-            } else {
-                toastIcon.innerText = '✅';
-                toast.style.borderColor = '#34d399';
-            }
-
-            toastMessage.innerText = message;
+            document.getElementById('toastMessage').innerText = message;
             toast.style.display = 'flex';
-            toast.style.animation = 'none';
-            toast.offsetHeight; 
-            toast.style.animation = 'toastFadeInOut 2.5s ease-in-out forwards';
-
-            setTimeout(() => {
-                toast.style.display = 'none';
-            }, 2500);
+            setTimeout(() => toast.style.display = 'none', 2000);
         }
 
         async function uploadAdditionalImages() {
             let input = document.getElementById('additionalImagesInput');
-            if (!input.files || input.files.length === 0) {
-                showToast("กรุณาเลือกรูปภาพก่อนอัปโหลด", "error");
-                return;
-            }
+            if (!input.files || input.files.length === 0) return alert("กรุณาเลือกรูปภาพ");
             document.getElementById('addImagesModal').style.display = 'none';
             const totalFiles = input.files.length;
             document.getElementById('loadingTitle').innerText = "กำลังอัปโหลด";
@@ -1189,32 +1162,19 @@
                 }
                 let response = await fetch(SCRIPT_URL, {
                     method: 'POST',
-                    body: JSON.stringify({ action: 'add_images', folderName: selectedFolderName, images: base64Images })
+                    body: JSON.stringify({ action: 'add_images', optionType: selectedOptionType, folderName: selectedFolderName, images: base64Images })
                 });
-                
-                // อ่านผลลัพธ์แบบ Text ก่อน แล้วแปลงเป็น JSON เพื่อป้องกัน Error กรณีเว็บส่งค่าว่างกลับมา
-                let textResult = await response.text();
-                let result = {};
-                try {
-                    result = JSON.parse(textResult);
-                } catch (e) {
-                    result = { status: "success" }; // ถ้าหลังบ้านทำสำเร็จแต่ไม่ได้พิมพ์ JSON ตอบกลับ ให้ถือว่าสำเร็จเพราะรูปเข้า Drive แล้ว
-                }
-
+                let result = await response.json();
                 loadingModal.style.display = 'none';
-                
-                // เช็คผลลัพธ์ให้ครอบคลุม (รองรับทั้ง status success หรือไม่มี error)
-                if (result.status === "success" || result.status === undefined) {
-                    showToast("เพิ่มรูปภาพสำเร็จ!", "success");
+                if (result.status === "success") {
+                    showToast("เพิ่มรูปภาพสำเร็จ!");
                     fetchAllAlbums();
                 } else {
-                    showToast("ผิดพลาด: " + (result.message || "ไม่ทราบสาเหตุ"), "error");
+                    alert("ผิดพลาด: " + result.message);
                 }
             } catch (err) {
                 loadingModal.style.display = 'none';
-                // ป้องกันกรณีเครือข่ายขัดจังหวะ แต่จริงๆ รูปอาจจะอัปโหลดไปแล้ว ให้แสดงแจ้งเตือนแบบซอฟต์ลง
-                showToast("เพิ่มรูปภาพเรียบร้อยแล้ว", "success");
-                fetchAllAlbums();
+                alert("เชื่อมต่อเซิร์ฟเวอร์ไม่สำเร็จ");
             }
         }
 
