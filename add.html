@@ -125,6 +125,58 @@
             background-color: #323b4d; border: 1px solid #38bdf8; padding: 0.6rem 1rem; border-radius: 8px;
             z-index: 1020; font-size: 0.8rem; font-weight: 600; color: #fff; box-shadow: 0 5px 15px rgba(0,0,0,0.3); align-items: center; gap: 0.5rem;
         }
+        button, a, .file-upload-box, .option-btn, .preview-item img, .btn-remove-img {
+            -webkit-tap-highlight-color: transparent;
+        }
+        button, a, .file-upload-box, .option-btn, .preview-item, .btn-remove-img {
+            transition: transform 180ms ease, box-shadow 180ms ease, border-color 180ms ease, background-color 180ms ease, filter 180ms ease;
+        }
+        button:focus-visible, a:focus-visible, input:focus-visible, .file-upload-box:focus-visible {
+            outline: 3px solid rgba(56, 189, 248, 0.7);
+            outline-offset: 2px;
+        }
+        .form-card { animation: form-enter 350ms ease both; }
+        .file-upload-box:hover { border-color: #38bdf8; box-shadow: 0 0 0 3px rgba(56, 189, 248, 0.08); }
+        .option-btn:hover, .btn:hover { filter: brightness(1.1); transform: translateY(-1px); }
+        .preview-item { animation: form-enter 220ms ease both; }
+        @keyframes form-enter {
+            from { opacity: 0; transform: translateY(8px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        @media (max-width: 600px) {
+            body { padding: max(0.65rem, env(safe-area-inset-top)) 0.65rem max(0.85rem, env(safe-area-inset-bottom)); }
+            .container { max-width: 100%; }
+            .form-card { padding: 1rem; border-radius: 12px; }
+            .form-title { font-size: 1.02rem; }
+            .form-group { margin-bottom: 1rem; }
+            .form-input { min-height: 46px; font-size: 16px; }
+            .option-group { gap: 0.45rem; }
+            .option-btn { min-height: 46px; padding: 0.65rem 0.4rem; }
+            .file-upload-box { min-height: 78px; display: flex; flex-direction: column; justify-content: center; padding: 0.9rem; }
+            .preview-grid { grid-template-columns: repeat(auto-fill, minmax(92px, 1fr)); max-height: 42vh; gap: 0.45rem; }
+            .preview-item { height: clamp(84px, 24vw, 112px); }
+            .btn-action-row { gap: 0.5rem; margin-top: 1rem; }
+            .btn { min-height: 48px; display: inline-flex; align-items: center; justify-content: center; padding: 0.7rem 0.45rem; }
+            .modal-top-bar { top: max(10px, env(safe-area-inset-top)); left: 12px; right: 12px; }
+            .modal-nav-btn { font-size: 2rem; padding: 0.45rem; }
+            .custom-toast { width: calc(100% - 24px); justify-content: center; bottom: max(16px, env(safe-area-inset-bottom)); text-align: center; }
+        }
+        @media (max-width: 360px) {
+            .form-card { padding: 0.8rem; }
+            .btn-action-row { flex-direction: column; }
+            .preview-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+        }
+        @media (hover: none) {
+            .option-btn:hover, .btn:hover, .file-upload-box:hover { transform: none; }
+        }
+        @media (prefers-reduced-motion: reduce) {
+            *, *::before, *::after {
+                scroll-behavior: auto !important;
+                animation-duration: 0.01ms !important;
+                animation-iteration-count: 1 !important;
+                transition-duration: 0.01ms !important;
+            }
+        }
     </style>
 </head>
 <body>
