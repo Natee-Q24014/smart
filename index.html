@@ -1331,37 +1331,42 @@
             if (!input.files || input.files.length === 0) return alert("กรุณาเลือกรูปภาพ");
             document.getElementById('addImagesModal').style.display = 'none';
             const totalFiles = input.files.length;
+            let uploadedCount = 0;
             document.getElementById('loadingTitle').innerText = "กำลังอัปโหลด";
-            document.getElementById('loadingDesc').innerText = `0/${totalFiles}`;
+            document.getElementById('loadingDesc').innerText = `เตรียมรูปภาพ 0/${totalFiles}`;
             loadingModal.style.display = 'flex';
             try {
                 let filesArray = Array.from(input.files);
                 let base64Images = [];
                 for (let i = 0; i < filesArray.length; i++) {
                     base64Images.push(await fileToBase64(filesArray[i], 2000));
-                    document.getElementById('loadingDesc').innerText = `${i + 1}/${totalFiles}`;
+                    document.getElementById('loadingDesc').innerText = `เตรียมรูปภาพ ${i + 1}/${totalFiles}`;
                 }
                 const before = await readAlbumsFromServer();
                 const targetBefore = before.find(album => isSameAlbum(album, selectedFolderName));
                 if (!targetBefore) throw new Error("ไม่พบอัลบั้มเป้าหมายในรายการล่าสุด");
-                const expectedImageCount = targetBefore.images.length + base64Images.length;
-                await postAndConfirm({
-                    action: 'add_images',
-                    folderId: selectedFolderName.folderId,
-                    folderName: selectedFolderName.folderName,
-                    optionType: selectedFolderName.optionType,
-                    images: base64Images,
-                    password: "6004"
-                }, albums => {
-                    const updated = albums.find(album => isSameAlbum(album, selectedFolderName));
-                    return updated && updated.images.length >= expectedImageCount;
-                }, "เพิ่มรูปภาพไม่สำเร็จ");
+                document.getElementById('loadingTitle').innerText = "กำลังอัปโหลดรูป";
+                for (let i = 0; i < base64Images.length; i++) {
+                    await postAndConfirm({
+                        action: 'add_images',
+                        folderId: selectedFolderName.folderId,
+                        folderName: selectedFolderName.folderName,
+                        optionType: selectedFolderName.optionType,
+                        images: [base64Images[i]],
+                        password: "6004"
+                    }, null, "เพิ่มรูปภาพไม่สำเร็จ");
+                    uploadedCount++;
+                    document.getElementById('loadingDesc').innerText = `อัปโหลดสำเร็จ ${uploadedCount}/${totalFiles} รูป`;
+                }
                 loadingModal.style.display = 'none';
                 showToast("เพิ่มรูปภาพสำเร็จ!");
                 fetchAllAlbums();
             } catch (err) {
                 loadingModal.style.display = 'none';
-                alert(err.message || "เชื่อมต่อเซิร์ฟเวอร์ไม่สำเร็จ");
+                const detail = err.message || "เชื่อมต่อเซิร์ฟเวอร์ไม่สำเร็จ";
+                alert(uploadedCount > 0
+                    ? `เพิ่มรูปได้ ${uploadedCount}/${totalFiles} รูปแล้ว ที่เหลือไม่สำเร็จ: ${detail}`
+                    : detail);
             }
         }
 
