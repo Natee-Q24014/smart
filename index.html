@@ -407,6 +407,7 @@
         let currentSelectedYear = null;
         let currentSelectedMonth = null;
         let recentNewAlbums = [];
+        let isBackgroundSyncRunning = false;
 
         let deferredPrompt;
 
@@ -607,7 +608,7 @@
             checkIOSInstallButton();
             initializeAppWithSplash();
             checkAndShowInstallPrompt();
-            setInterval(backgroundSyncAlbums, 3000);
+            setInterval(backgroundSyncAlbums, 15000);
         };
 
         async function initializeAppWithSplash() {
@@ -668,7 +669,7 @@
             const response = await fetchWithTimeout(
                 SCRIPT_URL + "?action=getAlbums&t=" + Date.now(),
                 { cache: 'no-store' },
-                5000
+                20000
             );
             const result = await response.json();
             if (!response.ok || result.status !== "success") {
@@ -687,7 +688,6 @@
         }
 
         async function postAndConfirm(payload, isApplied, failureMessage) {
-            let result = null;
             let requestError = null;
             try {
                 const response = await fetchWithTimeout(SCRIPT_URL, {
@@ -722,6 +722,7 @@
         }
 
         async function backgroundSyncAlbums() {
+            if (isBackgroundSyncRunning) return;
             if (document.getElementById('passwordModal').style.display === 'flex' || 
                 document.getElementById('addImagesModal').style.display === 'flex' || 
                 document.getElementById('renameModal').style.display === 'flex' ||
@@ -731,8 +732,13 @@
                 document.getElementById('installPromptModal').style.display === 'flex') {
                 return;
             }
+            isBackgroundSyncRunning = true;
             try {
-                const response = await fetch(SCRIPT_URL + "?action=getAlbums");
+                const response = await fetchWithTimeout(
+                    SCRIPT_URL + "?action=getAlbums&t=" + Date.now(),
+                    { cache: 'no-store' },
+                    20000
+                );
                 const result = await response.json();
                 if (result.status === "success") {
                     let newData = result.data || [];
@@ -743,7 +749,13 @@
                         renderCurrentLevel();
                     }
                 }
-            } catch (err) {}
+            } catch (err) {
+                if (err.name !== "AbortError") {
+                    setSystemStatus('red', 'ซิงค์ข้อมูลไม่สำเร็จ');
+                }
+            } finally {
+                isBackgroundSyncRunning = false;
+            }
         }
 
         function processNewAlbumsDetection(newData) {
