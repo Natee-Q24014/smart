@@ -654,8 +654,22 @@
             }
         }
 
+        async function fetchWithTimeout(url, options, timeoutMs) {
+            const controller = new AbortController();
+            const timeoutId = setTimeout(() => controller.abort(), timeoutMs);
+            try {
+                return await fetch(url, { ...options, signal: controller.signal });
+            } finally {
+                clearTimeout(timeoutId);
+            }
+        }
+
         async function readAlbumsFromServer() {
-            const response = await fetch(SCRIPT_URL + "?action=getAlbums&t=" + Date.now());
+            const response = await fetchWithTimeout(
+                SCRIPT_URL + "?action=getAlbums&t=" + Date.now(),
+                { cache: 'no-store' },
+                5000
+            );
             const result = await response.json();
             if (!response.ok || result.status !== "success") {
                 throw new Error(result.message || "โหลดรายการอัลบั้มไม่สำเร็จ");
@@ -674,31 +688,37 @@
 
         async function postAndConfirm(payload, isApplied, failureMessage) {
             let result = null;
+            let requestError = null;
             try {
-                const response = await fetch(SCRIPT_URL, {
+                const response = await fetchWithTimeout(SCRIPT_URL, {
                     method: 'POST',
+                    mode: 'no-cors',
+                    headers: { 'Content-Type': 'text/plain;charset=UTF-8' },
                     body: JSON.stringify(payload)
-                });
-                result = await response.json();
+                }, 20000);
+                // no-cors returns an opaque response; confirm mutations with the GET endpoint below.
+                if (!response.ok && response.type !== 'opaque') {
+                    throw new Error(`เซิร์ฟเวอร์ตอบกลับ HTTP ${response.status}`);
+                }
             } catch (err) {
-                // Apps Script may finish a cross-origin POST while the browser blocks its response.
+                requestError = err;
             }
 
-            if (result && result.status === "success") return result;
-            if (result && result.status === "error") {
-                throw new Error(result.message || failureMessage);
-            }
-
-            for (let attempt = 0; attempt < 15; attempt++) {
-                await new Promise(resolve => setTimeout(resolve, 1000));
+            for (let attempt = 0; attempt < 10; attempt++) {
+                document.getElementById('loadingDesc').innerText =
+                    `รอเซิร์ฟเวอร์ยืนยันผล (${attempt + 1}/10)...`;
                 try {
                     const albums = await readAlbumsFromServer();
                     if (isApplied(albums)) return { status: "success", confirmed: true };
                 } catch (err) {
-                    // Keep checking while the server may still be processing the mutation.
+                    requestError = err;
                 }
+                await new Promise(resolve => setTimeout(resolve, 1000));
             }
-            throw new Error(failureMessage + " (เซิร์ฟเวอร์ไม่ยืนยันผล กรุณาตรวจรายการก่อนลองซ้ำ)");
+            const detail = requestError && requestError.name === "AbortError"
+                ? "หมดเวลารอการตอบกลับ"
+                : requestError ? requestError.message : "เซิร์ฟเวอร์ไม่ยืนยันผล";
+            throw new Error(failureMessage + ` (${detail}; กรุณาตรวจรายการอัลบั้มก่อนลองซ้ำ)`);
         }
 
         async function backgroundSyncAlbums() {
@@ -1148,12 +1168,12 @@
                               album.folderName === newName)
                     ),
                     "เปลี่ยนชื่ออัลบั้มไม่สำเร็จ");
-                loadingModal.style.display = 'none';
                 showToast("เปลี่ยนชื่ออัลบั้มสำเร็จ!");
                 fetchAllAlbums();
             } catch (err) {
-                loadingModal.style.display = 'none';
                 alert(err.message || "เกิดข้อผิดพลาดในการเชื่อมต่อเซิร์ฟเวอร์");
+            } finally {
+                loadingModal.style.display = 'none';
             }
         }
 
