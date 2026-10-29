@@ -461,41 +461,77 @@
         }
 
         async function readAlbumsFromServer() {
-            const response = await fetch(SCRIPT_URL + "?action=getAlbums&t=" + Date.now());
-            const result = await response.json();
-            if (!response.ok || result.status !== "success") {
+            const result = await getAlbumsJsonp();
+            if (result.status !== "success") {
                 throw new Error(result.message || "โหลดรายการอัลบั้มไม่สำเร็จ");
             }
             return result.data || [];
         }
 
-        async function postAndConfirm(payload, isApplied) {
-            let result = null;
+        function getAlbumsJsonp() {
+            return new Promise((resolve, reject) => {
+                const callbackName = "__albumsCallback_" + Date.now() + "_" + Math.floor(Math.random() * 1000000);
+                const script = document.createElement('script');
+                const timeoutId = setTimeout(() => finish(new Error("หมดเวลารอข้อมูลจาก Apps Script")), 10000);
+                function finish(error, result) {
+                    clearTimeout(timeoutId);
+                    delete window[callbackName];
+                    script.remove();
+                    if (error) reject(error);
+                    else resolve(result);
+                }
+                window[callbackName] = result => finish(null, result);
+                script.onerror = () => finish(new Error("โหลดข้อมูลจาก Apps Script ไม่สำเร็จ"));
+                script.src = SCRIPT_URL + "?action=getAlbums&callback=" + callbackName + "&t=" + Date.now();
+                document.head.appendChild(script);
+            });
+        }
+
+        function submitMutationForm(payload) {
+            const iframe = document.createElement('iframe');
+            const form = document.createElement('form');
+            const requestId = "mutation_" + Date.now() + "_" + Math.floor(Math.random() * 1000000);
+            iframe.name = requestId;
+            iframe.style.display = 'none';
+            form.method = 'POST';
+            form.action = SCRIPT_URL;
+            form.target = requestId;
+            form.style.display = 'none';
+            const field = document.createElement('input');
+            field.type = 'hidden';
+            field.name = 'payload';
+            field.value = JSON.stringify(payload);
+            form.appendChild(field);
+            document.body.appendChild(iframe);
+            document.body.appendChild(form);
             try {
-                const response = await fetch(SCRIPT_URL, {
-                    method: 'POST',
-                    body: JSON.stringify(payload)
-                });
-                result = await response.json();
+                form.submit();
             } catch (err) {
-                // Apps Script may finish a cross-origin POST while the browser blocks its response.
+                form.remove();
+                iframe.remove();
+                throw err;
             }
+            setTimeout(() => {
+                form.remove();
+                iframe.remove();
+            }, 60000);
+        }
 
-            if (result && result.status === "success") return result;
-            if (result && result.status === "error") {
-                throw new Error(result.message || "บันทึกข้อมูลไม่สำเร็จ");
-            }
+        async function postAndConfirm(payload, isApplied) {
+            submitMutationForm(payload);
 
-            for (let attempt = 0; attempt < 15; attempt++) {
-                await new Promise(resolve => setTimeout(resolve, 1000));
+            let lastError = null;
+            for (let attempt = 0; attempt < 8; attempt++) {
                 try {
                     const albums = await readAlbumsFromServer();
                     if (isApplied(albums)) return { status: "success", confirmed: true };
                 } catch (err) {
-                    // Keep checking while the server may still be processing the mutation.
+                    lastError = err;
                 }
+                await new Promise(resolve => setTimeout(resolve, 1000));
             }
-            throw new Error("เซิร์ฟเวอร์ไม่ยืนยันผล กรุณาตรวจรายการอัลบั้มก่อนลองซ้ำ");
+            throw new Error("เซิร์ฟเวอร์ไม่ยืนยันผล กรุณาตรวจรายการอัลบั้มก่อนลองซ้ำ" +
+                (lastError ? ` (${lastError.message})` : ""));
         }
 
         async function handleFormSubmit(e) {
