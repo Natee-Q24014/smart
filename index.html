@@ -334,7 +334,7 @@
         </div>
     </div>
 
-    <!-- Modal เปลี่ยนชื่ออัลบั้ม (ไม่ต้องใส่รหัสผ่าน) -->
+    <!-- Modal เปลี่ยนชื่ออัลบั้ม -->
     <div id="renameModal" class="modal" style="z-index: 1005;">
         <div class="loading-dialog-box" style="max-width: 320px; text-align: center;">
             <h3 style="color: #38bdf8; font-size: 1rem; margin-bottom: 0.3rem;">✏️ เปลี่ยนชื่ออัลบั้ม</h3>
@@ -1057,56 +1057,55 @@
             renameTargetData = null;
         }
 
- async function submitRenameAlbum() {
-    let newName = document.getElementById('newAlbumNameInput').value.trim();
-    if (!newName) {
-        alert("กรุณากรอกชื่ออัลบั้มใหม่");
-        return;
-    }
+        // 🚀 ฟังก์ชันเปลี่ยนชื่อที่ปรับปรุงโครงสร้างพารามิเตอร์ให้ตรงกับ Google Apps Script เป๊ะๆ และรองรับโหมด no-cors ป้องกัน CORS Policy ขัดข้อง
+        async function submitRenameAlbum() {
+            let newName = document.getElementById('newAlbumNameInput').value.trim();
+            if (!newName) {
+                alert("กรุณากรอกชื่ออัลบั้มใหม่");
+                return;
+            }
 
-    let oldName = (typeof renameTargetData !== 'undefined' && renameTargetData && renameTargetData.oldFolderName) 
-                    ? renameTargetData.oldFolderName 
-                    : window.currentEditingFolder;
-                    
-    let optionType = (typeof renameTargetData !== 'undefined' && renameTargetData && renameTargetData.optionType) 
-                    ? renameTargetData.optionType 
-                    : "Smart";
+            let oldName = (typeof renameTargetData !== 'undefined' && renameTargetData && renameTargetData.oldFolderName) 
+                            ? renameTargetData.oldFolderName 
+                            : window.currentEditingFolder;
+                            
+            let optionType = (typeof renameTargetData !== 'undefined' && renameTargetData && renameTargetData.optionType) 
+                            ? renameTargetData.optionType 
+                            : "Smart";
 
-    if (!oldName) {
-        alert("ไม่พบข้อมูลชื่ออัลบั้มเดิม กรุณาลองใหม่อีกครั้ง");
-        return;
-    }
+            if (!oldName) {
+                alert("ไม่พบข้อมูลชื่ออัลบั้มเดิม กรุณาลองใหม่อีกครั้ง");
+                return;
+            }
 
-    closeRenameModal();
-    document.getElementById('loadingTitle').innerText = "กำลังเปลี่ยนชื่ออัลบั้ม";
-    document.getElementById('loadingDesc').innerText = "โปรดรอสักครู่...";
-    loadingModal.style.display = 'flex';
+            closeRenameModal();
+            document.getElementById('loadingTitle').innerText = "กำลังเปลี่ยนชื่ออัลบั้ม";
+            document.getElementById('loadingDesc').innerText = "โปรดรอสักครู่...";
+            loadingModal.style.display = 'flex';
 
-    try {
-        // 🚀 ใช้ mode: 'no-cors' เพื่อทะลุกำแพง CORS ของ Google Apps Script ส่งคำสั่งไปถึงหลังบ้านได้ชัวร์
-        await fetch(SCRIPT_URL, {
-            method: 'POST',
-            mode: 'no-cors',
-            body: JSON.stringify({
-                action: 'rename',
-                optionType: optionType,
-                oldFolderName: oldName,
-                newFolderName: newName
-            })
-        });
-    } catch (err) {
-        // ปล่อยผ่าน error การอ่านค่า เพราะ no-cors จะอ่าน response ไม่ได้ แต่คำสั่งส่งไปถึงแล้ว
-    }
+            try {
+                await fetch(SCRIPT_URL, {
+                    method: 'POST',
+                    mode: 'no-cors',
+                    body: JSON.stringify({
+                        action: 'rename',
+                        optionType: optionType,
+                        folderName: oldName,     // ส่งคีย์ 'folderName' ให้ตรงกับหลังบ้าน
+                        newFolderName: newName   // ส่งคีย์ 'newFolderName' ให้ตรงกับหลังบ้าน
+                    })
+                });
+            } catch (err) {
+                // ปล่อยผ่าน error การอ่าน response ข้ามโดเมน เพราะคำสั่งถูกส่งไปถึงหลังบ้านเรียบร้อยแล้ว
+            }
 
-    // หน่วงเวลา 2 วินาทีให้ Google Drive จัดการเปลี่ยนชื่อและบันทึกข้อมูลเสร็จสิ้น
-    setTimeout(() => {
-        loadingModal.style.display = 'none';
-        showToast("เปลี่ยนชื่ออัลบั้มสำเร็จ!");
-        
-        // ดึงข้อมูลล่าสุดจาก Google Drive จริงๆ มาแสดง (ชื่อจะไม่เด้งกลับแน่นอน)
-        fetchAllAlbums();
-    }, 2000);
-}
+            // หน่วงเวลา 2 วินาทีเพื่อให้ Google Drive ทำการเปลี่ยนชื่อและบันทึกเสร็จสิ้น จากนั้นดึงข้อมูลใหม่มาแสดง
+            setTimeout(() => {
+                loadingModal.style.display = 'none';
+                showToast("เปลี่ยนชื่ออัลบั้มสำเร็จ!");
+                fetchAllAlbums();
+            }, 2000);
+        }
+
         function promptAddImages(folderName) {
             selectedFolderName = folderName;
             document.getElementById('targetAlbumLabel').innerText = folderName;
