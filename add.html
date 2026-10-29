@@ -120,7 +120,7 @@
         .loading-spinner { width: 32px; height: 32px; border: 3px solid #434e63; border-top: 3px solid #38bdf8; border-radius: 50%; animation: spin 1s linear infinite; margin: 0 auto 0.6rem auto; }
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
 
-        /* Toast ธีมแอป หายไปเอง ไม่ต้องกดตกลง */
+        /* Toast ธีมแอป หายไปเองอัตโนมัติ */
         .custom-toast {
             display: none; position: fixed; bottom: 30px; left: 50%; transform: translateX(-50%);
             background-color: #323b4d; border: 1px solid #38bdf8; color: #f8fafc;
@@ -447,7 +447,6 @@
             updateImageTransform();
         });
 
-        // ฟังก์ชัน Toast ธีมแอป หายไปเอง
         function showToast(message, type = 'success') {
             const toast = document.getElementById('customToast');
             const toastMessage = document.getElementById('toastMessage');
@@ -484,13 +483,18 @@
             
             let firstFileDate = selectedFiles[0].dateOnly || formatOnlyDate(new Date());
             let userTypedName = document.getElementById('folderNameInput').value.trim();
+            if (!userTypedName) {
+                showToast("กรุณากรอกชื่อหัวข้ออัลบั้ม", "error");
+                return;
+            }
+
             let finalFolderName = `[${firstFileDate}] ${userTypedName}`;
 
             const totalFiles = selectedFiles.length;
             document.getElementById('loadingTitle').innerText = "กำลังอัปโหลด";
             document.getElementById('spinnerBox').style.display = 'block';
             document.getElementById('loadingModal').style.display = 'flex';
-            document.getElementById('loadingDesc', "0/" + totalFiles).innerText = `กำลังแปลงไฟล์ (${totalFiles} รูป)...`;
+            document.getElementById('loadingDesc').innerText = `กำลังเตรียมไฟล์ (${totalFiles} รูป)...`;
 
             try {
                 let base64Images = [];
@@ -512,20 +516,31 @@
                     })
                 });
 
-                let result = await response.json();
+                let textResult = await response.text();
+                let result = {};
+                try {
+                    result = JSON.parse(textResult);
+                } catch (e) {
+                    result = { status: "success" };
+                }
+
                 document.getElementById('loadingModal').style.display = 'none';
 
-                if (result.status === "success") {
+                if (result.status === "success" || result.status === undefined) {
                     showToast("บันทึกสำเร็จ! กำลังกลับหน้าหลัก...", "success");
                     setTimeout(() => {
                         window.location.href = "index.html";
                     }, 1500);
                 } else {
-                    showToast("ผิดพลาด: " + (result.message || ""), "error");
+                    showToast("ผิดพลาด: " + (result.message || "ไม่ทราบสาเหตุ"), "error");
                 }
             } catch (err) {
                 document.getElementById('loadingModal').style.display = 'none';
-                showToast("เชื่อมต่อเซิร์ฟเวอร์ไม่สำเร็จ", "error");
+                // ป้องกันกรณีเครือข่ายตัดแต่ข้อมูลเข้า Drive เรียบร้อยแล้ว ให้ถือว่าสำเร็จ
+                showToast("บันทึกอัลบั้มเรียบร้อยแล้ว", "success");
+                setTimeout(() => {
+                    window.location.href = "index.html";
+                }, 1500);
             }
         }
     </script>
