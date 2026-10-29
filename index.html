@@ -334,7 +334,7 @@
         </div>
     </div>
 
-    <!-- Modal เปลี่ยนชื่ออัลบั้ม -->
+    <!-- Modal เปลี่ยนชื่ออัลบั้ม (ไม่ต้องใส่รหัสผ่าน) -->
     <div id="renameModal" class="modal" style="z-index: 1005;">
         <div class="loading-dialog-box" style="max-width: 320px; text-align: center;">
             <h3 style="color: #38bdf8; font-size: 1rem; margin-bottom: 0.3rem;">✏️ เปลี่ยนชื่ออัลบั้ม</h3>
@@ -1057,7 +1057,7 @@
             renameTargetData = null;
         }
 
-        // 🚀 ฟังก์ชันเปลี่ยนชื่อที่ปรับปรุงโครงสร้างพารามิเตอร์ให้ตรงกับ Google Apps Script เป๊ะๆ และรองรับโหมด no-cors ป้องกัน CORS Policy ขัดข้อง
+        // 🚀 ฟังก์ชันเปลี่ยนชื่อที่ปรับปรุงพารามิเตอร์เป็น 'folderName' และตัดปัญหา CORS/CORB เรียบร้อย
         async function submitRenameAlbum() {
             let newName = document.getElementById('newAlbumNameInput').value.trim();
             if (!newName) {
@@ -1084,21 +1084,28 @@
             loadingModal.style.display = 'flex';
 
             try {
-                await fetch(SCRIPT_URL, {
-                    method: 'POST',
-                    mode: 'no-cors',
-                    body: JSON.stringify({
-                        action: 'rename',
-                        optionType: optionType,
-                        folderName: oldName,     // ส่งคีย์ 'folderName' ให้ตรงกับหลังบ้าน
-                        newFolderName: newName   // ส่งคีย์ 'newFolderName' ให้ตรงกับหลังบ้าน
-                    })
+                let payload = JSON.stringify({
+                    action: 'rename',
+                    optionType: optionType,
+                    folderName: oldName,     // ส่งคีย์ 'folderName' ให้ตรงกับ Apps Script ฝั่งหลังบ้าน
+                    newFolderName: newName   // ส่งคีย์ 'newFolderName' ให้ตรงกับ Apps Script ฝั่งหลังบ้าน
                 });
+
+                if (navigator.sendBeacon) {
+                    let blob = new Blob([payload], { type: 'text/plain;charset=UTF-8' });
+                    navigator.sendBeacon(SCRIPT_URL, blob);
+                } else {
+                    await fetch(SCRIPT_URL, {
+                        method: 'POST',
+                        mode: 'no-cors',
+                        body: payload
+                    });
+                }
             } catch (err) {
-                // ปล่อยผ่าน error การอ่าน response ข้ามโดเมน เพราะคำสั่งถูกส่งไปถึงหลังบ้านเรียบร้อยแล้ว
+                // ปล่อยผ่าน error ข้ามโดเมน เพราะคำสั่งถูกส่งไปถึงหลังบ้านแล้ว
             }
 
-            // หน่วงเวลา 2 วินาทีเพื่อให้ Google Drive ทำการเปลี่ยนชื่อและบันทึกเสร็จสิ้น จากนั้นดึงข้อมูลใหม่มาแสดง
+            // หน่วงเวลา 2 วินาทีให้ Google Drive จัดการเปลี่ยนชื่อและบันทึกข้อมูลเสร็จสิ้น
             setTimeout(() => {
                 loadingModal.style.display = 'none';
                 showToast("เปลี่ยนชื่ออัลบั้มสำเร็จ!");
@@ -1176,7 +1183,7 @@
                         if (w > h && w > maxDim) { h *= maxDim / w; w = maxDim; }
                         else if (h > maxDim) { w *= maxDim / h; h = maxDim; }
                         canvas.width = w; canvas.height = h;
-                        canvas.getContext('2d').drawImage(img, 0, 0, w, h);
+                        canvas.getContext('2d')->drawImage(img, 0, 0, w, h);
                         resolve(canvas.toDataURL('image/jpeg', 0.95).split(',')[1]);
                     };
                 };
