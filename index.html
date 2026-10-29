@@ -389,7 +389,7 @@
     </div>
 
     <script>
-        const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzM6LAjut8SRHhbgaXpHwrCIm0aeNo8fVV8v3K8JsC1af0xmA807cciiyoe_kn5wsYeyg/exec";
+        const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwJRLgYZb8IQ5fq9UfA7SxnduOTXW_7qoTSbjzRlYoZkNWvu0uCRlN23EVXcvm2m_DcDg/exec";
 
         const mainContainer = document.getElementById('mainContainer');
         const sectionTitle = document.getElementById('sectionTitle');
@@ -663,6 +663,15 @@
             return result.data || [];
         }
 
+        function isSameAlbum(album, target) {
+            if (target.folderId && album.folderId) {
+                return album.folderId === target.folderId;
+            }
+            return album.folderName === target.folderName &&
+                album.optionType === target.optionType &&
+                album.month === target.month;
+        }
+
         async function postAndConfirm(payload, isApplied, failureMessage) {
             let result = null;
             try {
@@ -871,7 +880,8 @@
                 } else {
                     for (let i = imgs.length; i < 4; i++) { html += `<div style="background:rgba(255,255,255,0.02); border-radius:5px; height:65px;"></div>`; }
                 }
-                html += `</div><div class="album-action-bar"><span class="album-footer-info">📅 ${album.month} (${imgs.length} รูป)</span><div class="action-btns"><button class="btn-action btn-download-album" onclick="downloadAlbumZip('${encodeURIComponent(album.folderName)}', '${encodeURIComponent(JSON.stringify(imgs))}')">⬇️ ZIP</button><button class="btn-action btn-add-img" onclick="promptAddImages('${album.folderId}', '${encodedFolderName}', '${album.optionType}')">➕ เพิ่ม</button><button class="btn-action btn-rename-album" onclick="promptRenameAlbum('${album.folderId}', '${encodedFolderName}', '${album.optionType}')">✏️ แก้ไข</button><button class="btn-action btn-del-album" onclick="promptDeleteAlbum('${album.folderId}', '${encodedFolderName}', '${album.optionType}')">🗑️ ลบ</button></div></div></div>`;
+                const safeFolderId = album.folderId || '';
+                html += `</div><div class="album-action-bar"><span class="album-footer-info">📅 ${album.month} (${imgs.length} รูป)</span><div class="action-btns"><button class="btn-action btn-download-album" onclick="downloadAlbumZip('${encodeURIComponent(album.folderName)}', '${encodeURIComponent(JSON.stringify(imgs))}')">⬇️ ZIP</button><button class="btn-action btn-add-img" onclick="promptAddImages('${safeFolderId}', '${encodedFolderName}', '${album.optionType}')">➕ เพิ่ม</button><button class="btn-action btn-rename-album" onclick="promptRenameAlbum('${safeFolderId}', '${encodedFolderName}', '${album.optionType}')">✏️ แก้ไข</button><button class="btn-action btn-del-album" onclick="promptDeleteAlbum('${safeFolderId}', '${encodedFolderName}', '${album.optionType}')">🗑️ ลบ</button></div></div></div>`;
             });
             html += '</div>';
             mainContainer.innerHTML = html;
@@ -1071,7 +1081,15 @@
         let renameTargetData = null;
 
         function promptDeleteAlbum(folderId, encodedFolderName, optionType) {
-            pendingAction = { type: 'deleteAlbum', folderId: folderId, folderName: decodeURIComponent(encodedFolderName), optionType: optionType };
+            const album = allAlbumsData.find(item => item.folderId === folderId) ||
+                allAlbumsData.find(item => item.folderName === decodeURIComponent(encodedFolderName) && item.optionType === optionType);
+            pendingAction = {
+                type: 'deleteAlbum',
+                folderId: folderId,
+                folderName: decodeURIComponent(encodedFolderName),
+                optionType: optionType,
+                month: album ? album.month : null
+            };
             document.getElementById('dialogTitle').innerText = "🔒 ใส่รหัสผ่านเพื่อลบ";
             document.getElementById('passwordSubText').innerText = "กรอกรหัสผ่านเพื่อดำเนินการต่อ";
             document.getElementById('adminPasswordInput').value = '';
@@ -1081,7 +1099,14 @@
 
         function promptRenameAlbum(folderId, encodedFolderName, optionType) {
             const folderName = decodeURIComponent(encodedFolderName);
-            renameTargetData = { folderId: folderId, oldFolderName: folderName, optionType: optionType };
+            const album = allAlbumsData.find(item => item.folderId === folderId) ||
+                allAlbumsData.find(item => item.folderName === folderName && item.optionType === optionType);
+            renameTargetData = {
+                folderId: folderId,
+                oldFolderName: folderName,
+                optionType: optionType,
+                month: album ? album.month : null
+            };
             document.getElementById('newAlbumNameInput').value = folderName;
             document.getElementById('renameModal').style.display = 'flex';
             document.getElementById('newAlbumNameInput').focus();
@@ -1115,7 +1140,13 @@
                         newFolderName: newName,
                         password: "6004" // ส่งรหัสผ่านหลังบ้านอัตโนมัติโดยไม่ต้องให้ผู้ใช้พิมพ์
                     },
-                    albums => albums.some(album => album.folderId === target.folderId && album.folderName === newName),
+                    albums => albums.some(album =>
+                        (target.folderId && album.folderId
+                            ? album.folderId === target.folderId
+                            : album.optionType === target.optionType &&
+                              album.month === target.month &&
+                              album.folderName === newName)
+                    ),
                     "เปลี่ยนชื่ออัลบั้มไม่สำเร็จ");
                 loadingModal.style.display = 'none';
                 showToast("เปลี่ยนชื่ออัลบั้มสำเร็จ!");
@@ -1127,7 +1158,15 @@
         }
 
         function promptAddImages(folderId, encodedFolderName, optionType) {
-            selectedFolderName = { folderId: folderId, folderName: decodeURIComponent(encodedFolderName), optionType: optionType };
+            const folderName = decodeURIComponent(encodedFolderName);
+            const album = allAlbumsData.find(item => item.folderId === folderId) ||
+                allAlbumsData.find(item => item.folderName === folderName && item.optionType === optionType);
+            selectedFolderName = {
+                folderId: folderId,
+                folderName: folderName,
+                optionType: optionType,
+                month: album ? album.month : null
+            };
             document.getElementById('targetAlbumLabel').innerText = selectedFolderName.folderName;
             document.getElementById('additionalImagesInput').value = '';
             document.getElementById('fileUploadLabel').innerText = "📁 เลือกรูปภาพ (ยังไม่ได้เลือกไฟล์)";
@@ -1174,7 +1213,13 @@
                         folderName: pendingAction.folderName,
                         optionType: pendingAction.optionType,
                         password: "6004"
-                    }, albums => !albums.some(album => album.folderId === pendingAction.folderId), "ลบอัลบั้มไม่สำเร็จ");
+                    }, albums => !albums.some(album =>
+                        pendingAction.folderId && album.folderId
+                            ? album.folderId === pendingAction.folderId
+                            : album.folderName === pendingAction.folderName &&
+                              album.optionType === pendingAction.optionType &&
+                              album.month === pendingAction.month
+                    ), "ลบอัลบั้มไม่สำเร็จ");
                     loadingModal.style.display = 'none';
                     showToast("ลบอัลบั้มสำเร็จ!");
                     fetchAllAlbums();
@@ -1209,7 +1254,7 @@
                     document.getElementById('loadingDesc').innerText = `${i + 1}/${totalFiles}`;
                 }
                 const before = await readAlbumsFromServer();
-                const targetBefore = before.find(album => album.folderId === selectedFolderName.folderId);
+                const targetBefore = before.find(album => isSameAlbum(album, selectedFolderName));
                 if (!targetBefore) throw new Error("ไม่พบอัลบั้มเป้าหมายในรายการล่าสุด");
                 const expectedImageCount = targetBefore.images.length + base64Images.length;
                 await postAndConfirm({
@@ -1220,7 +1265,7 @@
                     images: base64Images,
                     password: "6004"
                 }, albums => {
-                    const updated = albums.find(album => album.folderId === selectedFolderName.folderId);
+                    const updated = albums.find(album => isSameAlbum(album, selectedFolderName));
                     return updated && updated.images.length >= expectedImageCount;
                 }, "เพิ่มรูปภาพไม่สำเร็จ");
                 loadingModal.style.display = 'none';
