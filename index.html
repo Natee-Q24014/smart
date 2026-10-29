@@ -614,19 +614,13 @@
         async function initializeAppWithSplash() {
             setSystemStatus('orange', 'กำลังซิงค์...');
             try {
-                const response = await fetch(SCRIPT_URL + "?action=getAlbums");
-                const result = await response.json();
-                if (result.status === "success") {
-                    allAlbumsData = result.data || [];
-                    processNewAlbumsDetection(allAlbumsData);
-                    updateStats();
-                    renderCurrentLevel();
-                    setSystemStatus('green', 'พร้อมใช้งาน');
-                } else {
-                    setSystemStatus('red', 'โหลดไม่สำเร็จ');
-                }
+                allAlbumsData = await readAlbumsFromServer();
+                processNewAlbumsDetection(allAlbumsData);
+                updateStats();
+                renderCurrentLevel();
+                setSystemStatus('green', 'พร้อมใช้งาน');
             } catch (err) {
-                setSystemStatus('red', 'เชื่อมต่อล้มเหลว');
+                setSystemStatus('red', err.message || 'เชื่อมต่อล้มเหลว');
             } finally {
                 const splash = document.getElementById('app-splash-screen');
                 if (splash) {
@@ -639,43 +633,73 @@
 
         async function fetchAllAlbums() {
             try {
-                const response = await fetch(SCRIPT_URL + "?action=getAlbums");
-                const result = await response.json();
-                if (result.status === "success") {
-                    allAlbumsData = result.data || [];
-                    processNewAlbumsDetection(allAlbumsData);
-                    updateStats();
-                    renderCurrentLevel();
-                    setSystemStatus('green', 'พร้อมใช้งาน');
-                }
+                allAlbumsData = await readAlbumsFromServer();
+                processNewAlbumsDetection(allAlbumsData);
+                updateStats();
+                renderCurrentLevel();
+                setSystemStatus('green', 'พร้อมใช้งาน');
             } catch (err) {
-                setSystemStatus('red', 'เชื่อมต่อล้มเหลว');
+                setSystemStatus('red', err.message || 'เชื่อมต่อล้มเหลว');
             } finally {
                 loadingModal.style.display = 'none';
             }
         }
 
-        async function fetchWithTimeout(url, options, timeoutMs) {
-            const controller = new AbortController();
-            const timeoutId = setTimeout(() => controller.abort(), timeoutMs);
-            try {
-                return await fetch(url, { ...options, signal: controller.signal });
-            } finally {
-                clearTimeout(timeoutId);
-            }
-        }
-
         async function readAlbumsFromServer() {
-            const response = await fetchWithTimeout(
-                SCRIPT_URL + "?action=getAlbums&t=" + Date.now(),
-                { cache: 'no-store' },
-                20000
-            );
-            const result = await response.json();
-            if (!response.ok || result.status !== "success") {
+            const result = await getAlbumsJsonp();
+            if (result.status !== "success") {
                 throw new Error(result.message || "โหลดรายการอัลบั้มไม่สำเร็จ");
             }
             return result.data || [];
+        }
+
+        function getAlbumsJsonp() {
+            return new Promise((resolve, reject) => {
+                const callbackName = "__albumsCallback_" + Date.now() + "_" + Math.floor(Math.random() * 1000000);
+                const script = document.createElement('script');
+                const timeoutId = setTimeout(() => finish(new Error("หมดเวลารอข้อมูลจาก Apps Script")), 10000);
+                function finish(error, result) {
+                    clearTimeout(timeoutId);
+                    delete window[callbackName];
+                    script.remove();
+                    if (error) reject(error);
+                    else resolve(result);
+                }
+                window[callbackName] = result => finish(null, result);
+                script.onerror = () => finish(new Error("โหลดข้อมูลจาก Apps Script ไม่สำเร็จ"));
+                script.src = SCRIPT_URL + "?action=getAlbums&callback=" + callbackName + "&t=" + Date.now();
+                document.head.appendChild(script);
+            });
+        }
+
+        function submitMutationForm(payload) {
+            const iframe = document.createElement('iframe');
+            const form = document.createElement('form');
+            const requestId = "mutation_" + Date.now() + "_" + Math.floor(Math.random() * 1000000);
+            iframe.name = requestId;
+            iframe.style.display = 'none';
+            form.method = 'POST';
+            form.action = SCRIPT_URL;
+            form.target = requestId;
+            form.style.display = 'none';
+            const field = document.createElement('input');
+            field.type = 'hidden';
+            field.name = 'payload';
+            field.value = JSON.stringify(payload);
+            form.appendChild(field);
+            document.body.appendChild(iframe);
+            document.body.appendChild(form);
+            try {
+                form.submit();
+            } catch (err) {
+                form.remove();
+                iframe.remove();
+                throw err;
+            }
+            setTimeout(() => {
+                form.remove();
+                iframe.remove();
+            }, 60000);
         }
 
         function isSameAlbum(album, target) {
@@ -688,25 +712,12 @@
         }
 
         async function postAndConfirm(payload, isApplied, failureMessage) {
-            let requestError = null;
-            try {
-                const response = await fetchWithTimeout(SCRIPT_URL, {
-                    method: 'POST',
-                    mode: 'no-cors',
-                    headers: { 'Content-Type': 'text/plain;charset=UTF-8' },
-                    body: JSON.stringify(payload)
-                }, 20000);
-                // no-cors returns an opaque response; confirm mutations with the GET endpoint below.
-                if (!response.ok && response.type !== 'opaque') {
-                    throw new Error(`เซิร์ฟเวอร์ตอบกลับ HTTP ${response.status}`);
-                }
-            } catch (err) {
-                requestError = err;
-            }
+            submitMutationForm(payload);
 
-            for (let attempt = 0; attempt < 10; attempt++) {
+            let requestError = null;
+            for (let attempt = 0; attempt < 8; attempt++) {
                 document.getElementById('loadingDesc').innerText =
-                    `รอเซิร์ฟเวอร์ยืนยันผล (${attempt + 1}/10)...`;
+                    `รอเซิร์ฟเวอร์ยืนยันผล (${attempt + 1}/8)...`;
                 try {
                     const albums = await readAlbumsFromServer();
                     if (isApplied(albums)) return { status: "success", confirmed: true };
@@ -734,12 +745,7 @@
             }
             isBackgroundSyncRunning = true;
             try {
-                const response = await fetchWithTimeout(
-                    SCRIPT_URL + "?action=getAlbums&t=" + Date.now(),
-                    { cache: 'no-store' },
-                    20000
-                );
-                const result = await response.json();
+                const result = await getAlbumsJsonp();
                 if (result.status === "success") {
                     let newData = result.data || [];
                     if (JSON.stringify(newData) !== JSON.stringify(allAlbumsData)) {
