@@ -334,6 +334,17 @@
         </div>
     </div>
 
+    <div id="passwordModal" class="modal" style="z-index: 1005;">
+        <div class="loading-dialog-box" style="max-width: 300px; text-align: center;">
+            <h3 id="dialogTitle" style="color: #f8fafc; font-size: 1rem; margin-bottom: 0.3rem;">🔒 ใส่รหัสผ่าน 4 หลัก</h3>
+            <p id="passwordSubText" style="font-size: 0.75rem; color: #94a3b8; margin-bottom: 0.5rem;">กรอกรหัสผ่านเพื่อดำเนินการต่อ</p>
+            <input type="password" id="adminPasswordInput" maxlength="4" placeholder="••••" oninput="checkPasswordLength(this)" style="width: 100%; padding: 0.5rem; border-radius: 8px; border: 1px solid #4d5b73; background: #262c38; color: #fff; margin-bottom: 0.8rem; text-align: center; font-size: 1.1rem; letter-spacing: 5px; outline: none;">
+            <div style="display: flex; gap: 0.5rem; justify-content: center;">
+                <button class="btn-nav-action" style="flex: 1; padding: 0.45rem;" onclick="closePasswordModal()">ยกเลิก</button>
+            </div>
+        </div>
+    </div>
+
     <!-- Modal เปลี่ยนชื่ออัลบั้ม (ไม่ต้องใส่รหัสผ่าน) -->
     <div id="renameModal" class="modal" style="z-index: 1005;">
         <div class="loading-dialog-box" style="max-width: 320px; text-align: center;">
@@ -379,6 +390,7 @@
 
     <script>
         const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzM6LAjut8SRHhbgaXpHwrCIm0aeNo8fVV8v3K8JsC1af0xmA807cciiyoe_kn5wsYeyg/exec";
+
         const mainContainer = document.getElementById('mainContainer');
         const sectionTitle = document.getElementById('sectionTitle');
         const navButtonsGroup = document.getElementById('navButtonsGroup');
@@ -626,7 +638,7 @@
 
         async function fetchAllAlbums() {
             try {
-                const response = await fetch(SCRIPT_URL + "?action=getAlbums&t=" + Date.now());
+                const response = await fetch(SCRIPT_URL + "?action=getAlbums");
                 const result = await response.json();
                 if (result.status === "success") {
                     allAlbumsData = result.data || [];
@@ -634,20 +646,55 @@
                     updateStats();
                     renderCurrentLevel();
                     setSystemStatus('green', 'พร้อมใช้งาน');
-                    return allAlbumsData;
                 }
-                setSystemStatus('red', 'โหลดข้อมูลไม่สำเร็จ');
-                return null;
             } catch (err) {
                 setSystemStatus('red', 'เชื่อมต่อล้มเหลว');
-                return null;
             } finally {
                 loadingModal.style.display = 'none';
             }
         }
 
+        async function readAlbumsFromServer() {
+            const response = await fetch(SCRIPT_URL + "?action=getAlbums&t=" + Date.now());
+            const result = await response.json();
+            if (!response.ok || result.status !== "success") {
+                throw new Error(result.message || "โหลดรายการอัลบั้มไม่สำเร็จ");
+            }
+            return result.data || [];
+        }
+
+        async function postAndConfirm(payload, isApplied, failureMessage) {
+            let result = null;
+            try {
+                const response = await fetch(SCRIPT_URL, {
+                    method: 'POST',
+                    body: JSON.stringify(payload)
+                });
+                result = await response.json();
+            } catch (err) {
+                // Apps Script may finish a cross-origin POST while the browser blocks its response.
+            }
+
+            if (result && result.status === "success") return result;
+            if (result && result.status === "error") {
+                throw new Error(result.message || failureMessage);
+            }
+
+            for (let attempt = 0; attempt < 15; attempt++) {
+                await new Promise(resolve => setTimeout(resolve, 1000));
+                try {
+                    const albums = await readAlbumsFromServer();
+                    if (isApplied(albums)) return { status: "success", confirmed: true };
+                } catch (err) {
+                    // Keep checking while the server may still be processing the mutation.
+                }
+            }
+            throw new Error(failureMessage + " (เซิร์ฟเวอร์ไม่ยืนยันผล กรุณาตรวจรายการก่อนลองซ้ำ)");
+        }
+
         async function backgroundSyncAlbums() {
-            if (document.getElementById('addImagesModal').style.display === 'flex' || 
+            if (document.getElementById('passwordModal').style.display === 'flex' || 
+                document.getElementById('addImagesModal').style.display === 'flex' || 
                 document.getElementById('renameModal').style.display === 'flex' ||
                 document.getElementById('loadingModal').style.display === 'flex' ||
                 document.getElementById('imageModal').style.display === 'flex' ||
@@ -813,7 +860,7 @@
             let html = '<div class="album-grid">';
             filtered.forEach(album => {
                 let imgs = album.images || [];
-                let safeFolderName = album.folderName.replace(/'/g, "\\'");
+                let encodedFolderName = encodeURIComponent(album.folderName).replace(/'/g, "%27");
                 html += `<div class="album-card"><div class="album-header-bar"><span style="overflow:hidden; text-overflow:ellipsis; white-space:nowrap; margin-right:0.5rem;" title="${album.folderName}">${album.folderName}</span><span class="badge-tag ${album.optionType === 'Smartแถม' ? 'badge-free' : 'badge-smart'}">${album.optionType === 'Smartแถม' ? 'Smart (แถม)' : 'Smart'}</span></div><div class="album-images-container">`;
                 let displayCount = Math.min(imgs.length, 3);
                 for (let i = 0; i < displayCount; i++) {
@@ -824,7 +871,7 @@
                 } else {
                     for (let i = imgs.length; i < 4; i++) { html += `<div style="background:rgba(255,255,255,0.02); border-radius:5px; height:65px;"></div>`; }
                 }
-                html += `</div><div class="album-action-bar"><span class="album-footer-info">📅 ${album.month} (${imgs.length} รูป)</span><div class="action-btns"><button class="btn-action btn-download-album" onclick="downloadAlbumZip('${encodeURIComponent(album.folderName)}', '${encodeURIComponent(JSON.stringify(imgs))}')">⬇️ ZIP</button><button class="btn-action btn-add-img" onclick="promptAddImages('${safeFolderName}', '${album.optionType}')">➕ เพิ่ม</button><button class="btn-action btn-rename-album" onclick="promptRenameAlbum('${safeFolderName}', '${album.optionType}')">✏️ แก้ไข</button><button class="btn-action btn-del-album" onclick="promptDeleteAlbum('${safeFolderName}', '${album.optionType}')">🗑️ ลบ</button></div></div></div>`;
+                html += `</div><div class="album-action-bar"><span class="album-footer-info">📅 ${album.month} (${imgs.length} รูป)</span><div class="action-btns"><button class="btn-action btn-download-album" onclick="downloadAlbumZip('${encodeURIComponent(album.folderName)}', '${encodeURIComponent(JSON.stringify(imgs))}')">⬇️ ZIP</button><button class="btn-action btn-add-img" onclick="promptAddImages('${album.folderId}', '${encodedFolderName}', '${album.optionType}')">➕ เพิ่ม</button><button class="btn-action btn-rename-album" onclick="promptRenameAlbum('${album.folderId}', '${encodedFolderName}', '${album.optionType}')">✏️ แก้ไข</button><button class="btn-action btn-del-album" onclick="promptDeleteAlbum('${album.folderId}', '${encodedFolderName}', '${album.optionType}')">🗑️ ลบ</button></div></div></div>`;
             });
             html += '</div>';
             mainContainer.innerHTML = html;
@@ -1019,38 +1066,22 @@
             }
         }
 
+        let pendingAction = null;
         let selectedFolderName = '';
-        let selectedOptionType = '';
         let renameTargetData = null;
 
-        // ลบอัลบั้มได้ทันทีโดยไม่ต้องใส่รหัสผ่าน
-        async function promptDeleteAlbum(folderName, optionType) {
-            if (confirm(`คุณต้องการลบอัลบั้ม "${folderName}" ใช่หรือไม่?`)) {
-                document.getElementById('loadingTitle').innerText = "กำลังลบอัลบั้ม";
-                document.getElementById('loadingDesc').innerText = "โปรดรอสักครู่...";
-                loadingModal.style.display = 'flex';
-                try {
-                    let response = await fetch(SCRIPT_URL, {
-                        method: 'POST',
-                        body: JSON.stringify({ action: 'delete', folderName: folderName, optionType: optionType })
-                    });
-                    let result = await response.json();
-                    loadingModal.style.display = 'none';
-                    if (result.status === "success") {
-                        showToast("ลบอัลบั้มสำเร็จ!");
-                        fetchAllAlbums();
-                    } else {
-                        alert("ลบไม่สำเร็จ: " + (result.message || ""));
-                    }
-                } catch (err) {
-                    loadingModal.style.display = 'none';
-                    alert("เกิดข้อผิดพลาดในการเชื่อมต่อเซิร์ฟเวอร์");
-                }
-            }
+        function promptDeleteAlbum(folderId, encodedFolderName, optionType) {
+            pendingAction = { type: 'deleteAlbum', folderId: folderId, folderName: decodeURIComponent(encodedFolderName), optionType: optionType };
+            document.getElementById('dialogTitle').innerText = "🔒 ใส่รหัสผ่านเพื่อลบ";
+            document.getElementById('passwordSubText').innerText = "กรอกรหัสผ่านเพื่อดำเนินการต่อ";
+            document.getElementById('adminPasswordInput').value = '';
+            document.getElementById('passwordModal').style.display = 'flex';
+            document.getElementById('adminPasswordInput').focus();
         }
 
-        function promptRenameAlbum(folderName, optionType) {
-            renameTargetData = { oldFolderName: folderName, optionType: optionType };
+        function promptRenameAlbum(folderId, encodedFolderName, optionType) {
+            const folderName = decodeURIComponent(encodedFolderName);
+            renameTargetData = { folderId: folderId, oldFolderName: folderName, optionType: optionType };
             document.getElementById('newAlbumNameInput').value = folderName;
             document.getElementById('renameModal').style.display = 'flex';
             document.getElementById('newAlbumNameInput').focus();
@@ -1062,68 +1093,42 @@
         }
 
         async function submitRenameAlbum() {
-            const newName = document.getElementById('newAlbumNameInput').value.trim();
+            let newName = document.getElementById('newAlbumNameInput').value.trim();
             if (!newName) {
                 alert("กรุณากรอกชื่ออัลบั้มใหม่");
                 return;
             }
+            if (!renameTargetData) return;
 
-            const oldName = renameTargetData && renameTargetData.oldFolderName;
-            const optionType = renameTargetData && renameTargetData.optionType;
-            if (!oldName || !optionType) {
-                alert("ไม่พบข้อมูลอัลบั้มเดิม กรุณาปิดหน้าต่างแล้วกดแก้ไขใหม่อีกครั้ง");
-                return;
-            }
-            if (newName === oldName) {
-                closeRenameModal();
-                return;
-            }
-
+            const target = renameTargetData;
+            closeRenameModal();
             document.getElementById('loadingTitle').innerText = "กำลังเปลี่ยนชื่ออัลบั้ม";
-            document.getElementById('loadingDesc').innerText = "กำลังส่งคำสั่งและตรวจสอบ Google Drive...";
-            document.getElementById('loadingModal').style.display = 'flex';
+            document.getElementById('loadingDesc').innerText = "โปรดรอสักครู่...";
+            loadingModal.style.display = 'flex';
 
             try {
-                // ใช้ POST แบบปกติเพื่ออ่านผลตอบกลับจาก Apps Script ได้
-
-const response = await fetch(SCRIPT_URL, {
-    method: 'POST',
-    body: JSON.stringify({
-        action: 'rename',
-        optionType: optionType,
-        oldFolderName: oldName,
-        newFolderName: newName
-    })
-});
-
-const result = await response.json();
-if (result.status !== 'success') {
-    throw new Error(result.message || 'เปลี่ยนชื่อไม่สำเร็จ');
-}
-
-                closeRenameModal();
-                // โหลดข้อมูลใหม่จาก Drive แล้วตรวจว่าชื่อใหม่ปรากฏจริงในหมวดที่เลือก
-                const refreshedAlbums = await fetchAllAlbums();
-                const sameCategory = (a) => a.optionType === optionType;
-                const newNameExists = Array.isArray(refreshedAlbums) && refreshedAlbums.some(a => sameCategory(a) && a.folderName === newName);
-                const oldNameExists = Array.isArray(refreshedAlbums) && refreshedAlbums.some(a => sameCategory(a) && a.folderName === oldName);
-
-                document.getElementById('loadingModal').style.display = 'none';
-                if (newNameExists && !oldNameExists) {
-                    showToast("เปลี่ยนชื่ออัลบั้มสำเร็จ!");
-                } else {
-                    alert("เซิร์ฟเวอร์ตอบว่าทำงานแล้ว แต่ยังยืนยันชื่อใหม่จากข้อมูล Drive ไม่ได้ กรุณารีเฟรชหน้าเว็บ และตรวจว่าได้ Deploy เวอร์ชันล่าสุดแล้วหรือไม่");
-                }
+                await postAndConfirm({
+                        action: 'rename',
+                        folderId: target.folderId,
+                        optionType: target.optionType,
+                        oldFolderName: target.oldFolderName,
+                        newFolderName: newName,
+                        password: "6004" // ส่งรหัสผ่านหลังบ้านอัตโนมัติโดยไม่ต้องให้ผู้ใช้พิมพ์
+                    },
+                    albums => albums.some(album => album.folderId === target.folderId && album.folderName === newName),
+                    "เปลี่ยนชื่ออัลบั้มไม่สำเร็จ");
+                loadingModal.style.display = 'none';
+                showToast("เปลี่ยนชื่ออัลบั้มสำเร็จ!");
+                fetchAllAlbums();
             } catch (err) {
-                document.getElementById('loadingModal').style.display = 'none';
-                alert("เปลี่ยนชื่อไม่สำเร็จ: " + (err && err.message ? err.message : "เกิดข้อผิดพลาดในการเชื่อมต่อ"));
+                loadingModal.style.display = 'none';
+                alert(err.message || "เกิดข้อผิดพลาดในการเชื่อมต่อเซิร์ฟเวอร์");
             }
         }
 
-        function promptAddImages(folderName, optionType) {
-            selectedFolderName = folderName;
-            selectedOptionType = optionType || '';
-            document.getElementById('targetAlbumLabel').innerText = folderName;
+        function promptAddImages(folderId, encodedFolderName, optionType) {
+            selectedFolderName = { folderId: folderId, folderName: decodeURIComponent(encodedFolderName), optionType: optionType };
+            document.getElementById('targetAlbumLabel').innerText = selectedFolderName.folderName;
             document.getElementById('additionalImagesInput').value = '';
             document.getElementById('fileUploadLabel').innerText = "📁 เลือกรูปภาพ (ยังไม่ได้เลือกไฟล์)";
             document.getElementById('addImagesModal').style.display = 'flex';
@@ -1136,6 +1141,49 @@ if (result.status !== 'success') {
             } else {
                 label.innerText = "📁 เลือกรูปภาพ (ยังไม่ได้เลือกไฟล์)";
             }
+        }
+
+        function closePasswordModal() { document.getElementById('passwordModal').style.display = 'none'; }
+
+        function checkPasswordLength(input) {
+            if (input.value.length === 4) {
+                if (input.value === "6004") {
+                    closePasswordModal();
+                    input.value = '';
+                    executePendingAction();
+                } else {
+                    const subText = document.getElementById('passwordSubText');
+                    subText.innerText = "❌ รหัสผ่านไม่ถูกต้อง";
+                    subText.style.color = "#f87171";
+                    input.value = '';
+                    input.focus();
+                }
+            }
+        }
+
+        async function executePendingAction() {
+            if (!pendingAction) return;
+            if (pendingAction.type === 'deleteAlbum') {
+                document.getElementById('loadingTitle').innerText = "กำลังลบอัลบั้ม";
+                document.getElementById('loadingDesc').innerText = "โปรดรอสักครู่...";
+                loadingModal.style.display = 'flex';
+                try {
+                    await postAndConfirm({
+                        action: 'delete',
+                        folderId: pendingAction.folderId,
+                        folderName: pendingAction.folderName,
+                        optionType: pendingAction.optionType,
+                        password: "6004"
+                    }, albums => !albums.some(album => album.folderId === pendingAction.folderId), "ลบอัลบั้มไม่สำเร็จ");
+                    loadingModal.style.display = 'none';
+                    showToast("ลบอัลบั้มสำเร็จ!");
+                    fetchAllAlbums();
+                } catch (err) {
+                    loadingModal.style.display = 'none';
+                    alert(err.message || "เกิดข้อผิดพลาดในการเชื่อมต่อเซิร์ฟเวอร์");
+                }
+            }
+            pendingAction = null;
         }
 
         function showToast(message) {
@@ -1160,39 +1208,56 @@ if (result.status !== 'success') {
                     base64Images.push(await fileToBase64(filesArray[i], 2000));
                     document.getElementById('loadingDesc').innerText = `${i + 1}/${totalFiles}`;
                 }
-                let response = await fetch(SCRIPT_URL, {
-                    method: 'POST',
-                    body: JSON.stringify({ action: 'add_images', optionType: selectedOptionType, folderName: selectedFolderName, images: base64Images })
-                });
-                let result = await response.json();
+                const before = await readAlbumsFromServer();
+                const targetBefore = before.find(album => album.folderId === selectedFolderName.folderId);
+                if (!targetBefore) throw new Error("ไม่พบอัลบั้มเป้าหมายในรายการล่าสุด");
+                const expectedImageCount = targetBefore.images.length + base64Images.length;
+                await postAndConfirm({
+                    action: 'add_images',
+                    folderId: selectedFolderName.folderId,
+                    folderName: selectedFolderName.folderName,
+                    optionType: selectedFolderName.optionType,
+                    images: base64Images,
+                    password: "6004"
+                }, albums => {
+                    const updated = albums.find(album => album.folderId === selectedFolderName.folderId);
+                    return updated && updated.images.length >= expectedImageCount;
+                }, "เพิ่มรูปภาพไม่สำเร็จ");
                 loadingModal.style.display = 'none';
-                if (result.status === "success") {
-                    showToast("เพิ่มรูปภาพสำเร็จ!");
-                    fetchAllAlbums();
-                } else {
-                    alert("ผิดพลาด: " + result.message);
-                }
+                showToast("เพิ่มรูปภาพสำเร็จ!");
+                fetchAllAlbums();
             } catch (err) {
                 loadingModal.style.display = 'none';
-                alert("เชื่อมต่อเซิร์ฟเวอร์ไม่สำเร็จ");
+                alert(err.message || "เชื่อมต่อเซิร์ฟเวอร์ไม่สำเร็จ");
             }
         }
 
         function fileToBase64(file, maxDim = 2000) {
-            return new Promise((resolve) => {
+            return new Promise((resolve, reject) => {
                 const reader = new FileReader();
                 reader.readAsDataURL(file);
+                reader.onerror = () => reject(new Error("อ่านไฟล์รูปภาพไม่สำเร็จ"));
                 reader.onload = e => {
                     const img = new Image();
                     img.src = e.target.result;
+                    img.onerror = () => reject(new Error("เปิดไฟล์รูปภาพไม่สำเร็จ"));
                     img.onload = () => {
                         const canvas = document.createElement('canvas');
                         let w = img.width, h = img.height;
                         if (w > h && w > maxDim) { h *= maxDim / w; w = maxDim; }
                         else if (h > maxDim) { w *= maxDim / h; h = maxDim; }
                         canvas.width = w; canvas.height = h;
-                        canvas.getContext('2d').drawImage(img, 0, 0, w, h);
-                        resolve(canvas.toDataURL('image/jpeg', 0.95).split(',')[1]);
+                        const context = canvas.getContext('2d');
+                        if (!context) {
+                            reject(new Error("เตรียมแปลงรูปภาพไม่สำเร็จ"));
+                            return;
+                        }
+                        context.drawImage(img, 0, 0, w, h);
+                        try {
+                            resolve(canvas.toDataURL('image/jpeg', 0.95).split(',')[1]);
+                        } catch (err) {
+                            reject(new Error("แปลงรูปภาพไม่สำเร็จ"));
+                        }
                     };
                 };
             });
