@@ -1088,13 +1088,15 @@
 
 const response = await fetch(SCRIPT_URL, {
     method: 'POST',
-    body: new URLSearchParams({
+    body: JSON.stringify({
         action: 'rename',
         optionType: optionType,
         oldFolderName: oldName,
         newFolderName: newName
     })
 });
+
+const result = await response.json();
 
 const result = await response.json();
 
